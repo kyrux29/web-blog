@@ -9,7 +9,7 @@ const base = process.env.BASE_PATH ?? '/';
 
 // https://astro.build/config
 export default defineConfig({
-  site: process.env.SITE_URL ?? 'https://example.github.io',
+  site: process.env.SITE_URL ?? 'https://kyrux29.github.io',
   base,
   vite: {
     plugins: [tailwindcss()]
