@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+const withBase = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 
 const blogEntries = (await getCollection("blog", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
@@ -9,8 +10,8 @@ const blogEntries = (await getCollection("blog", ({ data }) => !data.draft)).sor
 
 <BaseLayout title="Blog | Kyrux">
   <section>
-    <h1 class="text-3xl font-semibold text-zinc-100">Technical Blog</h1>
-    <p class="mt-3 text-zinc-400">
+    <h1 class="text-3xl font-semibold text-slate-100">Technical Blog</h1>
+    <p class="mt-3 text-slate-400">
       Research notes on web security, tooling, reverse engineering, and exploitation workflows.
     </p>
   </section>
@@ -18,12 +19,12 @@ const blogEntries = (await getCollection("blog", ({ data }) => !data.draft)).sor
   <ul class="mt-8 space-y-4">
     {
       blogEntries.map((entry) => (
-        <li class="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
-          <a href={`/blog/${entry.id}/`} class="text-xl font-medium text-zinc-100 hover:text-emerald-300">
+        <li class="rounded-lg border border-slate-800 bg-slate-900/40 p-4">
+          <a href={withBase(`/blog/${entry.id}/`)} class="text-xl font-medium text-slate-100 hover:text-cyan-300">
             {entry.data.title}
           </a>
-          <p class="mt-2 text-sm text-zinc-400">{entry.data.description}</p>
-          <p class="mt-2 text-xs text-zinc-500">{entry.data.tags.map((tag) => `#${tag}`).join(" ")}</p>
+          <p class="mt-2 text-sm text-slate-400">{entry.data.description}</p>
+          <p class="mt-2 text-xs text-slate-500">{entry.data.tags.map((tag) => `#${tag}`).join(" ")}</p>
         </li>
       ))
     }

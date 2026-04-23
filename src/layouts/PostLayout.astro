@@ -12,15 +12,15 @@ const { title, date, description } = Astro.props;
 
 <BaseLayout title={`${title} | Kyrux`} description={description}>
   <article class="mx-auto max-w-3xl">
-    <header class="mb-8 border-b border-zinc-800 pb-5">
-      <h1 class="text-3xl font-semibold text-zinc-100 md:text-4xl">{title}</h1>
-      <p class="mt-2 text-sm text-zinc-400">
+    <header class="mb-8 border-b border-slate-800 pb-5">
+      <h1 class="text-3xl font-semibold text-slate-100 md:text-4xl">{title}</h1>
+      <p class="mt-2 text-sm text-slate-400">
         <time datetime={date.toISOString()}>{date.toLocaleDateString("en-US", { dateStyle: "long" })}</time>
       </p>
     </header>
 
     <div
-      class="prose prose-invert prose-zinc max-w-none prose-headings:tracking-tight prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-700 prose-pre:bg-zinc-900 prose-pre:p-4 prose-pre:text-zinc-100 prose-code:rounded prose-code:bg-zinc-900 prose-code:px-1 prose-code:py-0.5 prose-code:text-emerald-300 prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-4 prose-blockquote:border-emerald-500 prose-blockquote:bg-zinc-900/70 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:text-zinc-300"
+      class="prose prose-invert prose-slate max-w-none prose-headings:tracking-tight prose-pre:rounded-xl prose-pre:border prose-pre:border-slate-700 prose-pre:bg-slate-900 prose-pre:p-4 prose-pre:text-slate-100 prose-code:rounded prose-code:bg-slate-900 prose-code:px-1 prose-code:py-0.5 prose-code:text-cyan-300 prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-4 prose-blockquote:border-violet-500 prose-blockquote:bg-slate-900/70 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:text-slate-300"
     >
       <slot />
     </div>
