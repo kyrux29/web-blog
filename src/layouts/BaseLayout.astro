@@ -1,0 +1,65 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Kyrux cybersecurity research blog" } = Astro.props;
+
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/ctf/", label: "CTF" },
+  { href: "/blog/", label: "Blog" },
+  { href: "https://github.com/", label: "GitHub", external: true }
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen">
+    <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+      <header class="mb-10 border-b border-zinc-800 pb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <a href="/" class="text-xl font-semibold tracking-wide text-zinc-100">Kyrux</a>
+          <nav aria-label="Main Navigation">
+            <ul class="flex items-center gap-4 text-sm sm:gap-6">
+              {
+                navLinks.map((link) => (
+                  <li>
+                    <a
+                      href={link.href}
+                      target={link.external ? "_blank" : undefined}
+                      rel={link.external ? "noreferrer" : undefined}
+                      class="text-zinc-400 hover:text-zinc-100"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+        </div>
+      </header>
+
+      <main class="flex-1">
+        <slot />
+      </main>
+
+      <footer class="mt-14 border-t border-zinc-800 pt-6 text-sm text-zinc-500">
+        <p>© {new Date().getFullYear()} Kyrux. Built with Astro.</p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const ctfEntries = (await getCollection("ctf", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<BaseLayout title="CTF Write-ups | Kyrux">
+  <section>
+    <h1 class="text-3xl font-semibold text-zinc-100">CTF Write-ups</h1>
+    <p class="mt-3 text-zinc-400">Hands-on challenge solutions, exploit notes, and methodology breakdowns.</p>
+  </section>
+
+  <ul class="mt-8 space-y-4">
+    {
+      ctfEntries.map((entry) => (
+        <li class="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
+          <a href={`/ctf/${entry.id}/`} class="text-xl font-medium text-zinc-100 hover:text-emerald-300">
+            {entry.data.title}
+          </a>
+          <p class="mt-2 text-sm text-zinc-400">
+            {entry.data.platform} - {entry.data.vulnerability_type}
+          </p>
+          <p class="mt-2 text-xs text-zinc-500">
+            {entry.data.tags.map((tag) => `#${tag}`).join(" ")}
+          </p>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

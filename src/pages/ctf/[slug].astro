@@ -1,0 +1,23 @@
+---
+import { getCollection, render } from "astro:content";
+import PostLayout from "../../layouts/PostLayout.astro";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("ctf", ({ data }) => !data.draft);
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry }
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<PostLayout title={entry.data.title} date={entry.data.date}>
+  <p class="mb-6 text-sm text-zinc-400">
+    Platform: <span class="text-zinc-200">{entry.data.platform}</span> | Vulnerability:
+    <span class="text-zinc-200"> {entry.data.vulnerability_type}</span>
+  </p>
+  <Content />
+</PostLayout>

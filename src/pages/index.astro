@@ -1,0 +1,62 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const latestCtf = (await getCollection("ctf", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const latestBlogs = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+
+<BaseLayout title="Kyrux | Cybersecurity Researcher Blog">
+  <section class="mb-12">
+    <h1 class="text-4xl font-bold tracking-tight text-zinc-100">Kyrux</h1>
+    <p class="mt-4 max-w-2xl text-zinc-400">
+      Cybersecurity researcher focused on CTF write-ups, vulnerability analysis, and practical offensive security
+      techniques. This space documents exploit chains, debugging workflows, and field notes from real challenges.
+    </p>
+  </section>
+
+  <section class="mb-12">
+    <div class="mb-4 flex items-center justify-between">
+      <h2 class="text-2xl font-semibold text-zinc-100">Latest CTF Write-ups</h2>
+      <a href="/ctf/" class="text-sm">View all</a>
+    </div>
+    <ul class="space-y-4">
+      {
+        latestCtf.map((entry) => (
+          <li class="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
+            <a href={`/ctf/${entry.id}/`} class="text-lg font-medium text-zinc-100 hover:text-emerald-300">
+              {entry.data.title}
+            </a>
+            <p class="mt-2 text-sm text-zinc-400">
+              {entry.data.platform} - {entry.data.vulnerability_type}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <div class="mb-4 flex items-center justify-between">
+      <h2 class="text-2xl font-semibold text-zinc-100">Latest Blog Posts</h2>
+      <a href="/blog/" class="text-sm">View all</a>
+    </div>
+    <ul class="space-y-4">
+      {
+        latestBlogs.map((entry) => (
+          <li class="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
+            <a href={`/blog/${entry.id}/`} class="text-lg font-medium text-zinc-100 hover:text-emerald-300">
+              {entry.data.title}
+            </a>
+            <p class="mt-2 text-sm text-zinc-400">{entry.data.description}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
