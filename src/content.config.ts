@@ -7,7 +7,9 @@ const ctf = defineCollection({
     title: z.string(),
     date: z.coerce.date(),
     platform: z.string(),
-    vulnerability_type: z.string(),
+    vulnerability_type: z.string().optional(),
+    category: z.string().optional(),
+    difficulty: z.string().optional(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false)
   })

