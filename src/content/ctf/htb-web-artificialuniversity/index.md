@@ -3,7 +3,7 @@ title: "ArtificialUniversity"
 date: 2026-04-23
 platform: "HackTheBox"
 category: "Web"
-difficulty: "Medium"
+difficulty: "Insane"
 tags: ["web", "hackthebox"]
 draft: false
 ---

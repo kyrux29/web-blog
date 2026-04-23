@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "encrypt": "node scripts/encrypt-posts.js",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -19,6 +20,8 @@
     "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0"
+    "@types/node": "^25.6.0",
+    "gray-matter": "^4.0.3",
+    "staticrypt": "^3.5.4"
   }
 }

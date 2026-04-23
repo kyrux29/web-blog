@@ -1,9 +1,10 @@
 ---
 title: "Resizer"
+password: "HTB{7f3a6cd2af4ac2fd8bc47710679b98bd}"
 date: 2026-04-23
 platform: "HackTheBox"
 category: "Web"
-difficulty: "Medium"
+difficulty: "Hard"
 tags: ["web", "hackthebox"]
 draft: false
 ---
