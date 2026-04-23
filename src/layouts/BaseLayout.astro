@@ -7,7 +7,8 @@ interface Props {
 }
 
 const { title, description = "Kyrux cybersecurity research blog" } = Astro.props;
-const withBase = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+const withBase = (path: string) =>
+  `${import.meta.env.BASE_URL.replace(/\/?$/, "/")}${path.replace(/^\//, "")}`;
 
 const navLinks = [
   { href: withBase("/"), label: "Home" },
