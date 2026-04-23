@@ -1,5 +1,6 @@
 ---
 title: "ArtificialUniversity"
+password: "123"
 date: 2026-04-23
 platform: "HackTheBox"
 category: "Web"

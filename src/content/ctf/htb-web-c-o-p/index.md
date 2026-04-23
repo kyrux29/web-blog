@@ -14,7 +14,7 @@ draft: false
 - **Event**: none
 - **Author**: InfoSecJack
 - **Difficulty**: Easy
-- **URL**: https://app.hackthebox.com/challenges/C.O.P?tab=play_challenge
+- **URL**: https://app.hackthebox.com/challenges/C.O.P
 - **Tags**: #web #insecure_deserialization #SQLi
 ---
 ## 1. Description
