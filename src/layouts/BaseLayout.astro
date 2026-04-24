@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { getCollection } from "astro:content";
 
 interface Props {
   title: string;
@@ -16,6 +17,23 @@ const navLinks = [
   { href: withBase("/blog/"), label: "Blog" },
   { href: "https://github.com/kyrux29", label: "GitHub", external: true }
 ];
+
+const blogEntries = await getCollection("blog", ({ data }) => !data.draft);
+const ctfEntries = await getCollection("ctf", ({ data }) => !data.draft);
+const terminalItems = {
+  blog: blogEntries.map((entry) => ({
+    slug: entry.id,
+    title: entry.data.title,
+    summary: entry.data.description ?? "Technical research notes",
+    url: withBase(`/blog/${entry.id}/`)
+  })),
+  ctf: ctfEntries.map((entry) => ({
+    slug: entry.id,
+    title: entry.data.title,
+    summary: `${entry.data.platform}${entry.data.vulnerability_type ? ` | ${entry.data.vulnerability_type}` : ""}`,
+    url: withBase(`/ctf/${entry.id}/`)
+  }))
+};
 ---
 
 <!doctype html>
@@ -30,17 +48,21 @@ const navLinks = [
     <title>{title}</title>
   </head>
   <body class="min-h-screen">
+    <a href="#content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-slate-900 focus:px-3 focus:py-2 focus:text-cyan-300">
+      Skip to content
+    </a>
+    <div id="reading-progress" class="fixed left-0 top-0 z-50 h-0.5 w-0 bg-cyan-400/90"></div>
     <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-6 sm:px-6 lg:px-8">
       <header class="mb-10">
-        <div class="panel mx-auto flex max-w-4xl items-center justify-between gap-3 px-3 py-2">
+        <div class="panel mx-auto grid max-w-4xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-2">
           <a
             href={withBase("/")}
             class="rounded-full border border-slate-700 bg-slate-950 px-4 py-1.5 text-sm font-semibold tracking-wider text-slate-100"
           >
             KYRUX_LABS
           </a>
-          <nav aria-label="Main Navigation">
-            <ul class="flex items-center gap-3 text-xs sm:gap-5 sm:text-sm">
+          <nav aria-label="Main Navigation" class="justify-self-center">
+            <ul class="flex items-center gap-4 text-xs sm:gap-7 sm:text-sm">
               {
                 navLinks.map((link) => (
                   <li>
@@ -57,16 +79,18 @@ const navLinks = [
               }
             </ul>
           </nav>
-          <a
-            href={withBase("/blog/")}
-            class="rounded-full bg-cyan-400 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-950 hover:bg-cyan-300"
-          >
-            Explore
-          </a>
+          <div class="flex items-center gap-2 justify-self-end">
+            <button id="theme-toggle" type="button" class="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300 hover:border-cyan-500 hover:text-cyan-300">
+              Dim
+            </button>
+            <button id="terminal-toggle" type="button" class="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300 hover:border-cyan-500 hover:text-cyan-300">
+              Terminal
+            </button>
+          </div>
         </div>
       </header>
 
-      <main class="flex-1">
+      <main id="content" class="flex-1">
         <slot />
       </main>
 
@@ -74,5 +98,194 @@ const navLinks = [
         <p>© {new Date().getFullYear()} Kyrux | Vu Trong Quoc Khanh.</p>
       </footer>
     </div>
+
+    <div id="terminal-modal" class="fixed inset-0 z-50 hidden items-end justify-end bg-slate-950/55 p-4">
+      <div class="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 px-4 py-2">
+          <p class="text-xs uppercase tracking-wider text-slate-400">kyrux@labs:~</p>
+          <button id="terminal-close" type="button" class="text-sm text-slate-400 hover:text-cyan-300">Close</button>
+        </div>
+        <div id="terminal-output" class="h-80 overflow-y-auto bg-slate-950 px-4 py-3 font-mono text-sm text-slate-200"></div>
+        <form id="terminal-form" class="flex items-center gap-2 border-t border-slate-800 px-4 py-3">
+          <span class="font-mono text-sm text-cyan-300">$</span>
+          <input
+            id="terminal-input"
+            type="text"
+            autocomplete="off"
+            class="w-full bg-transparent font-mono text-sm text-slate-100 outline-none placeholder:text-slate-500"
+            placeholder="Type help"
+          />
+        </form>
+      </div>
+    </div>
+    <script id="terminal-data" type="application/json" set:html={JSON.stringify(terminalItems)}></script>
+
+    <script is:inline>
+      const terminalData = JSON.parse(document.getElementById("terminal-data")?.textContent ?? '{"blog":[],"ctf":[]}');
+      const root = document.documentElement;
+      const savedTheme = localStorage.getItem("kyrux-theme") ?? "dark";
+      root.dataset.theme = savedTheme;
+
+      const themeToggle = document.getElementById("theme-toggle");
+      const setThemeLabel = () => {
+        if (!themeToggle) return;
+        themeToggle.textContent = root.dataset.theme === "dim" ? "Dark" : "Dim";
+      };
+      setThemeLabel();
+      themeToggle?.addEventListener("click", () => {
+        root.dataset.theme = root.dataset.theme === "dim" ? "dark" : "dim";
+        localStorage.setItem("kyrux-theme", root.dataset.theme);
+        setThemeLabel();
+      });
+
+      const preBlocks = Array.from(document.querySelectorAll(".prose pre"));
+      preBlocks.forEach((pre) => {
+        if (pre.querySelector(".copy-code-btn")) return;
+        pre.classList.add("relative");
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "Copy";
+        button.className =
+          "copy-code-btn absolute right-3 top-3 rounded border border-slate-600 bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:border-cyan-500 hover:text-cyan-300";
+
+        button.addEventListener("click", async () => {
+          const code = pre.querySelector("code");
+          if (!code) return;
+          const raw = code.innerText;
+          try {
+            await navigator.clipboard.writeText(raw);
+            button.textContent = "Copied";
+            setTimeout(() => (button.textContent = "Copy"), 1200);
+          } catch {
+            button.textContent = "Error";
+            setTimeout(() => (button.textContent = "Copy"), 1200);
+          }
+        });
+
+        pre.appendChild(button);
+      });
+
+      const progressBar = document.getElementById("reading-progress");
+      const updateProgress = () => {
+        if (!progressBar) return;
+        const scrollTop = window.scrollY;
+        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = scrollHeight > 0 ? Math.min(100, (scrollTop / scrollHeight) * 100) : 0;
+        progressBar.style.width = `${progress}%`;
+      };
+      window.addEventListener("scroll", updateProgress, { passive: true });
+      updateProgress();
+
+      const terminalModal = document.getElementById("terminal-modal");
+      const terminalToggle = document.getElementById("terminal-toggle");
+      const terminalClose = document.getElementById("terminal-close");
+      const terminalOutput = document.getElementById("terminal-output");
+      const terminalForm = document.getElementById("terminal-form");
+      const terminalInput = document.getElementById("terminal-input");
+      let cwd = "/";
+
+      const printLine = (text) => {
+        if (!terminalOutput) return;
+        const line = document.createElement("div");
+        line.className = "mb-1 whitespace-pre-wrap break-words";
+        line.textContent = text;
+        terminalOutput.appendChild(line);
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+      };
+
+      const openTerminal = () => {
+        terminalModal?.classList.remove("hidden");
+        terminalModal?.classList.add("flex");
+        terminalInput?.focus();
+        if (terminalOutput && terminalOutput.childElementCount === 0) {
+          printLine("Kyrux Research Terminal v1");
+          printLine("Type help to list commands.");
+        }
+      };
+
+      const closeTerminal = () => {
+        terminalModal?.classList.add("hidden");
+        terminalModal?.classList.remove("flex");
+      };
+
+      const listDir = () => {
+        if (cwd === "/") return ["blog/", "ctf/", "about.txt"];
+        if (cwd === "/blog") return terminalData.blog.map((item) => item.slug);
+        if (cwd === "/ctf") return terminalData.ctf.map((item) => item.slug);
+        return [];
+      };
+
+      const resolveItem = (name) => {
+        if (cwd === "/blog") return terminalData.blog.find((item) => item.slug === name);
+        if (cwd === "/ctf") return terminalData.ctf.find((item) => item.slug === name);
+        return null;
+      };
+
+      const runCommand = (rawInput) => {
+        const [cmd, ...args] = rawInput.trim().split(/\s+/);
+        if (!cmd) return;
+        if (cmd === "help") {
+          printLine("Commands: ls, cd <dir>, pwd, cat <name>, whoami, clear");
+          return;
+        }
+        if (cmd === "clear") {
+          if (terminalOutput) terminalOutput.innerHTML = "";
+          return;
+        }
+        if (cmd === "pwd") {
+          printLine(cwd);
+          return;
+        }
+        if (cmd === "ls") {
+          printLine(listDir().join("  "));
+          return;
+        }
+        if (cmd === "cd") {
+          const next = args[0] ?? "/";
+          if (next === "/" || next === "~") cwd = "/";
+          else if (next === "..") cwd = cwd === "/" ? "/" : "/";
+          else if ((cwd === "/" && (next === "blog" || next === "ctf")) || (cwd === "/" && (next === "blog/" || next === "ctf/"))) cwd = `/${next.replace("/", "")}`;
+          else printLine(`cd: no such directory: ${next}`);
+          return;
+        }
+        if (cmd === "cat") {
+          const target = args[0];
+          if (!target) {
+            printLine("cat: missing operand");
+            return;
+          }
+          if (cwd === "/" && target === "about.txt") {
+            printLine("Kyrux - cybersecurity researcher focused on CTFs, vuln research, and offensive tooling.");
+            return;
+          }
+          const item = resolveItem(target);
+          if (!item) {
+            printLine(`cat: ${target}: No such file`);
+            return;
+          }
+          printLine(`${item.title}\n${item.summary}\n${item.url}`);
+          return;
+        }
+        if (cmd === "whoami") {
+          printLine("kyrux (security researcher | web exploitation | CTF player)");
+          return;
+        }
+        printLine(`${cmd}: command not found`);
+      };
+
+      terminalToggle?.addEventListener("click", openTerminal);
+      terminalClose?.addEventListener("click", closeTerminal);
+      terminalModal?.addEventListener("click", (event) => {
+        if (event.target === terminalModal) closeTerminal();
+      });
+      terminalForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const value = terminalInput?.value ?? "";
+        printLine(`$ ${value}`);
+        runCommand(value);
+        if (terminalInput) terminalInput.value = "";
+      });
+    </script>
   </body>
 </html>

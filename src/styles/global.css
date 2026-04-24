@@ -8,13 +8,22 @@
 html,
 body {
   @apply bg-slate-950 text-slate-100 antialiased;
-  background-image:
-    radial-gradient(circle at 20% -10%, rgba(34, 211, 238, 0.08), transparent 30%),
-    radial-gradient(circle at 90% 10%, rgba(129, 140, 248, 0.1), transparent 32%);
+  background-image: radial-gradient(circle at 50% -30%, rgba(30, 41, 59, 0.5), transparent 45%);
+}
+
+html[data-theme="dim"] body {
+  @apply bg-[#0d1117] text-slate-200;
+  background-image: radial-gradient(circle at 50% -35%, rgba(56, 189, 248, 0.08), transparent 45%);
 }
 
 a {
   @apply text-cyan-400 transition-colors hover:text-cyan-300;
+}
+
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  @apply outline-none ring-2 ring-cyan-500/80 ring-offset-2 ring-offset-slate-950;
 }
 
 .panel {
@@ -23,4 +32,26 @@ a {
 
 .chip {
   @apply inline-flex items-center rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1 text-[11px] uppercase tracking-wider text-slate-400;
+}
+
+.prose pre code {
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+}
+
+.prose :not(pre) > code {
+  @apply rounded bg-slate-800 px-1.5 py-0.5 text-cyan-200;
+}
+
+.toc-link {
+  @apply block rounded-md border-l-2 border-transparent px-2 py-1 transition-colors;
+}
+
+.toc-link.toc-active {
+  @apply border-cyan-500 bg-slate-900/70 text-cyan-300;
+}
+
+.copy-code-btn {
+  @apply font-medium tracking-wide;
 }

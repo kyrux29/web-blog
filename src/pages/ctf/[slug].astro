@@ -11,10 +11,10 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 ---
 
-<PostLayout title={entry.data.title} date={entry.data.date}>
+<PostLayout title={entry.data.title} date={entry.data.date} tags={entry.data.tags} headings={headings}>
   <p class="mb-6 text-sm text-zinc-400">
     Platform: <span class="text-zinc-200">{entry.data.platform}</span> | Vulnerability:
     <span class="text-zinc-200"> {entry.data.vulnerability_type}</span>
