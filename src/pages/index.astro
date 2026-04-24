@@ -13,13 +13,15 @@ const latestBlogs = (await getCollection("blog", ({ data }) => !data.draft))
   .slice(0, 3);
 ---
 
-<BaseLayout title="Kyrux | Cybersecurity Researcher Blog">
+<BaseLayout title="Kyrux | Cyber Security Research Blog">
   <section class="mb-12">
     <h1 class="text-4xl font-bold tracking-tight text-slate-100">Kyrux</h1>
     <p class="mt-4 max-w-2xl text-slate-300">
-      Cybersecurity researcher focused on CTF write-ups, vulnerability analysis, and practical offensive security
-      techniques. This space documents exploit chains, debugging workflows, and field notes from real challenges.
+      Đây là nơi mình chia sẻ về các vấn đề liên quan đến cybersecurity, bao gồm các CTF write-ups, các blog chuyên môn và các research note.
     </p>
+	<p class="mt-4 max-w-2xl text-slate-300">
+	  This is where I share my thoughts on cybersecurity, including CTF write-ups, technical blog posts, and research notes.
+	</p>
   </section>
 
   <section class="mb-12">

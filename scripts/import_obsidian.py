@@ -106,7 +106,7 @@ def import_one(source_dir: Path, out_root: Path, post_date: str, overwrite: bool
     meta = parse_source_metadata(source_dir)
     bundle_slug = f'{platform_prefix(meta["platform"])}-{slugify(meta["category_raw"])}-{slugify(meta["title"])}'
     bundle_dir = out_root / bundle_slug
-    index_path = bundle_dir / "index.mdx"
+    index_path = bundle_dir / "index.md"
 
     if bundle_dir.exists():
         if not overwrite:
@@ -179,3 +179,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# python scripts/import_obsidian.py --source "C:\path\to\HackTheBox Challenges\web\ArtificialUniversity" --overwrite
+
+# python scripts/import_obsidian.py --source "C:\path\to\HackTheBox Challenges" --bulk --overwrite
