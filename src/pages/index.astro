@@ -11,6 +11,21 @@ const latestCtf = (await getCollection("ctf", ({ data }) => !data.draft))
 const latestBlogs = (await getCollection("blog", ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
+
+const searchable = [
+  ...(await getCollection("ctf", ({ data }) => !data.draft)).map((entry) => ({
+    type: "ctf",
+    title: entry.data.title,
+    summary: `${entry.data.platform} ${entry.data.vulnerability_type ?? ""} ${(entry.data.tags ?? []).join(" ")}`.trim(),
+    href: `/ctf/${entry.id}/`
+  })),
+  ...(await getCollection("blog", ({ data }) => !data.draft)).map((entry) => ({
+    type: "blog",
+    title: entry.data.title,
+    summary: `${entry.data.description} ${(entry.data.tags ?? []).join(" ")}`.trim(),
+    href: `/blog/${entry.id}/`
+  }))
+];
 ---
 
 <BaseLayout title="Kyrux | Cyber Security Research Blog">
@@ -22,6 +37,34 @@ const latestBlogs = (await getCollection("blog", ({ data }) => !data.draft))
 	<p class="mt-4 max-w-2xl text-slate-300">
 	  This is where I share my thoughts on cybersecurity, including CTF write-ups, technical blog posts, and research notes.
 	</p>
+  </section>
+
+  <section class="mb-12">
+    <div class="panel p-5">
+      <h2 class="text-xl font-semibold text-slate-100">Quick Search</h2>
+      <p class="mt-2 text-sm text-slate-400">Find write-ups and research notes by title, tags, platform, or keywords.</p>
+      <input
+        id="home-search"
+        type="search"
+        placeholder="Try: ssrf, hackthebox, grpc, race condition..."
+        class="mt-4 w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+      />
+      <ul id="home-search-results" class="mt-4 space-y-2">
+        {
+          searchable.slice(0, 6).map((item) => (
+            <li
+              class="hidden rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2"
+              data-search={`${item.title} ${item.summary}`.toLowerCase()}
+              data-href={withBase(item.href)}
+            >
+              <a href={withBase(item.href)} class="text-sm text-slate-200 hover:text-cyan-300">
+                <span class="mr-2 chip">{item.type}</span>{item.title}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
   </section>
 
   <section class="mb-12">
@@ -63,4 +106,22 @@ const latestBlogs = (await getCollection("blog", ({ data }) => !data.draft))
       }
     </ul>
   </section>
+
+  <script is:inline>
+    const homeSearch = document.getElementById("home-search");
+    const results = Array.from(document.querySelectorAll("#home-search-results > li"));
+
+    const runHomeSearch = () => {
+      const query = (homeSearch?.value ?? "").trim().toLowerCase();
+      let shown = 0;
+      results.forEach((item) => {
+        const match = query.length > 1 && (item.getAttribute("data-search") ?? "").includes(query);
+        const shouldShow = match && shown < 6;
+        item.classList.toggle("hidden", !shouldShow);
+        if (shouldShow) shown += 1;
+      });
+    };
+
+    homeSearch?.addEventListener("input", runHomeSearch);
+  </script>
 </BaseLayout>

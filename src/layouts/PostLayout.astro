@@ -14,8 +14,8 @@ const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.
 ---
 
 <BaseLayout title={`${title} | Kyrux`} description={description}>
-  <article class="mx-auto max-w-6xl lg:grid lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-8">
-    <div>
+  <article class="mx-auto max-w-7xl lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-10">
+    <div class="min-w-0">
       <header class="panel mb-8 p-6">
         <div class="mb-3 flex flex-wrap items-center gap-2">
           <span class="chip">Research</span>
@@ -51,10 +51,12 @@ const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.
         </details>
       )}
 
-      <div
-        class="prose prose-invert prose-slate max-w-none prose-headings:mt-10 prose-headings:tracking-tight prose-h2:text-3xl prose-p:leading-8 prose-pre:rounded-2xl prose-pre:border prose-pre:border-slate-700 prose-pre:bg-slate-900 prose-pre:p-5 prose-pre:text-slate-100 prose-pre:shadow-lg prose-code:before:content-none prose-code:after:content-none prose-blockquote:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-cyan-500 prose-blockquote:bg-slate-900/80 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:text-slate-300"
-      >
+      <div class="mx-auto max-w-3xl">
+        <div
+          class="prose prose-invert prose-slate max-w-none prose-headings:mt-10 prose-headings:tracking-tight prose-h2:text-3xl prose-p:leading-8 prose-pre:rounded-2xl prose-pre:border prose-pre:border-slate-700 prose-pre:bg-slate-900 prose-pre:p-5 prose-pre:text-slate-100 prose-pre:shadow-lg prose-code:before:content-none prose-code:after:content-none prose-blockquote:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-cyan-500 prose-blockquote:bg-slate-900/80 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:text-slate-300"
+        >
         <slot />
+        </div>
       </div>
     </div>
 

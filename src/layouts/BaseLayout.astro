@@ -15,6 +15,7 @@ const navLinks = [
   { href: withBase("/"), label: "Home" },
   { href: withBase("/ctf/"), label: "CTF" },
   { href: withBase("/blog/"), label: "Blog" },
+  { href: withBase("/about/"), label: "About" },
   { href: "https://github.com/kyrux29", label: "GitHub", external: true }
 ];
 
@@ -184,6 +185,8 @@ const terminalItems = {
       const terminalForm = document.getElementById("terminal-form");
       const terminalInput = document.getElementById("terminal-input");
       let cwd = "/";
+      const history = [];
+      let historyIndex = -1;
 
       const printLine = (text) => {
         if (!terminalOutput) return;
@@ -222,11 +225,17 @@ const terminalItems = {
         return null;
       };
 
+      const completions = (partial) => {
+        const commands = ["help", "ls", "cd", "pwd", "cat", "open", "whoami", "clear"];
+        const filesystem = cwd === "/" ? ["blog", "ctf", "about.txt"] : listDir().map((item) => item.replace("/", ""));
+        return [...commands, ...filesystem].filter((item) => item.startsWith(partial));
+      };
+
       const runCommand = (rawInput) => {
         const [cmd, ...args] = rawInput.trim().split(/\s+/);
         if (!cmd) return;
         if (cmd === "help") {
-          printLine("Commands: ls, cd <dir>, pwd, cat <name>, whoami, clear");
+          printLine("Commands: ls, cd <dir>, pwd, cat <name>, open <name>, whoami, clear");
           return;
         }
         if (cmd === "clear") {
@@ -256,7 +265,7 @@ const terminalItems = {
             return;
           }
           if (cwd === "/" && target === "about.txt") {
-            printLine("Kyrux - cybersecurity researcher focused on CTFs, vuln research, and offensive tooling.");
+            printLine("Kyrux - cybersecurity researcher focused on web exploitation, CTF write-ups, and practical offensive tooling.");
             return;
           }
           const item = resolveItem(target);
@@ -265,6 +274,21 @@ const terminalItems = {
             return;
           }
           printLine(`${item.title}\n${item.summary}\n${item.url}`);
+          return;
+        }
+        if (cmd === "open") {
+          const target = args[0];
+          if (!target) {
+            printLine("open: missing operand");
+            return;
+          }
+          const item = resolveItem(target);
+          if (!item) {
+            printLine(`open: ${target}: No such entry`);
+            return;
+          }
+          window.open(item.url, "_blank", "noopener");
+          printLine(`Opened ${item.url}`);
           return;
         }
         if (cmd === "whoami") {
@@ -282,9 +306,43 @@ const terminalItems = {
       terminalForm?.addEventListener("submit", (event) => {
         event.preventDefault();
         const value = terminalInput?.value ?? "";
+        if (value.trim()) {
+          history.push(value.trim());
+          historyIndex = history.length;
+        }
         printLine(`$ ${value}`);
         runCommand(value);
         if (terminalInput) terminalInput.value = "";
+      });
+
+      terminalInput?.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          if (history.length === 0) return;
+          historyIndex = Math.max(0, historyIndex - 1);
+          terminalInput.value = history[historyIndex] ?? "";
+          return;
+        }
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          if (history.length === 0) return;
+          historyIndex = Math.min(history.length, historyIndex + 1);
+          terminalInput.value = historyIndex >= history.length ? "" : history[historyIndex];
+          return;
+        }
+        if (event.key === "Tab") {
+          event.preventDefault();
+          const current = terminalInput.value.trim();
+          const parts = current.split(/\s+/);
+          const partial = parts[parts.length - 1] ?? "";
+          const matches = completions(partial);
+          if (matches.length === 1) {
+            parts[parts.length - 1] = matches[0];
+            terminalInput.value = parts.join(" ");
+          } else if (matches.length > 1) {
+            printLine(matches.join("  "));
+          }
+        }
       });
     </script>
   </body>
