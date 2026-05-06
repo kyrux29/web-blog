@@ -44,6 +44,34 @@ summary:focus-visible {
   @apply rounded bg-slate-800 px-1.5 py-0.5 text-cyan-200;
 }
 
+.prose pre {
+  @apply overflow-x-auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose table {
+  @apply block w-full overflow-x-auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose thead th {
+  @apply whitespace-nowrap;
+}
+
+.prose img,
+.prose video,
+.prose iframe {
+  @apply max-w-full;
+}
+
+.prose hr {
+  @apply border-slate-800;
+}
+
+.prose kbd {
+  @apply rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5 font-mono text-xs text-slate-200;
+}
+
 .toc-link {
   @apply block rounded-md border-l-2 border-transparent px-2 py-1 transition-colors;
 }

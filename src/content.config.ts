@@ -11,6 +11,8 @@ const ctf = defineCollection({
     category: z.string().optional(),
     difficulty: z.string().optional(),
     tags: z.array(z.string()).default([]),
+    password: z.string().optional(),
+    password_env: z.string().optional(),
     draft: z.boolean().default(false)
   })
 });
@@ -22,6 +24,8 @@ const blog = defineCollection({
     date: z.coerce.date(),
     description: z.string(),
     tags: z.array(z.string()).default([]),
+    password: z.string().optional(),
+    password_env: z.string().optional(),
     draft: z.boolean().default(false)
   })
 });

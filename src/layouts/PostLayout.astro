@@ -14,28 +14,26 @@ const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.
 ---
 
 <BaseLayout title={`${title} | Kyrux`} description={description}>
-  <article class="mx-auto max-w-7xl lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-10">
+  <article class="mx-auto max-w-7xl lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
     <div class="min-w-0">
-      <header class="panel mb-8 p-6">
+      <header class="panel mb-6 p-5 sm:p-6">
         <div class="mb-3 flex flex-wrap items-center gap-2">
           <span class="chip">Research</span>
           {
             tags.map((tag) => <span class="chip">{tag}</span>)
           }
         </div>
-        <div class="mb-3 flex flex-wrap items-center gap-2">
-        <span class="chip">
-          <time datetime={date.toISOString()}>{date.toLocaleDateString("en-CA")}</time>
-        </span>
+        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
+          <span class="chip">
+            <time datetime={date.toISOString()}>{date.toLocaleDateString("en-US", { dateStyle: "medium" })}</time>
+          </span>
         </div>
-        <h1 class="text-3xl font-semibold leading-tight text-slate-100 md:text-5xl">{title}</h1>
-        <p class="mt-3 text-sm text-slate-400">
-          <time datetime={date.toISOString()}>{date.toLocaleDateString("en-US", { dateStyle: "long" })}</time>
-        </p>
+        <h1 class="text-3xl font-semibold leading-tight text-slate-100 sm:text-4xl md:text-5xl">{title}</h1>
+        {description && <p class="mt-3 max-w-2xl text-sm text-slate-400 sm:text-base">{description}</p>}
       </header>
 
       {tocHeadings.length > 0 && (
-        <details class="panel mb-6 p-4 lg:hidden">
+        <details class="panel mb-5 p-4 lg:hidden">
           <summary class="cursor-pointer text-xs font-semibold uppercase tracking-wider text-slate-300">
             Quick Nav
           </summary>
@@ -53,7 +51,7 @@ const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.
 
       <div class="mx-auto max-w-3xl">
         <div
-          class="prose prose-invert prose-slate max-w-none prose-headings:mt-10 prose-headings:tracking-tight prose-h2:text-3xl prose-p:leading-8 prose-pre:rounded-2xl prose-pre:border prose-pre:border-slate-700 prose-pre:bg-slate-900 prose-pre:p-5 prose-pre:text-slate-100 prose-pre:shadow-lg prose-code:before:content-none prose-code:after:content-none prose-blockquote:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-cyan-500 prose-blockquote:bg-slate-900/80 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:text-slate-300"
+          class="prose prose-invert prose-slate max-w-none prose-headings:mt-10 prose-headings:tracking-tight prose-h2:text-2xl sm:prose-h2:text-3xl prose-p:leading-7 sm:prose-p:leading-8 prose-pre:rounded-2xl prose-pre:border prose-pre:border-slate-700 prose-pre:bg-slate-900 prose-pre:p-4 sm:prose-pre:p-5 prose-pre:text-slate-100 prose-pre:shadow-lg prose-code:before:content-none prose-code:after:content-none prose-blockquote:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-cyan-500 prose-blockquote:bg-slate-900/80 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:text-slate-300"
         >
         <slot />
         </div>

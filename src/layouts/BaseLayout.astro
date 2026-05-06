@@ -100,13 +100,13 @@ const terminalItems = {
       </footer>
     </div>
 
-    <div id="terminal-modal" class="fixed inset-0 z-50 hidden items-end justify-end bg-slate-950/55 p-4">
-      <div class="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-2xl">
+    <div id="terminal-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/55 p-3 sm:items-end sm:justify-end sm:p-4">
+      <div class="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-2xl sm:max-w-2xl">
         <div class="flex items-center justify-between border-b border-slate-800 px-4 py-2">
           <p class="text-xs uppercase tracking-wider text-slate-400">kyrux@labs:~</p>
           <button id="terminal-close" type="button" class="text-sm text-slate-400 hover:text-cyan-300">Close</button>
         </div>
-        <div id="terminal-output" class="h-80 overflow-y-auto bg-slate-950 px-4 py-3 font-mono text-sm text-slate-200"></div>
+        <div id="terminal-output" class="h-[60vh] max-h-[520px] overflow-y-auto bg-slate-950 px-4 py-3 font-mono text-sm text-slate-200"></div>
         <form id="terminal-form" class="flex items-center gap-2 border-t border-slate-800 px-4 py-3">
           <span class="font-mono text-sm text-cyan-300">$</span>
           <input
@@ -197,13 +197,15 @@ const terminalItems = {
         terminalOutput.scrollTop = terminalOutput.scrollHeight;
       };
 
+      const formatPrompt = () => `kyrux@labs:${cwd}$`;
+
       const openTerminal = () => {
         terminalModal?.classList.remove("hidden");
         terminalModal?.classList.add("flex");
         terminalInput?.focus();
         if (terminalOutput && terminalOutput.childElementCount === 0) {
-          printLine("Kyrux Research Terminal v1");
-          printLine("Type help to list commands.");
+          printLine("Kyrux Research Terminal v2");
+          printLine("Type help for commands. Tip: try `search xss` or `tree`.");
         }
       };
 
@@ -212,10 +214,33 @@ const terminalItems = {
         terminalModal?.classList.remove("flex");
       };
 
-      const listDir = () => {
-        if (cwd === "/") return ["blog/", "ctf/", "about.txt"];
-        if (cwd === "/blog") return terminalData.blog.map((item) => item.slug);
-        if (cwd === "/ctf") return terminalData.ctf.map((item) => item.slug);
+      const normalizePath = (p) => {
+        if (!p) return "/";
+        if (p === "~") return "/";
+        if (!p.startsWith("/")) {
+          if (cwd === "/") return `/${p}`;
+          return `${cwd.replace(/\/$/, "")}/${p}`;
+        }
+        return p;
+      };
+
+      const cleanPath = (p) => {
+        const parts = p.split("/").filter(Boolean);
+        const stack = [];
+        for (const part of parts) {
+          if (part === ".") continue;
+          if (part === "..") stack.pop();
+          else stack.push(part);
+        }
+        return `/${stack.join("/")}`;
+      };
+
+      const isDir = (p) => ["/", "/blog", "/ctf"].includes(p);
+
+      const listDir = (dir = cwd) => {
+        if (dir === "/") return ["blog/", "ctf/", "about.txt"];
+        if (dir === "/blog") return terminalData.blog.map((item) => item.slug);
+        if (dir === "/ctf") return terminalData.ctf.map((item) => item.slug);
         return [];
       };
 
@@ -226,16 +251,54 @@ const terminalItems = {
       };
 
       const completions = (partial) => {
-        const commands = ["help", "ls", "cd", "pwd", "cat", "open", "whoami", "clear"];
+        const commands = ["help", "ls", "cd", "pwd", "cat", "open", "whoami", "clear", "tree", "search"];
         const filesystem = cwd === "/" ? ["blog", "ctf", "about.txt"] : listDir().map((item) => item.replace("/", ""));
         return [...commands, ...filesystem].filter((item) => item.startsWith(partial));
+      };
+
+      const printHelp = () => {
+        printLine("Commands:");
+        printLine("  ls               - list directory");
+        printLine("  cd <dir>         - change dir (/, blog, ctf, ..)");
+        printLine("  pwd              - print cwd");
+        printLine("  tree             - show sections");
+        printLine("  cat <name>       - show entry meta/about.txt");
+        printLine("  open <name>      - open entry in new tab");
+        printLine("  search <keyword> - search across blog + ctf");
+        printLine("  whoami           - about");
+        printLine("  clear            - clear screen (Ctrl+L)");
+      };
+
+      const runSearch = (query) => {
+        const q = (query ?? "").trim().toLowerCase();
+        if (q.length < 2) {
+          printLine("search: query too short (min 2 chars)");
+          return;
+        }
+        const hits = [];
+        for (const item of terminalData.blog ?? []) {
+          const hay = `${item.slug} ${item.title} ${item.summary}`.toLowerCase();
+          if (hay.includes(q)) hits.push({ ...item, kind: "blog" });
+        }
+        for (const item of terminalData.ctf ?? []) {
+          const hay = `${item.slug} ${item.title} ${item.summary}`.toLowerCase();
+          if (hay.includes(q)) hits.push({ ...item, kind: "ctf" });
+        }
+        if (hits.length === 0) {
+          printLine("No results.");
+          return;
+        }
+        hits.slice(0, 10).forEach((hit) => {
+          printLine(`[${hit.kind}] ${hit.slug}  →  ${hit.title}`);
+        });
+        if (hits.length > 10) printLine(`...and ${hits.length - 10} more`);
       };
 
       const runCommand = (rawInput) => {
         const [cmd, ...args] = rawInput.trim().split(/\s+/);
         if (!cmd) return;
         if (cmd === "help") {
-          printLine("Commands: ls, cd <dir>, pwd, cat <name>, open <name>, whoami, clear");
+          printHelp();
           return;
         }
         if (cmd === "clear") {
@@ -251,11 +314,20 @@ const terminalItems = {
           return;
         }
         if (cmd === "cd") {
-          const next = args[0] ?? "/";
-          if (next === "/" || next === "~") cwd = "/";
-          else if (next === "..") cwd = cwd === "/" ? "/" : "/";
-          else if ((cwd === "/" && (next === "blog" || next === "ctf")) || (cwd === "/" && (next === "blog/" || next === "ctf/"))) cwd = `/${next.replace("/", "")}`;
-          else printLine(`cd: no such directory: ${next}`);
+          const nextRaw = args[0] ?? "/";
+          const next = cleanPath(normalizePath(nextRaw));
+          if (!isDir(next)) {
+            printLine(`cd: no such directory: ${nextRaw}`);
+            return;
+          }
+          cwd = next;
+          return;
+        }
+        if (cmd === "tree") {
+          printLine("/");
+          printLine("├── blog/");
+          printLine("├── ctf/");
+          printLine("└── about.txt");
           return;
         }
         if (cmd === "cat") {
@@ -291,6 +363,10 @@ const terminalItems = {
           printLine(`Opened ${item.url}`);
           return;
         }
+        if (cmd === "search") {
+          runSearch(args.join(" "));
+          return;
+        }
         if (cmd === "whoami") {
           printLine("kyrux (security researcher | web exploitation | CTF player)");
           return;
@@ -310,12 +386,21 @@ const terminalItems = {
           history.push(value.trim());
           historyIndex = history.length;
         }
-        printLine(`$ ${value}`);
+        printLine(`${formatPrompt()} ${value}`);
         runCommand(value);
         if (terminalInput) terminalInput.value = "";
       });
 
       terminalInput?.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeTerminal();
+          return;
+        }
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "l") {
+          event.preventDefault();
+          if (terminalOutput) terminalOutput.innerHTML = "";
+          return;
+        }
         if (event.key === "ArrowUp") {
           event.preventDefault();
           if (history.length === 0) return;
@@ -342,6 +427,12 @@ const terminalItems = {
           } else if (matches.length > 1) {
             printLine(matches.join("  "));
           }
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && terminalModal?.classList.contains("flex")) {
+          closeTerminal();
         }
       });
     </script>

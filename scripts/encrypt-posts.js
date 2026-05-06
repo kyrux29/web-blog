@@ -22,7 +22,7 @@ function walkMarkdownFiles(dir) {
       files.push(...walkMarkdownFiles(fullPath));
       continue;
     }
-    if (entry.isFile() && fullPath.endsWith(".md")) {
+    if (entry.isFile() && (fullPath.endsWith(".md") || fullPath.endsWith(".mdx"))) {
       files.push(fullPath);
     }
   }
@@ -39,6 +39,39 @@ function toOutputHtmlPath(markdownPath, contentDir, routeBase) {
     parsed.name.toLowerCase() === "index" ? parsed.dir : relativeNoExt;
 
   return path.join(DIST_ROOT, routeBase, slugPath, "index.html");
+}
+
+function resolvePassword(frontmatter, filePath) {
+  const rawPassword = frontmatter?.password;
+  const passwordEnv = frontmatter?.password_env;
+
+  if (typeof passwordEnv === "string" && passwordEnv.trim().length > 0) {
+    const envKey = passwordEnv.trim();
+    const envVal = process.env[envKey];
+    if (!envVal) {
+      throw new Error(
+        `Missing env var ${envKey} for protected post: ${filePath}`
+      );
+    }
+    return String(envVal);
+  }
+
+  if (typeof rawPassword === "string" && rawPassword.trim().length > 0) {
+    const trimmed = rawPassword.trim();
+    if (/^env:/i.test(trimmed)) {
+      const envKey = trimmed.slice(4).trim();
+      const envVal = process.env[envKey];
+      if (!envVal) {
+        throw new Error(
+          `Missing env var ${envKey} (from password: env:...) for protected post: ${filePath}`
+        );
+      }
+      return String(envVal);
+    }
+    return trimmed;
+  }
+
+  return null;
 }
 
 function encryptHtmlFile(htmlPath, password) {
@@ -80,6 +113,7 @@ function encryptHtmlFile(htmlPath, password) {
 function main() {
   let encryptedCount = 0;
   let protectedCount = 0;
+  let skippedCount = 0;
 
   for (const root of CONTENT_ROOTS) {
     const markdownFiles = walkMarkdownFiles(root.dir);
@@ -87,7 +121,7 @@ function main() {
     for (const filePath of markdownFiles) {
       const raw = fs.readFileSync(filePath, "utf8");
       const { data } = matter(raw);
-      const password = data?.password;
+      const password = resolvePassword(data, filePath);
 
       if (!password) continue;
       protectedCount += 1;
@@ -95,6 +129,7 @@ function main() {
       const htmlPath = toOutputHtmlPath(filePath, root.dir, root.routeBase);
       if (!fs.existsSync(htmlPath)) {
         console.warn(`Skipping missing HTML: ${htmlPath}`);
+        skippedCount += 1;
         continue;
       }
 
@@ -106,6 +141,7 @@ function main() {
 
   console.log(`Protected posts detected: ${protectedCount}`);
   console.log(`HTML files encrypted: ${encryptedCount}`);
+  console.log(`Encrypted skipped (missing HTML): ${skippedCount}`);
 }
 
 main();
