@@ -16,6 +16,10 @@ html[data-theme="dim"] body {
   background-image: radial-gradient(circle at 50% -35%, rgba(56, 189, 248, 0.08), transparent 45%);
 }
 
+::selection {
+  @apply bg-cyan-500/25 text-slate-50;
+}
+
 a {
   @apply text-cyan-400 transition-colors hover:text-cyan-300;
 }
@@ -30,8 +34,32 @@ summary:focus-visible {
   @apply rounded-2xl border border-slate-800/90 bg-slate-900/50 backdrop-blur;
 }
 
+.panel:hover {
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+}
+
 .chip {
   @apply inline-flex items-center rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1 text-[11px] uppercase tracking-wider text-slate-400;
+}
+
+.chip--easy {
+  @apply border-emerald-500/35 bg-emerald-950/30 text-emerald-200;
+}
+
+.chip--medium {
+  @apply border-amber-500/35 bg-amber-950/30 text-amber-200;
+}
+
+.chip--hard {
+  @apply border-rose-500/35 bg-rose-950/30 text-rose-200;
+}
+
+.chip--insane {
+  @apply border-violet-500/35 bg-violet-950/30 text-violet-200;
+}
+
+.chip--unknown {
+  @apply border-slate-600 bg-slate-900/70 text-slate-300;
 }
 
 .prose pre code {

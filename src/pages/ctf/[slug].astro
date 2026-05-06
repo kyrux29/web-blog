@@ -12,13 +12,22 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
+
+const difficultyChipClass = (difficulty?: string) => {
+  const key = (difficulty ?? "").trim().toLowerCase();
+  if (key === "easy") return "chip--easy";
+  if (key === "medium") return "chip--medium";
+  if (key === "hard") return "chip--hard";
+  if (key === "insane") return "chip--insane";
+  return "chip--unknown";
+};
 ---
 
 <PostLayout title={entry.data.title} date={entry.data.date} tags={entry.data.tags} headings={headings}>
   <div class="panel mb-6 flex flex-wrap items-center gap-2 px-4 py-3 text-xs">
     <span class="chip">{entry.data.platform}</span>
     {entry.data.vulnerability_type && <span class="chip">{entry.data.vulnerability_type}</span>}
-    {entry.data.difficulty && <span class="chip">Difficulty: {entry.data.difficulty}</span>}
+    {entry.data.difficulty && <span class={`chip ${difficultyChipClass(entry.data.difficulty)}`}>{entry.data.difficulty}</span>}
   </div>
   <Content />
 </PostLayout>

@@ -12,9 +12,9 @@ draft: false
 ## Challenge Information
 - **Category**: Web Exploitation
 - **Event**: none
-- **Author**: JOR1AN
+- **Author**: Rayhan0x01 & makelaris
 - **Difficulty**: Medium
-- **URL**: https://app.hackthebox.com/challenges/NextPath?tab=play_challenge
+- **URL**: https://app.hackthebox.com/challenges/BatchCraft%2520Potions
 - **Tags**: #web #Path_Traversal 
 ---
 ## 1. Description
@@ -54,6 +54,7 @@ Mình sẽ xem tiếp file `/routes/index.js`, file này chứa các route của
 - `/dashboard`: Xem các potions (yêu cầu đăng nhập).
 - `/api/products/add`: Thêm các potions.
 - `/products/preview/:id`: Xem trước các sản phẩm với id mong muốn
+### 1. GraphQL Batching
 
 Mình sẽ tập trung phân tích sâu vào `/graphql`, ta có thể dễ dàng nhận ra dev cũng đã tắt `graphiql` để che dấu thông tin:
 
@@ -170,6 +171,7 @@ print("[-] Không tìm thấy mã OTP hợp lệ.")
 
 ![](./images/Pasted%20image%2020260506020214.png)
 
+### 2. CSP Injection & Dom Clobbering
 Nhìn vào đây ta cũng có thể dễ dàng đoán ra được ứng dụng có chức năng thêm sản phẩm:
 
 ![](./images/Pasted%20image%2020260506214637.png)
