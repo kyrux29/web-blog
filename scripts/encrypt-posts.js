@@ -78,6 +78,7 @@ function encryptHtmlFile(htmlPath, password) {
   const htmlDir = path.dirname(htmlPath);
   const htmlFile = path.basename(htmlPath);
   const tempOutputDir = "__staticrypt_encrypted__";
+  const templatePath = path.resolve("scripts/staticrypt-password-template.html");
 
   const cmd = process.platform === "win32" ? "npx.cmd" : "npx";
   const result = spawnSync(
@@ -88,6 +89,18 @@ function encryptHtmlFile(htmlPath, password) {
       "--password",
       String(password),
       "--short",
+      "--template",
+      templatePath,
+      "--template-title",
+      "KYRUX_LABS :: Access Required",
+      "--template-instructions",
+      "This page is protected. Enter the passphrase to decrypt the write-up locally in your browser.",
+      "--template-placeholder",
+      "Passphrase",
+      "--template-button",
+      "UNLOCK",
+      "--template-error",
+      "Wrong passphrase.",
       "--directory",
       tempOutputDir
     ],

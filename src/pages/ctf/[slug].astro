@@ -15,9 +15,10 @@ const { Content, headings } = await render(entry);
 ---
 
 <PostLayout title={entry.data.title} date={entry.data.date} tags={entry.data.tags} headings={headings}>
-  <p class="mb-6 text-sm text-zinc-400">
-    Platform: <span class="text-zinc-200">{entry.data.platform}</span> | Vulnerability:
-    <span class="text-zinc-200"> {entry.data.vulnerability_type}</span>
-  </p>
+  <div class="panel mb-6 flex flex-wrap items-center gap-2 px-4 py-3 text-xs">
+    <span class="chip">{entry.data.platform}</span>
+    {entry.data.vulnerability_type && <span class="chip">{entry.data.vulnerability_type}</span>}
+    {entry.data.difficulty && <span class="chip">Difficulty: {entry.data.difficulty}</span>}
+  </div>
   <Content />
 </PostLayout>

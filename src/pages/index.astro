@@ -16,7 +16,7 @@ const searchable = [
   ...(await getCollection("ctf", ({ data }) => !data.draft)).map((entry) => ({
     type: "ctf",
     title: entry.data.title,
-    summary: `${entry.data.platform} ${entry.data.vulnerability_type ?? ""} ${(entry.data.tags ?? []).join(" ")}`.trim(),
+    summary: `${entry.data.platform} ${entry.data.vulnerability_type ?? ""} ${entry.data.difficulty ?? ""} ${(entry.data.tags ?? []).join(" ")}`.trim(),
     href: `/ctf/${entry.id}/`
   })),
   ...(await getCollection("blog", ({ data }) => !data.draft)).map((entry) => ({
