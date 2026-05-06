@@ -124,6 +124,18 @@ const terminalItems = {
         </form>
       </div>
     </div>
+
+    <div id="image-lightbox" class="lightbox" data-open="false" aria-hidden="true">
+      <div class="lightbox-panel" role="dialog" aria-modal="true" aria-label="Image viewer">
+        <div class="lightbox-toolbar">
+          <div id="lightbox-title" class="lightbox-title">image</div>
+          <button id="lightbox-close" type="button" class="lightbox-close">Close</button>
+        </div>
+        <div class="lightbox-body">
+          <img id="lightbox-img" class="lightbox-img" alt="" />
+        </div>
+      </div>
+    </div>
     <script id="terminal-data" type="application/json" set:html={JSON.stringify(terminalItems)}></script>
 
     <script is:inline>
@@ -170,6 +182,44 @@ const terminalItems = {
         });
 
         pre.appendChild(button);
+      });
+
+      const lightbox = document.getElementById("image-lightbox");
+      const lightboxImg = document.getElementById("lightbox-img");
+      const lightboxTitle = document.getElementById("lightbox-title");
+      const lightboxClose = document.getElementById("lightbox-close");
+
+      const openLightbox = (img) => {
+        if (!lightbox || !lightboxImg) return;
+        const src = img.currentSrc || img.src;
+        if (!src) return;
+        lightboxImg.src = src;
+        lightboxImg.alt = img.alt || "image";
+        if (lightboxTitle) lightboxTitle.textContent = img.alt || src.split("/").pop() || "image";
+        lightbox.dataset.open = "true";
+        lightbox.setAttribute("aria-hidden", "false");
+        document.documentElement.style.overflow = "hidden";
+      };
+
+      const closeLightbox = () => {
+        if (!lightbox || !lightboxImg) return;
+        lightbox.dataset.open = "false";
+        lightbox.setAttribute("aria-hidden", "true");
+        lightboxImg.src = "";
+        document.documentElement.style.overflow = "";
+      };
+
+      const proseImgs = Array.from(document.querySelectorAll(".prose img"));
+      proseImgs.forEach((img) => {
+        img.loading = img.loading || "lazy";
+        img.decoding = img.decoding || "async";
+        img.setAttribute("data-zoomable", "true");
+        img.addEventListener("click", () => openLightbox(img));
+      });
+
+      lightboxClose?.addEventListener("click", closeLightbox);
+      lightbox?.addEventListener("click", (event) => {
+        if (event.target === lightbox) closeLightbox();
       });
 
       const progressBar = document.getElementById("reading-progress");
@@ -438,6 +488,9 @@ const terminalItems = {
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && terminalModal?.classList.contains("flex")) {
           closeTerminal();
+        }
+        if (event.key === "Escape" && lightbox?.dataset?.open === "true") {
+          closeLightbox();
         }
       });
     </script>
