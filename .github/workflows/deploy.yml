@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -18,11 +21,17 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       SITE_URL: https://${{ github.repository_owner }}.github.io
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.8
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -42,7 +51,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          corepack enable
           pnpm install --frozen-lockfile
           pnpm approve-builds --all
 
@@ -67,6 +75,7 @@ jobs:
           path: ./dist
 
   deploy:
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
