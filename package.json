@@ -34,6 +34,7 @@
     "gray-matter": "^4.0.3",
     "pagefind": "^1.5.2",
     "pnpm": "^11.0.8",
+    "sharp": "^0.34.5",
     "staticrypt": "^3.5.4",
     "typescript": "^6.0.3"
   }
