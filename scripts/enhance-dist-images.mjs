@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
-import sharp from "sharp";
+let sharpLib = null;
 
 const DIST_DIR = path.resolve("dist");
 const ASTRO_PREFIX = "/_astro/";
@@ -32,7 +32,8 @@ function buildAttrString(attrs) {
 }
 
 async function generateVariants(absSrcPath) {
-  const image = sharp(absSrcPath);
+  if (!sharpLib) return null;
+  const image = sharpLib(absSrcPath);
   const meta = await image.metadata();
   const baseWidth = meta.width ?? 0;
   if (!baseWidth) return null;
@@ -55,10 +56,10 @@ async function generateVariants(absSrcPath) {
     const avifPath = path.join(dir, avifName);
 
     if (!fs.existsSync(webpPath)) {
-      await sharp(absSrcPath).resize({ width: w, withoutEnlargement: true }).webp({ quality: 78 }).toFile(webpPath);
+      await sharpLib(absSrcPath).resize({ width: w, withoutEnlargement: true }).webp({ quality: 78 }).toFile(webpPath);
     }
     if (!fs.existsSync(avifPath)) {
-      await sharp(absSrcPath).resize({ width: w, withoutEnlargement: true }).avif({ quality: 48 }).toFile(avifPath);
+      await sharpLib(absSrcPath).resize({ width: w, withoutEnlargement: true }).avif({ quality: 48 }).toFile(avifPath);
     }
 
     webpSet.push(`${ASTRO_PREFIX}${webpName} ${w}w`);
@@ -69,6 +70,14 @@ async function generateVariants(absSrcPath) {
 }
 
 async function main() {
+  try {
+    const sharpModule = await import("sharp");
+    sharpLib = sharpModule.default;
+  } catch {
+    console.warn("enhance:images skipped (sharp unavailable in this environment)");
+    return;
+  }
+
   const htmlFiles = walkHtml(DIST_DIR);
   let rewritten = 0;
   let converted = 0;
