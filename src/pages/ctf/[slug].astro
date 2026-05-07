@@ -12,6 +12,9 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
+const isProtected = Boolean(entry.data.password || entry.data.password_env);
+const withBase = (p: string) =>
+  `${import.meta.env.BASE_URL.replace(/\/?$/, "/")}${p.replace(/^\//, "")}`;
 
 const difficultyChipClass = (difficulty?: string) => {
   const key = (difficulty ?? "").trim().toLowerCase();
@@ -21,13 +24,45 @@ const difficultyChipClass = (difficulty?: string) => {
   if (key === "insane") return "chip--insane";
   return "chip--unknown";
 };
+
+const allEntries = await getCollection("ctf", ({ data }) => !data.draft);
+const related = allEntries
+  .filter((item) => item.id !== entry.id)
+  .map((item) => {
+    const overlap = item.data.tags.filter((tag) => entry.data.tags.includes(tag)).length;
+    const samePlatform = item.data.platform === entry.data.platform ? 1 : 0;
+    const score = overlap * 2 + samePlatform;
+    return { item, score };
+  })
+  .filter(({ score }) => score > 0)
+  .sort((a, b) => b.score - a.score || b.item.data.date.valueOf() - a.item.data.date.valueOf())
+  .slice(0, 3)
+  .map(({ item }) => item);
 ---
 
-<PostLayout title={entry.data.title} date={entry.data.date} tags={entry.data.tags} headings={headings}>
+<PostLayout title={entry.data.title} date={entry.data.date} tags={entry.data.tags} headings={headings} protected={isProtected}>
   <div class="panel mb-6 flex flex-wrap items-center gap-2 px-4 py-3 text-xs">
     <span class="chip">{entry.data.platform}</span>
     {entry.data.vulnerability_type && <span class="chip">{entry.data.vulnerability_type}</span>}
     {entry.data.difficulty && <span class={`chip ${difficultyChipClass(entry.data.difficulty)}`}>{entry.data.difficulty}</span>}
   </div>
   <Content />
+  {related.length > 0 && (
+    <section class="panel mt-10 p-5">
+      <h2 class="mb-4 text-xl font-semibold text-zinc-100">Related CTF Write-ups</h2>
+      <ul class="space-y-3">
+        {related.map((item) => (
+          <li>
+            <a href={withBase(`/ctf/${item.id}/`)} class="text-zinc-200 hover:text-cyan-300">
+              {item.data.title}
+            </a>
+            <p class="mt-1 text-sm text-zinc-400">
+              {item.data.platform}
+              {item.data.vulnerability_type ? ` · ${item.data.vulnerability_type}` : ""}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
 </PostLayout>

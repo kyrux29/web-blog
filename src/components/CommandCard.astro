@@ -1,0 +1,51 @@
+---
+interface Props {
+  title?: string;
+  command?: string;
+  items?: string[];
+  variant?: "info" | "success" | "warning" | "danger";
+}
+
+const { title = "TL;DR", command, items = [], variant = "info" } = Astro.props;
+
+const accents: Record<string, { border: string; glow: string; dot: string }> = {
+  info: { border: "border-cyan-500/20", glow: "shadow-cyan-500/10", dot: "bg-cyan-400" },
+  success: { border: "border-emerald-500/20", glow: "shadow-emerald-500/10", dot: "bg-emerald-400" },
+  warning: { border: "border-amber-500/20", glow: "shadow-amber-500/10", dot: "bg-amber-400" },
+  danger: { border: "border-rose-500/20", glow: "shadow-rose-500/10", dot: "bg-rose-400" }
+};
+
+const accent = accents[variant] ?? accents.info;
+---
+
+<section class={`panel border ${accent.border} overflow-hidden`}>
+  <header class="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-2">
+    <div class="flex items-center gap-2">
+      <span class={`h-2 w-2 rounded-full ${accent.dot}`}></span>
+      <p class="text-xs uppercase tracking-wider text-zinc-300" style="font-family: var(--font-mono);">
+        {title}
+      </p>
+    </div>
+    <span class="text-[11px] text-zinc-500" style="font-family: var(--font-mono);">kyrux@labs</span>
+  </header>
+
+  <div class={`px-4 py-4 shadow-[0_0_40px] ${accent.glow}`}>
+    {command && (
+      <pre class="m-0 overflow-x-auto rounded-xl border border-white/5 bg-white/[0.03] p-4 text-sm text-zinc-100"><code style="font-family: var(--font-mono);">$ {command}</code></pre>
+    )}
+
+    {items.length > 0 && (
+      <ul class="mt-4 space-y-2 text-sm text-zinc-300">
+        {items.map((item) => (
+          <li class="flex gap-3">
+            <span class="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-white/20"></span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    <slot />
+  </div>
+</section>
+

@@ -2,18 +2,27 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Inter", "Segoe UI", "Roboto", "Helvetica Neue", sans-serif;
+  --font-sans: "Geist Sans", "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 }
 
 html,
 body {
-  @apply bg-slate-950 text-slate-100 antialiased;
-  background-image: radial-gradient(circle at 50% -30%, rgba(30, 41, 59, 0.5), transparent 45%);
+  @apply bg-zinc-950 text-zinc-100 antialiased;
+  background-image:
+    radial-gradient(circle at 40% -20%, rgba(34, 211, 238, 0.10), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(244, 63, 94, 0.06), transparent 35%),
+    radial-gradient(circle at 10% 20%, rgba(245, 158, 11, 0.06), transparent 30%);
 }
 
 html[data-theme="dim"] body {
-  @apply bg-[#0d1117] text-slate-200;
-  background-image: radial-gradient(circle at 50% -35%, rgba(56, 189, 248, 0.08), transparent 45%);
+  @apply bg-[#0a0a0a] text-zinc-200;
+  background-image:
+    radial-gradient(circle at 40% -25%, rgba(34, 211, 238, 0.08), transparent 42%),
+    radial-gradient(circle at 90% 10%, rgba(244, 63, 94, 0.05), transparent 35%),
+    radial-gradient(circle at 10% 20%, rgba(245, 158, 11, 0.05), transparent 30%);
 }
 
 ::selection {
@@ -31,15 +40,19 @@ summary:focus-visible {
 }
 
 .panel {
-  @apply rounded-2xl border border-slate-800/90 bg-slate-900/50 backdrop-blur;
+  @apply rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-md;
 }
 
 .panel:hover {
-  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(34, 211, 238, 0.08),
+    0 0 35px rgba(34, 211, 238, 0.06);
 }
 
 .chip {
-  @apply inline-flex items-center rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1 text-[11px] uppercase tracking-wider text-slate-400;
+  @apply inline-flex items-center rounded-full border border-white/5 bg-white/[0.03] px-2.5 py-1 text-[11px] uppercase tracking-wider text-zinc-300;
+  font-family: var(--font-mono);
 }
 
 .chip--easy {
@@ -59,7 +72,7 @@ summary:focus-visible {
 }
 
 .chip--unknown {
-  @apply border-slate-600 bg-slate-900/70 text-slate-300;
+  @apply border-white/5 bg-white/[0.03] text-zinc-300;
 }
 
 .prose pre code {

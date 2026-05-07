@@ -1,0 +1,34 @@
+---
+title: "Signature Components"
+date: 2026-05-08
+description: "Preview Kyrux glassy components"
+tags: ["ui", "glassy", "dashboard"]
+draft: true
+---
+
+import CommandCard from "../../components/CommandCard.astro";
+import KillChain from "../../components/KillChain.astro";
+
+<CommandCard
+  title="TL;DR"
+  command="exploit --chain graphql-batching --target /graphql --rate-limit nginx"
+  items={[
+    "Root cause: GraphQL batching bypassed request-based rate limits",
+    "Barrier: 20 req/min at nginx",
+    "Bypass: pack 2000 aliases per request, split into 5 requests",
+    "Impact: brute-force OTP in minutes"
+  ]}
+/>
+
+<div style={{ height: 16 }} />
+
+<KillChain
+  title="Kill Chain"
+  steps={[
+    { title: "Recon: identify /graphql + 2FA gate", status: "note" },
+    { title: "Barrier: nginx rate limit 20 req/min", status: "blocked" },
+    { title: "Technique: GraphQL batching via aliases", status: "bypass" },
+    { title: "Exploit: OTP brute-force inside 5 requests", status: "owned" }
+  ]}
+/>
+

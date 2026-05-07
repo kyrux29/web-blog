@@ -1,0 +1,46 @@
+---
+interface Step {
+  title: string;
+  detail?: string;
+  status?: "blocked" | "bypass" | "owned" | "note";
+}
+
+interface Props {
+  title?: string;
+  steps: Step[];
+}
+
+const { title = "Exploit Chain", steps } = Astro.props;
+
+const statusStyles: Record<string, string> = {
+  blocked: "border-rose-500/25 bg-rose-950/15 text-rose-200",
+  bypass: "border-amber-500/25 bg-amber-950/15 text-amber-200",
+  owned: "border-emerald-500/25 bg-emerald-950/15 text-emerald-200",
+  note: "border-cyan-500/25 bg-cyan-950/15 text-cyan-200"
+};
+---
+
+<section class="panel overflow-hidden">
+  <header class="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-2">
+    <p class="text-xs uppercase tracking-wider text-zinc-300" style="font-family: var(--font-mono);">{title}</p>
+    <span class="text-[11px] text-zinc-500" style="font-family: var(--font-mono);">pipeline</span>
+  </header>
+
+  <ol class="grid gap-3 px-4 py-4">
+    {steps.map((step, idx) => (
+      <li class="relative rounded-xl border border-white/5 bg-white/[0.02] p-4">
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+          <span class="chip">{String(idx + 1).padStart(2, "0")}</span>
+          <span class="text-sm font-semibold text-zinc-100">{step.title}</span>
+          {step.status && (
+            <span class={`chip ${statusStyles[step.status] ?? statusStyles.note}`}>
+              {step.status}
+            </span>
+          )}
+        </div>
+        {step.detail && <p class="text-sm text-zinc-400">{step.detail}</p>}
+      </li>
+    ))}
+  </ol>
+</section>
+

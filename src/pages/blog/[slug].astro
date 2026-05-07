@@ -12,6 +12,21 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
+const isProtected = Boolean(entry.data.password || entry.data.password_env);
+const withBase = (p: string) =>
+  `${import.meta.env.BASE_URL.replace(/\/?$/, "/")}${p.replace(/^\//, "")}`;
+
+const allEntries = await getCollection("blog", ({ data }) => !data.draft);
+const related = allEntries
+  .filter((item) => item.id !== entry.id)
+  .map((item) => {
+    const overlap = item.data.tags.filter((tag) => entry.data.tags.includes(tag)).length;
+    return { item, overlap };
+  })
+  .filter(({ overlap }) => overlap > 0)
+  .sort((a, b) => b.overlap - a.overlap || b.item.data.date.valueOf() - a.item.data.date.valueOf())
+  .slice(0, 3)
+  .map(({ item }) => item);
 ---
 
 <PostLayout
@@ -20,6 +35,22 @@ const { Content, headings } = await render(entry);
   description={entry.data.description}
   tags={entry.data.tags}
   headings={headings}
+  protected={isProtected}
 >
   <Content />
+  {related.length > 0 && (
+    <section class="panel mt-10 p-5">
+      <h2 class="mb-4 text-xl font-semibold text-zinc-100">Related Research</h2>
+      <ul class="space-y-3">
+        {related.map((item) => (
+          <li>
+            <a href={withBase(`/blog/${item.id}/`)} class="text-zinc-200 hover:text-cyan-300">
+              {item.data.title}
+            </a>
+            <p class="mt-1 text-sm text-zinc-400">{item.data.description}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
 </PostLayout>

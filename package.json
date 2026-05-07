@@ -2,18 +2,28 @@
   "name": "kyrux_blog",
   "type": "module",
   "version": "0.0.1",
+  "packageManager": "pnpm@11.0.8",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "astro dev",
+    "lint": "pnpm exec astro check",
     "build": "astro build",
+    "check": "astro check",
     "encrypt": "node scripts/encrypt-posts.js",
+    "pagefind": "pagefind --site dist",
+    "check:links": "node scripts/check-internal-links.mjs",
+    "enhance:images": "node scripts/enhance-dist-images.mjs",
+    "postbuild": "pnpm run enhance:images && pnpm run pagefind && pnpm run encrypt",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.9",
     "@astrojs/mdx": "^5.0.4",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.2",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.1.9",
@@ -22,6 +32,9 @@
   "devDependencies": {
     "@types/node": "^25.6.0",
     "gray-matter": "^4.0.3",
-    "staticrypt": "^3.5.4"
+    "pagefind": "^1.5.2",
+    "pnpm": "^11.0.8",
+    "staticrypt": "^3.5.4",
+    "typescript": "^6.0.3"
   }
 }

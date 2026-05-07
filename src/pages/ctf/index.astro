@@ -4,6 +4,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 const withBase = (path: string) =>
   `${import.meta.env.BASE_URL.replace(/\/?$/, "/")}${path.replace(/^\//, "")}`;
 
+const tagHref = (tag: string) => withBase(`/tags/${encodeURIComponent(tag)}/`);
+
 const difficultyChipClass = (difficulty?: string) => {
   const key = (difficulty ?? "").trim().toLowerCase();
   if (key === "easy") return "chip--easy";
@@ -16,21 +18,43 @@ const difficultyChipClass = (difficulty?: string) => {
 const ctfEntries = (await getCollection("ctf", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
+
+const platforms = Array.from(new Set(ctfEntries.map((entry) => entry.data.platform).filter(Boolean))).sort();
+const difficulties = Array.from(
+  new Set(ctfEntries.map((entry) => (entry.data.difficulty ?? "").trim()).filter(Boolean))
+).sort((a, b) => a.localeCompare(b));
 ---
 
 <BaseLayout title="CTF Write-ups | Kyrux">
   <section class="mb-6">
-    <h1 class="text-4xl font-semibold tracking-tight text-slate-100">CTF Archives</h1>
-    <p class="mt-3 max-w-3xl text-slate-400">
+    <h1 class="text-4xl font-semibold tracking-tight text-zinc-100">CTF Archives</h1>
+    <p class="mt-3 max-w-3xl text-zinc-400">
       Hands-on challenge solutions, exploit notes, post-exploitation reasoning, and payload strategy breakdowns.
     </p>
-    <div class="mt-5">
+    <div class="mt-5 grid gap-3 md:grid-cols-3">
       <input
         id="ctf-search"
         type="search"
         placeholder="Search by title, platform, type, or tags..."
-        class="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+        class="w-full rounded-xl border border-white/5 bg-white/[0.03] px-4 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500 focus:outline-none md:col-span-3"
       />
+      <select id="ctf-platform-filter" class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 text-sm text-zinc-200 focus:border-cyan-500 focus:outline-none">
+        <option value="">All Platforms</option>
+        {platforms.map((platform) => <option value={platform.toLowerCase()}>{platform}</option>)}
+      </select>
+      <select id="ctf-difficulty-filter" class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 text-sm text-zinc-200 focus:border-cyan-500 focus:outline-none">
+        <option value="">All Difficulties</option>
+        {difficulties.map((difficulty) => <option value={difficulty.toLowerCase()}>{difficulty}</option>)}
+      </select>
+      <button id="ctf-clear-filters" type="button" class="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-300">
+        Clear Filters
+      </button>
+      <select id="ctf-sort" class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 text-sm text-zinc-200 focus:border-cyan-500 focus:outline-none md:col-span-3">
+        <option value="newest">Sort: Newest</option>
+        <option value="oldest">Sort: Oldest</option>
+        <option value="difficulty-asc">Sort: Difficulty (Easy → Hard)</option>
+        <option value="difficulty-desc">Sort: Difficulty (Hard → Easy)</option>
+      </select>
     </div>
   </section>
 
@@ -38,42 +62,89 @@ const ctfEntries = (await getCollection("ctf", ({ data }) => !data.draft)).sort(
     {
       ctfEntries.map((entry) => (
         <li
-          class="panel group p-5 transition hover:border-cyan-700/70 hover:bg-slate-900/80"
+          class="panel group p-5 transition hover:border-cyan-500/30 hover:bg-white/[0.04]"
           data-search={`${entry.data.title} ${entry.data.platform} ${entry.data.vulnerability_type ?? ""} ${entry.data.difficulty ?? ""} ${entry.data.tags.join(" ")}`.toLowerCase()}
+          data-platform={entry.data.platform.toLowerCase()}
+          data-difficulty={(entry.data.difficulty ?? "").toLowerCase()}
+          data-date={entry.data.date.toISOString()}
         >
           <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
             <span class="chip">{entry.data.date.toLocaleDateString("en-CA")}</span>
             <span class="chip">{entry.data.platform}</span>
             {entry.data.difficulty && <span class={`chip ${difficultyChipClass(entry.data.difficulty)}`}>{entry.data.difficulty}</span>}
+            {(entry.data.password || entry.data.password_env) && <span class="chip chip--hard">Protected</span>}
           </div>
-          <a href={withBase(`/ctf/${entry.id}/`)} class="text-2xl font-medium leading-tight text-slate-100 hover:text-cyan-300">
+          <a href={withBase(`/ctf/${entry.id}/`)} class="text-2xl font-medium leading-tight text-zinc-100 hover:text-cyan-300">
             {entry.data.title}
           </a>
-          <p class="mt-3 text-sm text-slate-400">
+          <p class="mt-3 text-sm text-zinc-400">
             {entry.data.vulnerability_type ?? entry.data.category ?? "Security research"}
           </p>
           <div class="mt-4 flex items-center justify-between gap-3">
-            <div class="flex flex-wrap gap-2">{entry.data.tags.map((tag) => <span class="chip">{tag}</span>)}</div>
-            <span class="text-lg text-slate-500 transition group-hover:text-cyan-300" aria-hidden="true">→</span>
+            <div class="flex flex-wrap gap-2">
+              {entry.data.tags.map((tag) => (
+                <a class="chip hover:text-cyan-300" href={tagHref(tag)}>
+                  {tag}
+                </a>
+              ))}
+            </div>
+            <span class="text-lg text-zinc-500 transition group-hover:text-cyan-300" aria-hidden="true">→</span>
           </div>
         </li>
       ))
     }
   </ul>
 
-  <p id="ctf-empty" class="mt-6 hidden text-sm text-slate-400">No matching write-ups found.</p>
+  <p id="ctf-empty" class="mt-6 hidden text-sm text-zinc-400">No matching write-ups found.</p>
 
   <script is:inline>
     const ctfSearch = document.getElementById("ctf-search");
+    const ctfPlatformFilter = document.getElementById("ctf-platform-filter");
+    const ctfDifficultyFilter = document.getElementById("ctf-difficulty-filter");
+    const ctfClearFilters = document.getElementById("ctf-clear-filters");
+    const ctfSort = document.getElementById("ctf-sort");
     const ctfItems = Array.from(document.querySelectorAll("#ctf-list > li"));
+    const ctfList = document.getElementById("ctf-list");
     const ctfEmpty = document.getElementById("ctf-empty");
+
+    const difficultyRank = (value) => {
+      const d = (value ?? "").toLowerCase();
+      if (d === "easy") return 1;
+      if (d === "medium") return 2;
+      if (d === "hard") return 3;
+      if (d === "insane") return 4;
+      return 99;
+    };
+
+    const sortItems = () => {
+      if (!ctfList || !ctfSort) return;
+      const mode = ctfSort.value;
+      const sorted = [...ctfItems].sort((a, b) => {
+        const da = Date.parse(a.getAttribute("data-date") ?? "");
+        const db = Date.parse(b.getAttribute("data-date") ?? "");
+        const ra = difficultyRank(a.getAttribute("data-difficulty"));
+        const rb = difficultyRank(b.getAttribute("data-difficulty"));
+        if (mode === "oldest") return da - db;
+        if (mode === "difficulty-asc") return ra - rb || db - da;
+        if (mode === "difficulty-desc") return rb - ra || db - da;
+        return db - da;
+      });
+      sorted.forEach((item) => ctfList.appendChild(item));
+    };
 
     const runCtfFilter = () => {
       const query = (ctfSearch?.value ?? "").trim().toLowerCase();
+      const selectedPlatform = (ctfPlatformFilter?.value ?? "").trim().toLowerCase();
+      const selectedDifficulty = (ctfDifficultyFilter?.value ?? "").trim().toLowerCase();
       let visible = 0;
       ctfItems.forEach((item) => {
         const haystack = item.getAttribute("data-search") ?? "";
-        const match = !query || haystack.includes(query);
+        const platform = (item.getAttribute("data-platform") ?? "").toLowerCase();
+        const difficulty = (item.getAttribute("data-difficulty") ?? "").toLowerCase();
+        const matchQuery = !query || haystack.includes(query);
+        const matchPlatform = !selectedPlatform || platform === selectedPlatform;
+        const matchDifficulty = !selectedDifficulty || difficulty === selectedDifficulty;
+        const match = matchQuery && matchPlatform && matchDifficulty;
         item.classList.toggle("hidden", !match);
         if (match) visible += 1;
       });
@@ -81,5 +152,18 @@ const ctfEntries = (await getCollection("ctf", ({ data }) => !data.draft)).sort(
     };
 
     ctfSearch?.addEventListener("input", runCtfFilter);
+    ctfPlatformFilter?.addEventListener("change", runCtfFilter);
+    ctfDifficultyFilter?.addEventListener("change", runCtfFilter);
+    ctfSort?.addEventListener("change", () => {
+      sortItems();
+      runCtfFilter();
+    });
+    ctfClearFilters?.addEventListener("click", () => {
+      if (ctfSearch) ctfSearch.value = "";
+      if (ctfPlatformFilter) ctfPlatformFilter.value = "";
+      if (ctfDifficultyFilter) ctfDifficultyFilter.value = "";
+      runCtfFilter();
+    });
+    sortItems();
   </script>
 </BaseLayout>

@@ -4,6 +4,7 @@ import { defineConfig } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
 
 const base = process.env.BASE_PATH ?? '/';
 
@@ -15,7 +16,7 @@ export default defineConfig({
     plugins: [tailwindcss()]
   },
 
-  integrations: [mdx()],
+  integrations: [mdx(), sitemap()],
   markdown: {
     syntaxHighlight: 'shiki',
     shikiConfig: {
