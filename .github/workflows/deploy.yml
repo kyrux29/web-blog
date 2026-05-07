@@ -24,6 +24,7 @@ jobs:
     timeout-minutes: 20
     env:
       SITE_URL: https://${{ github.repository_owner }}.github.io
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,6 +55,12 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm approve-builds --all
 
+      - name: Verify toolchain
+        run: |
+          node -v
+          pnpm -v
+          pnpm exec astro --version
+
       - name: Lint
         run: pnpm run lint
 
@@ -62,6 +69,11 @@ jobs:
 
       - name: Build site
         run: pnpm run build
+
+      - name: Verify dist output
+        run: |
+          test -d dist
+          ls -la dist
 
       - name: Internal link check
         run: pnpm run check:links
