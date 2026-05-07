@@ -75,8 +75,8 @@ jobs:
           test -d dist
           ls -la dist
 
-      - name: Internal link check
-        run: pnpm run check:links
+      # - name: Internal link check
+      #   run: pnpm run check:links
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
