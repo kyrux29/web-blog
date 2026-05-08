@@ -11,13 +11,21 @@
     <div id="terminal-output" class="h-[60vh] max-h-[520px] overflow-y-auto bg-neutral-950 px-4 py-3 font-mono text-sm text-neutral-200"></div>
     <form id="terminal-form" class="flex items-center gap-2 border-t border-neutral-800 px-4 py-3">
       <span class="font-mono text-sm text-cyan-300">$</span>
-      <input
-        id="terminal-input"
-        type="text"
-        autocomplete="off"
-        class="w-full bg-transparent font-mono text-sm text-neutral-100 outline-none placeholder:text-neutral-500"
-        placeholder="Type help"
-      />
+      <div class="relative flex-1">
+        <!-- Inline autosuggestion overlay -->
+        <div id="terminal-suggestion" class="pointer-events-none absolute inset-0 z-0 flex items-center font-mono text-sm" aria-hidden="true">
+          <span id="terminal-typed" class="whitespace-pre text-neutral-100"></span>
+          <span id="terminal-ghost" class="whitespace-pre text-neutral-700"></span>
+        </div>
+        <input
+          id="terminal-input"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          class="relative z-10 w-full bg-transparent font-mono text-sm text-transparent caret-neutral-100 outline-none placeholder:text-neutral-500"
+          placeholder="Type help"
+        />
+      </div>
     </form>
   </div>
 </div>
@@ -128,10 +136,26 @@
   const isDir = (p: string) => ["/", "/blog", "/ctf"].includes(p);
 
   const listDir = (dir = cwd): string[] => {
-    if (dir === "/") return ["blog/", "ctf/", "about.txt"];
+    if (dir === "/") return ["blog/", "ctf/", "about.txt", "tags/"];
     if (dir === "/blog") return terminalData.blog.map((item) => item.slug);
     if (dir === "/ctf") return terminalData.ctf.map((item) => item.slug);
     return [];
+  };
+
+  const lsRoot = () => {
+    if (!terminalStats) {
+      printLine("blog/  ctf/  about.txt");
+      return;
+    }
+    const c = terminalStats.ctf;
+    const b = terminalStats.blog;
+    const t = terminalStats.tags;
+    printHtml(`
+      <span style="color:#06b6d4">blog/</span>   <span style="color:#a3a3a3">(${b} posts)</span>
+      <span style="color:#06b6d4">ctf/</span>    <span style="color:#a3a3a3">(${c} write-ups)</span>
+      <span style="color:#06b6d4">tags/</span>   <span style="color:#a3a3a3">(${t} topics)</span>
+      <span style="color:#a3a3a3">about.txt</span>
+    `.split("\n").map(s => s.trim()).join("\n").trim());
   };
 
   const resolveItem = (name: string): TerminalItem | null => {
@@ -223,7 +247,11 @@
     if (cmd === "help") { printHelp(); return; }
     if (cmd === "clear") { if (output) output.innerHTML = ""; return; }
     if (cmd === "pwd") { printLine(cwd); return; }
-    if (cmd === "ls") { printLine(listDir().join("  ")); return; }
+    if (cmd === "ls") {
+      if (cwd === "/") { lsRoot(); }
+      else { printLine(listDir().join("  ")); }
+      return;
+    }
 
     if (cmd === "cd") {
       const nextRaw = args[0] ?? "/";
@@ -240,6 +268,7 @@
       printLine("/");
       printLine("├── blog/");
       printLine("├── ctf/");
+      printLine("├── tags/");
       printLine("└── about.txt");
       return;
     }
@@ -296,6 +325,7 @@
     printLine(`${formatPrompt()} ${value}`);
     runCommand(value);
     if (input) input.value = "";
+    updateSuggestion();
   });
 
   input?.addEventListener("keydown", (event) => {
@@ -309,31 +339,79 @@
       event.preventDefault();
       if (history.length === 0) return;
       historyIndex = Math.max(0, historyIndex - 1);
-      if (input) input.value = history[historyIndex] ?? "";
+      if (input) { input.value = history[historyIndex] ?? ""; updateSuggestion(); }
       return;
     }
     if (event.key === "ArrowDown") {
       event.preventDefault();
       if (history.length === 0) return;
       historyIndex = Math.min(history.length, historyIndex + 1);
-      if (input) input.value =
-        historyIndex >= history.length ? "" : history[historyIndex];
+      if (input) {
+        input.value = historyIndex >= history.length ? "" : history[historyIndex];
+        updateSuggestion();
+      }
       return;
     }
     if (event.key === "Tab") {
       event.preventDefault();
+      // If autosuggestion is showing, complete it
+      const ghostEl = document.getElementById("terminal-ghost");
+      const ghostText = ghostEl?.textContent ?? "";
+      if (ghostText) {
+        if (input) input.value = (input.value ?? "") + ghostText + " ";
+        updateSuggestion();
+        return;
+      }
+      // Fallback to old tab-completion
       const current = input?.value?.trim() ?? "";
       const parts = current.split(/\s+/);
       const partial = parts[parts.length - 1] ?? "";
       const matches = completions(partial);
       if (matches.length === 1) {
         parts[parts.length - 1] = matches[0];
-        if (input) input.value = parts.join(" ");
+        if (input) input.value = parts.join(" ") + " ";
       } else if (matches.length > 1) {
         printLine(matches.join("  "));
       }
     }
+    if (event.key === "ArrowRight") {
+      // Accept autosuggestion on right arrow
+      const ghostEl = document.getElementById("terminal-ghost");
+      const ghostText = ghostEl?.textContent ?? "";
+      if (ghostText) {
+        event.preventDefault();
+        if (input) input.value = (input.value ?? "") + ghostText + " ";
+        updateSuggestion();
+      }
+    }
   });
+
+  // ---------- Inline autosuggestion ----------
+  const updateSuggestion = () => {
+    const typedEl = document.getElementById("terminal-typed");
+    const ghostEl = document.getElementById("terminal-ghost");
+    if (!typedEl || !ghostEl || !input) return;
+
+    const current = input.value ?? "";
+    typedEl.textContent = current;
+
+    if (current.length === 0) {
+      ghostEl.textContent = "";
+      return;
+    }
+
+    // Find best match from commands (by first char)
+    const allCommands = completions("");
+    const lc = current.toLowerCase();
+    const match = allCommands.find(cmd => cmd.startsWith(lc) && cmd !== lc);
+    if (match) {
+      ghostEl.textContent = match.slice(lc.length);
+    } else {
+      ghostEl.textContent = "";
+    }
+  };
+
+  input?.addEventListener("input", updateSuggestion);
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && modal?.classList.contains("flex")) {

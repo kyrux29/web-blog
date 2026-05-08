@@ -105,47 +105,50 @@ const terminalItems = {
     <!-- Reading progress bar -->
     <div id="reading-progress" class="fixed left-0 top-0 z-50 h-0.5 w-0 bg-cyan-400/90"></div>
 
-    <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-      <header id="site-header" class="sticky top-0 z-40 -mx-4 mb-8 sm:mb-10 sm:-mx-6 lg:-mx-8">
-        <div class="mx-auto flex max-w-4xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8 bg-neutral-950/80 backdrop-blur-md border-b border-neutral-800/60">
-          <a
-            href={withBase("/")}
-            class="text-lg font-semibold tracking-tight text-neutral-100 hover:text-cyan-300"
-          >
-            kyrux
-          </a>
-          <nav aria-label="Main Navigation" class="min-w-0 flex-1">
-            <ul class="flex min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap text-sm [scrollbar-width:none]">
-              {
-                navLinks.map((link) => (
-                  <li>
-                    <a
-                      href={link.href}
-                      target={link.external ? "_blank" : undefined}
-                      rel={link.external ? "noreferrer" : undefined}
-                      class:list={[
-                        "relative rounded-md px-2 py-1 text-neutral-400 hover:text-cyan-300 transition-colors",
-                        !link.external && currentPath === new URL(link.href, Astro.url).pathname
-                          ? "text-cyan-300 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-1/2 after:rounded-full after:bg-cyan-400"
-                          : ""
-                      ]}
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-          </nav>
-          <div class="ml-auto flex items-center gap-2">
-            <ThemeToggle />
-            <button id="terminal-toggle" type="button" class="inline-flex items-center gap-1.5 rounded-md border border-neutral-700 bg-neutral-900 px-2.5 py-1.5 font-mono text-xs text-neutral-300 hover:border-cyan-500 hover:text-cyan-300 transition-colors" title="Open terminal (Ctrl+`)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-              <span class="hidden sm:inline">terminal</span>
-            </button>
-          </div>
+    <!-- Sticky header — full-width, outside content container -->
+    <header id="site-header" class="sticky top-0 z-40 w-full border-b border-transparent transition-all duration-300">
+      <div class="absolute inset-0 bg-neutral-950/85 backdrop-blur-md"></div>
+      <div class="relative mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <a
+          href={withBase("/")}
+          class="shrink-0 text-lg font-semibold tracking-tight text-neutral-100 hover:text-cyan-300 transition-colors"
+        >
+          kyrux
+        </a>
+        <nav aria-label="Main Navigation" class="min-w-0 flex-1">
+          <ul class="flex min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap text-sm [scrollbar-width:none]">
+            {
+              navLinks.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    target={link.external ? "_blank" : undefined}
+                    rel={link.external ? "noreferrer" : undefined}
+                    class:list={[
+                      "relative rounded-md px-2 py-1 text-neutral-400 hover:text-cyan-300 transition-colors",
+                      !link.external && currentPath === new URL(link.href, Astro.url).pathname
+                        ? "text-cyan-300 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-1/2 after:rounded-full after:bg-cyan-400"
+                        : ""
+                    ]}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+        <div class="ml-auto flex shrink-0 items-center gap-2">
+          <ThemeToggle />
+          <button id="terminal-toggle" type="button" class="inline-flex items-center gap-1.5 rounded-md border border-neutral-700/80 bg-neutral-900/80 px-2.5 py-1.5 font-mono text-xs text-neutral-300 hover:border-cyan-500 hover:text-cyan-300 hover:bg-neutral-800/80 transition-colors" title="Open terminal (Ctrl+`)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <span class="hidden sm:inline">terminal</span>
+          </button>
         </div>
-      </header>
+      </div>
+    </header>
+
+    <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 lg:px-8">
 
       <main id="content" class="flex-1">
         <slot />
@@ -235,6 +238,19 @@ const terminalItems = {
             logo.style.transform = "";
           });
         }
+      })();
+    </script>
+
+    <!-- Navbar scroll shadow -->
+    <script is:inline>
+      (function() {
+        var header = document.getElementById("site-header");
+        if (!header) return;
+        window.addEventListener("scroll", function() {
+          var scrolled = window.scrollY > 8;
+          header.style.borderBottomColor = scrolled ? "rgba(38,38,38,0.6)" : "transparent";
+          header.style.boxShadow = scrolled ? "0 1px 2px 0 rgba(0,0,0,0.3)" : "none";
+        }, { passive: true });
       })();
     </script>
 
