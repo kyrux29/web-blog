@@ -185,6 +185,58 @@ const terminalItems = {
       updateProgress();
     </script>
 
+    <!-- Easter eggs: konami code, glitch -->
+    <script is:inline>
+      (function() {
+        // Konami code: ↑↑↓↓←→←→BA
+        const konami = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+        let pos = 0;
+
+        document.addEventListener("keydown", function(e) {
+          if (e.key === konami[pos]) {
+            pos++;
+            if (pos === konami.length) {
+              document.body.style.transition = "filter 0.15s";
+              document.body.style.filter = "hue-rotate(180deg)";
+              setTimeout(function() {
+                document.body.style.filter = "";
+                setTimeout(function() {
+                  document.body.style.transition = "";
+                }, 150);
+              }, 200);
+              console.log("%c🛡️ Kyrux Labs %c— If you know the enemy and know yourself, you need not fear the result of a hundred battles.",
+                "color: #06b6d4; font-size: 16px; font-weight: bold;",
+                "color: #a3a3a3;");
+              pos = 0;
+            }
+          } else {
+            pos = 0;
+          }
+        });
+
+        // Glitch hover on the logo (random jitter)
+        var logo = document.querySelector('a[href="/"], a[href$="/"]');
+        if (logo) {
+          var glitchTimer = null;
+          logo.addEventListener("mouseenter", function() {
+            var el = logo;
+            var count = 0;
+            glitchTimer = setInterval(function() {
+              if (count >= 6) { clearInterval(glitchTimer); el.style.transform = ""; return; }
+              var dx = (Math.random() - 0.5) * 3;
+              var dy = (Math.random() - 0.5) * 2;
+              el.style.transform = "translate(" + dx + "px, " + dy + "px)";
+              count++;
+            }, 50);
+          });
+          logo.addEventListener("mouseleave", function() {
+            if (glitchTimer) clearInterval(glitchTimer);
+            logo.style.transform = "";
+          });
+        }
+      })();
+    </script>
+
     <!-- Scroll-reveal observer -->
     <script is:inline>
       (function () {

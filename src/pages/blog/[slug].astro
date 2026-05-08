@@ -40,6 +40,8 @@ const related = allEntries
   headings={headings}
   protected={isProtected}
   canonicalUrl={canonicalUrl}
+  collectionType="blog"
+  bodyText={entry.body}
 >
   <Content />
   {related.length > 0 && (

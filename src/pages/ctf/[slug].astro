@@ -34,7 +34,7 @@ const related = allEntries
   .map(({ item }) => item);
 ---
 
-<PostLayout title={entry.data.title} date={entry.data.date} tags={entry.data.tags} headings={headings} protected={isProtected} canonicalUrl={canonicalUrl}>
+<PostLayout title={entry.data.title} date={entry.data.date} description={entry.data.vulnerability_type} tags={entry.data.tags} headings={headings} protected={isProtected} canonicalUrl={canonicalUrl} collectionType="ctf" bodyText={entry.body}>
   <div class="panel mb-6 flex flex-wrap items-center gap-2 px-4 py-3 text-xs">
     <span class="chip">{entry.data.platform}</span>
     {entry.data.vulnerability_type && <span class="chip">{entry.data.vulnerability_type}</span>}

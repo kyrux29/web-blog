@@ -1,43 +1,143 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const skills = [
+  { name: "Web Exploitation", level: 5 },
+  { name: "Python", level: 5 },
+  { name: "Golang", level: 3 },
+  { name: "C/C++", level: 3 },
+  { name: "Java", level: 3 },
+  { name: "CTF (Jeopardy)", level: 4 },
+  { name: "Pentesting", level: 3 },
+  { name: "Reverse Engineering", level: 2 },
+  { name: "Cryptography", level: 2 },
+  { name: "Forensics", level: 2 },
+];
+
+const tools = [
+  { name: "ParrotOS", desc: "Daily driver OS" },
+  { name: "Neovim", desc: "Code editor" },
+  { name: "Obsidian", desc: "Knowledge base" },
+  { name: "Burp Suite", desc: "Web proxy" },
+  { name: "Docker", desc: "Lab environments" },
+  { name: "Git", desc: "Version control" },
+];
+
+const links = [
+  { label: "GitHub", href: "https://github.com/kyrux29", icon: "▸" },
+  { label: "HackTheBox", href: "https://app.hackthebox.com/users/kyrux29", icon: "▸" },
+  { label: "CTFtime", href: "https://ctftime.org/user/kyrux29", icon: "▸" },
+];
+
+const maxLevel = 5;
 ---
 
 <BaseLayout title="About | Kyrux">
-  <section class="panel mx-auto max-w-3xl p-6 md:p-8">
-    <p class="chip mb-4">About Me</p>
-    <h1 class="text-4xl font-semibold tracking-tight text-neutral-100">Kyrux</h1>
-    <p class="mt-4 leading-8 text-neutral-300">
-      I focus on practical web exploitation and offensive security. Currently grinding CTFs to sharpen
-      my pentesting skills. My goal is simple: turn complex exploit chains into clear, reproducible workflows for everyone.
-    </p>
-    <p class="mt-4 leading-8 text-neutral-300">
-      I use this site as a digital lab notebook to archive my CTF workflows, deep dives, and concise
-      field notes. Practical, reproducible, and built for the offensive mindset.
-    </p>
+  <div class="mx-auto max-w-3xl space-y-10">
+    <!-- Header with avatar -->
+    <section>
+      <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+        <!-- Avatar: SVG-generated identicon-style placeholder -->
+        <div class="flex h-20 w-20 flex-none items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900">
+          <span class="font-mono text-3xl text-cyan-400">K</span>
+        </div>
+        <div>
+          <p class="font-mono text-[10px] tracking-[0.25em] text-neutral-600">Vu Trong Quoc Khanh</p>
+          <h1 class="text-3xl font-bold tracking-tight text-neutral-100 sm:text-4xl">
+            Kyrux
+          </h1>
+          <p class="mt-2 max-w-xl font-mono text-sm leading-relaxed text-neutral-400">
+            Cybersecurity student. Web exploitation enthusiast. I break web apps and write about it.
+          </p>
+        </div>
+      </div>
+    </section>
 
-    <div class="mt-8 grid gap-4 sm:grid-cols-2">
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-        <h2 class="text-sm font-semibold tracking-wider text-neutral-400">Focus Areas</h2>
-        <ul class="mt-3 space-y-2 text-sm text-neutral-300">
-          <li>Web Exploitation</li>
-          <li>CTF Player</li>
-          <li>Pentesting</li>
-          <li>Offensive Tooling</li>
-        </ul>
+    <!-- Bio -->
+    <section class="reveal">
+      <div class="border-l-2 border-cyan-500/30 pl-4">
+        <p class="font-mono text-sm leading-relaxed text-neutral-300">
+          I treat every CTF challenge as a learning opportunity — dissecting source code, bypassing filters,
+          and chaining vulnerabilities into working exploits. This blog is my digital lab notebook:
+          <span class="text-cyan-400"> raw, technical, and reproducible.</span>
+        </p>
+        <p class="mt-3 font-mono text-sm leading-relaxed text-neutral-400">
+          When I'm not hunting flags, I'm building offensive tooling, studying compiler internals,
+          or diving deep into web protocol internals (HTTP/2, gRPC, WebSockets).
+        </p>
       </div>
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-        <h2 class="text-sm font-semibold tracking-wider text-neutral-400">Contact</h2>
-        <ul class="mt-3 space-y-2 text-sm text-neutral-300">
-          <li>
-            GitHub:
-            <a href="https://github.com/kyrux29" target="_blank" rel="noreferrer"> @kyrux29</a>
-          </li>
-          <li>
-            Status:
-            <span class="text-cyan-300"> Open for security collaborations</span>
-          </li>
-        </ul>
+    </section>
+
+    <!-- Skills bar -->
+    <section class="reveal">
+      <h2 class="mb-4 font-mono text-sm text-neutral-400">
+        <span class="text-cyan-400">$</span> cat /etc/skills.conf
+      </h2>
+      <div class="space-y-3">
+        {skills.map((skill) => (
+          <div class="flex items-center gap-3">
+            <span class="w-28 flex-none font-mono text-[11px] text-neutral-500 sm:w-36">{skill.name}</span>
+            <div class="flex gap-1">
+              {Array.from({ length: maxLevel }).map((_, i) => (
+                <span
+                  class={`h-1.5 w-6 rounded-full ${
+                    i < skill.level
+                      ? "bg-gradient-to-r from-cyan-500 to-cyan-400"
+                      : "bg-neutral-800"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
-  </section>
+    </section>
+
+    <!-- Tools -->
+    <section class="reveal">
+      <h2 class="mb-4 font-mono text-sm text-neutral-400">
+        <span class="text-cyan-400">$</span> ls /opt/toolbox/
+      </h2>
+      <div class="grid gap-2 sm:grid-cols-2">
+        {tools.map((tool) => (
+          <div class="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-2.5">
+            <span class="font-mono text-xs text-cyan-400">▸</span>
+            <div>
+              <p class="font-mono text-sm text-neutral-200">{tool.name}</p>
+              <p class="text-[10px] tracking-wide text-neutral-600">{tool.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Links -->
+    <section class="reveal">
+      <h2 class="mb-4 font-mono text-sm text-neutral-400">
+        <span class="text-cyan-400">$</span> dig kyrux -t links
+      </h2>
+      <div class="flex flex-wrap gap-3">
+        {links.map((link) => (
+          <a
+            href={link.href}
+            target="_blank"
+            rel="noreferrer"
+            class="inline-flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-2.5 font-mono text-sm text-neutral-300 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+          >
+            <span class="text-cyan-400">{link.icon}</span>
+            {link.label}
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- Status -->
+    <section class="reveal">
+      <div class="rounded-lg border border-emerald-500/20 bg-emerald-950/20 px-4 py-3">
+        <p class="font-mono text-xs text-emerald-300">
+          <span class="text-emerald-400">●</span> Status: Open for security collaborations & CTF team-ups
+        </p>
+      </div>
+    </section>
+  </div>
 </BaseLayout>

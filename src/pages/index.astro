@@ -1,6 +1,6 @@
 ---
 import { getPublishedBlogPosts, getPublishedCtfPosts, getTagCounts } from "../lib/content";
-import { withBase } from "../utils";
+import { estimateReadingTime, withBase } from "../utils";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const latestCtf = (await getPublishedCtfPosts()).slice(0, 3);
@@ -11,98 +11,98 @@ const allBlog = await getPublishedBlogPosts();
 const tagCounts = await getTagCounts();
 
 const stats = [
-  { label: "CTF Write-ups", value: allCtf.length },
-  { label: "Research Notes", value: allBlog.length },
-  { label: "Tags", value: tagCounts.length },
+  { cmd: "ls ctf/ | wc -l", value: allCtf.length, label: "CTF write-ups" },
+  { cmd: "ls blog/ | wc -l", value: allBlog.length, label: "Research posts" },
+  { cmd: "ls tags/ | wc -l", value: tagCounts.length, label: "Topics covered" },
 ];
 
-const searchable = [
-  ...allCtf.map((entry) => ({
-    type: "ctf",
-    title: entry.data.title,
-    summary: `${entry.data.platform} ${entry.data.vulnerability_type ?? ""} ${entry.data.difficulty ?? ""} ${(entry.data.tags ?? []).join(" ")}`.trim(),
-    href: `/ctf/${entry.id}/`
-  })),
-  ...allBlog.map((entry) => ({
-    type: "blog",
-    title: entry.data.title,
-    summary: `${entry.data.description} ${(entry.data.tags ?? []).join(" ")}`.trim(),
-    href: `/blog/${entry.id}/`
-  }))
+// Pick a random cybersecurity quote
+const quotes = [
+  { text: "The quieter you become, the more you are able to hear.", author: "— Kali Linux motd", glitch: false },
+  { text: "There is no patch for human stupidity.", author: "— Kevin Mitnick", glitch: true },
+  { text: "Trust, but verify. Then verify again.", author: "— Offensive Security mantra", glitch: false },
+  { text: "Shells don't ask for permission.", author: "— Unknown", glitch: true },
+  { text: "If you know the enemy and know yourself, you need not fear the result of a hundred battles.", author: "— Sun Tzu", glitch: false },
+  { text: "Every defensive measure is just an offensive measure waiting to be reversed.", author: "— Kyrux", glitch: true },
 ];
+const quote = quotes[Math.floor(Math.random() * quotes.length)];
 ---
 
 <BaseLayout title="Kyrux | Cyber Security Research Blog">
   <!-- Hero -->
   <section class="mb-10">
+    <div class="mb-3 font-mono text-[11px] tracking-[0.25em] text-neutral-600">
+      [kyrux@labs ~]$ whoami
+    </div>
     <h1 class="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
       <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 bg-clip-text text-transparent">
         Kyrux
       </span>
     </h1>
-    <p class="mt-4 max-w-2xl text-neutral-300">
-      Đây là nơi mình chia sẻ về các vấn đề liên quan đến cybersecurity, bao gồm các CTF write-ups, các blog chuyên môn và các research note.
+    <p class="mt-4 max-w-2xl font-mono text-sm leading-6 text-neutral-400">
+      <span class="text-cyan-400">></span> Web exploitation specialist & CTF player.
     </p>
-    <p class="mt-3 max-w-2xl text-neutral-400">
-      This is where I share my thoughts on cybersecurity, including CTF write-ups, technical blog posts, and research notes.
+    <p class="mt-1 max-w-2xl font-mono text-sm leading-6 text-neutral-500">
+      <span class="text-neutral-700">></span> Turning attack chains into reproducible write-ups.
+    </p>
+    <p class="mt-1 max-w-2xl font-mono text-sm leading-6 text-neutral-600">
+      <span class="text-neutral-800">></span> Home lab: ParrotOS · Neovim · Obsidian · Python/C/Golang.
     </p>
   </section>
 
-  <!-- Stats bar -->
-  <div class="mb-10 grid grid-cols-3 gap-3">
+  <!-- Stats bar — terminal-style -->
+  <div class="mb-10 grid gap-2 sm:grid-cols-3">
     {stats.map((stat) => (
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-4 text-center">
-        <p class="text-2xl font-bold text-cyan-300" style="font-family: var(--font-mono);">{stat.value}</p>
-        <p class="mt-1 text-[10px] tracking-wide text-neutral-500">{stat.label}</p>
+      <div class="group/card rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-3">
+        <p class="font-mono text-[10px] tracking-wide text-neutral-600">
+          <span class="text-cyan-500/70">$</span> {stat.cmd}
+        </p>
+        <p class="mt-1.5 font-mono text-2xl font-bold text-neutral-100 group-hover/card:text-cyan-300 transition-colors">
+          {stat.value}
+        </p>
+        <p class="mt-0.5 text-[10px] tracking-wide text-neutral-600">{stat.label}</p>
       </div>
     ))}
   </div>
 
-  <!-- Quick Search -->
-  <section class="reveal mb-10">
-    <div class="panel p-5">
-      <h2 class="text-xl font-semibold text-neutral-100">Quick Search</h2>
-      <p class="mt-2 text-sm text-neutral-400">Find write-ups and research notes by title, tags, platform, or keywords.</p>
-      <input
-        id="home-search"
-        type="search"
-        placeholder="Try: ssrf, hackthebox, grpc, race condition..."
-        class="mt-4 w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-cyan-500 focus:outline-none"
-      />
-      <ul id="home-search-results" class="mt-4 space-y-2">
-        {
-          searchable.slice(0, 6).map((item) => (
-            <li
-              class="hidden rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
-              data-search={`${item.title} ${item.summary}`.toLowerCase()}
-              data-href={withBase(item.href)}
-            >
-              <a href={withBase(item.href)} class="text-sm text-neutral-200 hover:text-cyan-300">
-                <span class="mr-2 chip">{item.type}</span>{item.title}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+  <!-- Random quote -->
+  <div class="reveal mb-10">
+    <div class="border-l-2 border-cyan-500/30 bg-neutral-900/50 px-4 py-3">
+      <p class="font-mono text-sm leading-relaxed text-neutral-400">
+        "{quote.text}"
+      </p>
+      <p class="mt-1.5 font-mono text-[10px] tracking-wide text-neutral-600">
+        {quote.author}
+      </p>
     </div>
-  </section>
+  </div>
 
   <!-- Latest CTF -->
   <section class="reveal mb-10">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-2xl font-semibold text-neutral-100">Latest CTF Write-ups</h2>
-      <a href={withBase("/ctf/")} class="text-sm text-cyan-300 hover:text-cyan-200">View all →</a>
+      <h2 class="font-mono text-lg text-neutral-300">
+        <span class="text-cyan-400">~/ctf</span><span class="text-neutral-500">/</span>
+      </h2>
+      <a href={withBase("/ctf/")} class="font-mono text-xs text-cyan-400 hover:text-cyan-300">ls -la →</a>
     </div>
-    <ul class="space-y-4">
+    <ul class="space-y-3">
       {
         latestCtf.map((entry) => (
           <li class="group card-lift rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 hover:border-l-cyan-500">
-            <a href={withBase(`/ctf/${entry.id}/`)} class="text-lg font-medium text-neutral-100 group-hover:text-cyan-300">
+            <a href={withBase(`/ctf/${entry.id}/`)} class="text-base font-medium text-neutral-100 group-hover:text-cyan-300">
               {entry.data.title}
             </a>
-            <p class="mt-2 text-sm text-neutral-400">
-              {entry.data.platform} - {entry.data.vulnerability_type}
-            </p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide">
+              <span class="text-neutral-600">{entry.data.platform}</span>
+              <span class="text-neutral-800">·</span>
+              <span class="text-neutral-600">{entry.data.vulnerability_type || entry.data.category}</span>
+              {entry.data.difficulty && (
+                <>
+                  <span class="text-neutral-800">·</span>
+                  <span class={`chip chip--${entry.data.difficulty.toLowerCase()}`}>{entry.data.difficulty}</span>
+                </>
+              )}
+            </div>
           </li>
         ))
       }
@@ -112,38 +112,32 @@ const searchable = [
   <!-- Latest Blog -->
   <section class="reveal">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-2xl font-semibold text-neutral-100">Latest Blog Posts</h2>
-      <a href={withBase("/blog/")} class="text-sm text-cyan-300 hover:text-cyan-200">View all →</a>
+      <h2 class="font-mono text-lg text-neutral-300">
+        <span class="text-cyan-400">~/blog</span><span class="text-neutral-500">/</span>
+      </h2>
+      <a href={withBase("/blog/")} class="font-mono text-xs text-cyan-400 hover:text-cyan-300">ls -la →</a>
     </div>
-    <ul class="space-y-4">
+    <ul class="space-y-3">
       {
         latestBlogs.map((entry) => (
           <li class="group card-lift rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 hover:border-l-cyan-500">
-            <a href={withBase(`/blog/${entry.id}/`)} class="text-lg font-medium text-neutral-100 group-hover:text-cyan-300">
+            <a href={withBase(`/blog/${entry.id}/`)} class="text-base font-medium text-neutral-100 group-hover:text-cyan-300">
               {entry.data.title}
             </a>
-            <p class="mt-2 text-sm text-neutral-400">{entry.data.description}</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide">
+              <span class="text-neutral-600">{entry.data.date.toLocaleDateString("en-CA")}</span>
+              <span class="text-neutral-800">·</span>
+              <span class="text-neutral-600">{estimateReadingTime(entry.body || entry.data.description || "")} min read</span>
+              {entry.data.tags.slice(0, 2).map((tag) => (
+                <>
+                  <span class="text-neutral-800">·</span>
+                  <span class="text-neutral-500">{tag}</span>
+                </>
+              ))}
+            </div>
           </li>
         ))
       }
     </ul>
   </section>
-
-  <script is:inline>
-    const homeSearch = document.getElementById("home-search");
-    const results = Array.from(document.querySelectorAll("#home-search-results > li"));
-
-    const runHomeSearch = () => {
-      const query = (homeSearch?.value ?? "").trim().toLowerCase();
-      let shown = 0;
-      results.forEach((item) => {
-        const match = query.length > 1 && (item.getAttribute("data-search") ?? "").includes(query);
-        const shouldShow = match && shown < 6;
-        item.classList.toggle("hidden", !shouldShow);
-        if (shouldShow) shown += 1;
-      });
-    };
-
-    homeSearch?.addEventListener("input", runHomeSearch);
-  </script>
 </BaseLayout>

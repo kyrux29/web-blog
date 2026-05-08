@@ -3,7 +3,7 @@
 // Renders: title header, tags/chips, quick-nav TOC, JSON-LD, and
 // reading-time TOC scroll-spy.
 import BaseLayout from "./BaseLayout.astro";
-import { withBase } from "../utils";
+import { estimateReadingTime, withBase } from "../utils";
 
 interface Props {
   title: string;
@@ -14,6 +14,12 @@ interface Props {
   protected?: boolean;
   /** The full canonical URL of the post. Used for JSON-LD. */
   canonicalUrl?: string;
+  /** "blog" or "ctf" — used for the chip label */
+  collectionType?: string;
+  /** Raw body text for reading time estimate */
+  bodyText?: string;
+  /** Last modified date (defaults to date) */
+  lastModified?: Date;
 }
 
 const {
@@ -24,7 +30,12 @@ const {
   headings = [],
   protected: isProtected = false,
   canonicalUrl,
+  collectionType = "blog",
+  bodyText,
+  lastModified,
 } = Astro.props;
+
+const chipLabel = collectionType === "ctf" ? "CTF Write-up" : "Research";
 
 const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
 
@@ -61,7 +72,7 @@ const jsonLd = {
     <div class="min-w-0">
       <header class="panel mb-6 p-5 sm:p-6">
         <div class="mb-3 flex flex-wrap items-center gap-2">
-          <span class="chip">Research</span>
+          <span class="chip">{chipLabel}</span>
           {isProtected && <span class="chip chip--hard">Protected</span>}
           {
             tags.map((tag) => (
@@ -71,10 +82,22 @@ const jsonLd = {
             ))
           }
         </div>
-        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
-          <span class="chip">
-            <time datetime={date.toISOString()}>{date.toLocaleDateString("en-US", { dateStyle: "medium" })}</time>
+        <div class="mb-3 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide">
+          <span class="text-neutral-500">
+            <time datetime={date.toISOString()}>{date.toLocaleDateString("en-CA")}</time>
           </span>
+          {bodyText && (
+            <>
+              <span class="text-neutral-800">·</span>
+              <span class="text-neutral-500">{estimateReadingTime(bodyText)} min read</span>
+            </>
+          )}
+          {lastModified && lastModified > date && (
+            <>
+              <span class="text-neutral-800">·</span>
+              <span class="text-neutral-600">updated {lastModified.toLocaleDateString("en-CA")}</span>
+            </>
+          )}
         </div>
         <h1 class="text-3xl font-semibold leading-tight text-neutral-100 sm:text-4xl md:text-5xl">{title}</h1>
         {description && <p class="mt-3 max-w-2xl text-sm text-neutral-400 sm:text-base">{description}</p>}
