@@ -1,0 +1,293 @@
+---
+// Terminal.astro – interactive pseudo-filesystem modal.
+// Receives content data as JSON via a <script type="application/json"> tag.
+// Hydrated with client:load so it's ready immediately.
+---
+<div id="terminal-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/55 p-3 sm:items-end sm:justify-end sm:p-4">
+  <div class="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-2xl sm:max-w-2xl">
+    <div class="flex items-center justify-between border-b border-slate-800 px-4 py-2">
+      <p class="text-xs uppercase tracking-wider text-slate-400">kyrux@labs:~</p>
+      <button id="terminal-close" type="button" class="text-sm text-slate-400 hover:text-cyan-300">Close</button>
+    </div>
+    <div id="terminal-output" class="h-[60vh] max-h-[520px] overflow-y-auto bg-slate-950 px-4 py-3 font-mono text-sm text-slate-200"></div>
+    <form id="terminal-form" class="flex items-center gap-2 border-t border-slate-800 px-4 py-3">
+      <span class="font-mono text-sm text-cyan-300">$</span>
+      <input
+        id="terminal-input"
+        type="text"
+        autocomplete="off"
+        class="w-full bg-transparent font-mono text-sm text-slate-100 outline-none placeholder:text-slate-500"
+        placeholder="Type help"
+      />
+    </form>
+  </div>
+</div>
+
+<script>
+  interface TerminalItem {
+    slug: string;
+    title: string;
+    summary: string;
+    url: string;
+  }
+
+  interface TerminalData {
+    blog: TerminalItem[];
+    ctf: TerminalItem[];
+  }
+
+  const dataEl = document.getElementById("terminal-data");
+  const terminalData: TerminalData = JSON.parse(
+    dataEl?.textContent ?? '{"blog":[],"ctf":[]}'
+  );
+
+  let cwd = "/";
+  const history: string[] = [];
+  let historyIndex = -1;
+
+  const output = document.getElementById("terminal-output");
+  const input = document.getElementById("terminal-input") as HTMLInputElement | null;
+  const modal = document.getElementById("terminal-modal");
+
+  const printLine = (text: string) => {
+    if (!output) return;
+    const line = document.createElement("div");
+    line.className = "mb-1 whitespace-pre-wrap break-words";
+    line.textContent = text;
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+  };
+
+  const formatPrompt = () => `kyrux@labs:${cwd}$`;
+
+  const open = () => {
+    modal?.classList.remove("hidden");
+    modal?.classList.add("flex");
+    input?.focus();
+    if (output && output.childElementCount === 0) {
+      printLine("Kyrux Research Terminal v2");
+      printLine(
+        "Type help for commands. Tip: try `search xss` or `tree`."
+      );
+    }
+  };
+
+  const close = () => {
+    modal?.classList.add("hidden");
+    modal?.classList.remove("flex");
+  };
+
+  const normalizePath = (p: string) => {
+    if (!p) return "/";
+    if (p === "~") return "/";
+    if (!p.startsWith("/")) {
+      if (cwd === "/") return `/${p}`;
+      return `${cwd.replace(/\/$/, "")}/${p}`;
+    }
+    return p;
+  };
+
+  const cleanPath = (p: string) => {
+    const parts = p.split("/").filter(Boolean);
+    const stack: string[] = [];
+    for (const part of parts) {
+      if (part === ".") continue;
+      if (part === "..") stack.pop();
+      else stack.push(part);
+    }
+    return `/${stack.join("/")}`;
+  };
+
+  const isDir = (p: string) => ["/", "/blog", "/ctf"].includes(p);
+
+  const listDir = (dir = cwd): string[] => {
+    if (dir === "/") return ["blog/", "ctf/", "about.txt"];
+    if (dir === "/blog") return terminalData.blog.map((item) => item.slug);
+    if (dir === "/ctf") return terminalData.ctf.map((item) => item.slug);
+    return [];
+  };
+
+  const resolveItem = (name: string): TerminalItem | null => {
+    if (cwd === "/blog")
+      return terminalData.blog.find((item) => item.slug === name) ?? null;
+    if (cwd === "/ctf")
+      return terminalData.ctf.find((item) => item.slug === name) ?? null;
+    return null;
+  };
+
+  const completions = (partial: string): string[] => {
+    const commands = [
+      "help", "ls", "cd", "pwd", "cat", "open",
+      "whoami", "clear", "tree", "search",
+    ];
+    const fileSystem =
+      cwd === "/"
+        ? ["blog", "ctf", "about.txt"]
+        : listDir().map((item) => item.replace("/", ""));
+    return [...commands, ...fileSystem].filter((item) =>
+      item.startsWith(partial)
+    );
+  };
+
+  const printHelp = () => {
+    printLine("Commands:");
+    printLine("  ls               - list directory");
+    printLine("  cd <dir>         - change dir (/, blog, ctf, ..)");
+    printLine("  pwd              - print cwd");
+    printLine("  tree             - show sections");
+    printLine("  cat <name>       - show entry meta/about.txt");
+    printLine("  open <name>      - open entry in new tab");
+    printLine("  search <keyword> - search across blog + ctf");
+    printLine("  whoami           - about");
+    printLine("  clear            - clear screen (Ctrl+L)");
+  };
+
+  const runSearch = (query: string) => {
+    const q = (query ?? "").trim().toLowerCase();
+    if (q.length < 2) {
+      printLine("search: query too short (min 2 chars)");
+      return;
+    }
+    const hits: (TerminalItem & { kind: string })[] = [];
+    for (const item of terminalData.blog ?? []) {
+      const hay = `${item.slug} ${item.title} ${item.summary}`.toLowerCase();
+      if (hay.includes(q)) hits.push({ ...item, kind: "blog" });
+    }
+    for (const item of terminalData.ctf ?? []) {
+      const hay = `${item.slug} ${item.title} ${item.summary}`.toLowerCase();
+      if (hay.includes(q)) hits.push({ ...item, kind: "ctf" });
+    }
+    if (hits.length === 0) {
+      printLine("No results.");
+      return;
+    }
+    hits.slice(0, 10).forEach((hit) => {
+      printLine(`[${hit.kind}] ${hit.slug}  →  ${hit.title}`);
+    });
+    if (hits.length > 10) printLine(`...and ${hits.length - 10} more`);
+  };
+
+  const runCommand = (rawInput: string) => {
+    const [cmd, ...args] = rawInput.trim().split(/\s+/);
+    if (!cmd) return;
+
+    if (cmd === "help") { printHelp(); return; }
+    if (cmd === "clear") { if (output) output.innerHTML = ""; return; }
+    if (cmd === "pwd") { printLine(cwd); return; }
+    if (cmd === "ls") { printLine(listDir().join("  ")); return; }
+
+    if (cmd === "cd") {
+      const nextRaw = args[0] ?? "/";
+      const next = cleanPath(normalizePath(nextRaw));
+      if (!isDir(next)) {
+        printLine(`cd: no such directory: ${nextRaw}`);
+        return;
+      }
+      cwd = next;
+      return;
+    }
+
+    if (cmd === "tree") {
+      printLine("/");
+      printLine("├── blog/");
+      printLine("├── ctf/");
+      printLine("└── about.txt");
+      return;
+    }
+
+    if (cmd === "cat") {
+      const target = args[0];
+      if (!target) { printLine("cat: missing operand"); return; }
+      if (cwd === "/" && target === "about.txt") {
+        printLine(
+          "Kyrux - cybersecurity researcher focused on web exploitation, CTF write-ups, and practical offensive tooling."
+        );
+        return;
+      }
+      const item = resolveItem(target);
+      if (!item) { printLine(`cat: ${target}: No such file`); return; }
+      printLine(`${item.title}\n${item.summary}\n${item.url}`);
+      return;
+    }
+
+    if (cmd === "open") {
+      const target = args[0];
+      if (!target) { printLine("open: missing operand"); return; }
+      const item = resolveItem(target);
+      if (!item) { printLine(`open: ${target}: No such entry`); return; }
+      window.open(item.url, "_blank", "noopener");
+      printLine(`Opened ${item.url}`);
+      return;
+    }
+
+    if (cmd === "search") { runSearch(args.join(" ")); return; }
+    if (cmd === "whoami") {
+      printLine("kyrux (security researcher | web exploitation | CTF player)");
+      return;
+    }
+
+    printLine(`${cmd}: command not found`);
+  };
+
+  // Event bindings
+  document.getElementById("terminal-toggle")?.addEventListener("click", open);
+  document.getElementById("terminal-close")?.addEventListener("click", close);
+  modal?.addEventListener("click", (event) => {
+    if (event.target === modal) close();
+  });
+
+  document.getElementById("terminal-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const value = input?.value ?? "";
+    if (value.trim()) {
+      history.push(value.trim());
+      historyIndex = history.length;
+    }
+    printLine(`${formatPrompt()} ${value}`);
+    runCommand(value);
+    if (input) input.value = "";
+  });
+
+  input?.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") { close(); return; }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "l") {
+      event.preventDefault();
+      if (output) output.innerHTML = "";
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      if (history.length === 0) return;
+      historyIndex = Math.max(0, historyIndex - 1);
+      if (input) input.value = history[historyIndex] ?? "";
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      if (history.length === 0) return;
+      historyIndex = Math.min(history.length, historyIndex + 1);
+      if (input) input.value =
+        historyIndex >= history.length ? "" : history[historyIndex];
+      return;
+    }
+    if (event.key === "Tab") {
+      event.preventDefault();
+      const current = input?.value?.trim() ?? "";
+      const parts = current.split(/\s+/);
+      const partial = parts[parts.length - 1] ?? "";
+      const matches = completions(partial);
+      if (matches.length === 1) {
+        parts[parts.length - 1] = matches[0];
+        if (input) input.value = parts.join(" ");
+      } else if (matches.length > 1) {
+        printLine(matches.join("  "));
+      }
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal?.classList.contains("flex")) {
+      close();
+    }
+  });
+</script>

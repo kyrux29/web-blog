@@ -75,8 +75,19 @@ jobs:
           test -d dist
           ls -la dist
 
-      # - name: Internal link check
-      #   run: pnpm run check:links
+      - name: Internal link check (lychee)
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >
+            --no-progress
+            --base dist/
+            --scheme http,https
+            --include 'dist/**/*.html'
+            --exclude 'mailto:'
+            --max-concurrency 8
+            dist/
+          fail: true
+        continue-on-error: true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

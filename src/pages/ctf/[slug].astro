@@ -1,9 +1,11 @@
 ---
-import { getCollection, render } from "astro:content";
+import { getPublishedCtfPosts } from "../../lib/content";
+import { withBase, difficultyChipClass } from "../../utils";
 import PostLayout from "../../layouts/PostLayout.astro";
+import { render } from "astro:content";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("ctf", ({ data }) => !data.draft);
+  const entries = await getPublishedCtfPosts();
   return entries.map((entry) => ({
     params: { slug: entry.id },
     props: { entry }
@@ -13,19 +15,11 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
 const isProtected = Boolean(entry.data.password || entry.data.password_env);
-const withBase = (p: string) =>
-  `${import.meta.env.BASE_URL.replace(/\/?$/, "/")}${p.replace(/^\//, "")}`;
 
-const difficultyChipClass = (difficulty?: string) => {
-  const key = (difficulty ?? "").trim().toLowerCase();
-  if (key === "easy") return "chip--easy";
-  if (key === "medium") return "chip--medium";
-  if (key === "hard") return "chip--hard";
-  if (key === "insane") return "chip--insane";
-  return "chip--unknown";
-};
+const siteUrl = Astro.site ?? new URL("https://kyrux29.github.io");
+const canonicalUrl = new URL(withBase(`/ctf/${entry.id}/`), siteUrl).toString();
 
-const allEntries = await getCollection("ctf", ({ data }) => !data.draft);
+const allEntries = await getPublishedCtfPosts();
 const related = allEntries
   .filter((item) => item.id !== entry.id)
   .map((item) => {
@@ -40,7 +34,7 @@ const related = allEntries
   .map(({ item }) => item);
 ---
 
-<PostLayout title={entry.data.title} date={entry.data.date} tags={entry.data.tags} headings={headings} protected={isProtected}>
+<PostLayout title={entry.data.title} date={entry.data.date} tags={entry.data.tags} headings={headings} protected={isProtected} canonicalUrl={canonicalUrl}>
   <div class="panel mb-6 flex flex-wrap items-center gap-2 px-4 py-3 text-xs">
     <span class="chip">{entry.data.platform}</span>
     {entry.data.vulnerability_type && <span class="chip">{entry.data.vulnerability_type}</span>}

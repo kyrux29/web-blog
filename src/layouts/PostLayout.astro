@@ -1,5 +1,9 @@
 ---
+// PostLayout – layout shell for individual blog/CTF posts.
+// Renders: title header, tags/chips, quick-nav TOC, JSON-LD, and
+// reading-time TOC scroll-spy.
 import BaseLayout from "./BaseLayout.astro";
+import { withBase } from "../utils";
 
 interface Props {
   title: string;
@@ -8,16 +12,51 @@ interface Props {
   tags?: string[];
   headings?: { depth: number; slug: string; text: string }[];
   protected?: boolean;
+  /** The full canonical URL of the post. Used for JSON-LD. */
+  canonicalUrl?: string;
 }
 
-const { title, date, description, tags = [], headings = [], protected: isProtected = false } = Astro.props;
+const {
+  title,
+  date,
+  description,
+  tags = [],
+  headings = [],
+  protected: isProtected = false,
+  canonicalUrl,
+} = Astro.props;
+
 const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
 
-const withBase = (p: string) =>
-  `${import.meta.env.BASE_URL.replace(/\/?$/, "/")}${p.replace(/^\//, "")}`;
+// JSON-LD structured data
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: title,
+  datePublished: date.toISOString(),
+  dateModified: date.toISOString(),
+  description: description ?? title,
+  author: {
+    "@type": "Person",
+    name: "Kyrux",
+    url: "https://github.com/kyrux29",
+  },
+  publisher: {
+    "@type": "Person",
+    name: "Kyrux",
+  },
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": canonicalUrl ?? undefined,
+  },
+  keywords: tags.join(", "),
+};
 ---
 
 <BaseLayout title={`${title} | Kyrux`} description={description}>
+  <!-- JSON-LD -->
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
   <article class="mx-auto max-w-7xl lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
     <div class="min-w-0">
       <header class="panel mb-6 p-5 sm:p-6">
@@ -85,35 +124,38 @@ const withBase = (p: string) =>
     )}
   </article>
 
+  <!-- TOC scroll-spy (kept inline for performance, tightly coupled to this layout) -->
   <script is:inline>
-    const links = Array.from(document.querySelectorAll("[data-toc-link]"));
-    const sections = links
-      .map((link) => document.getElementById(link.getAttribute("data-toc-link")))
-      .filter(Boolean);
+    (function () {
+      const links = Array.from(document.querySelectorAll("[data-toc-link]"));
+      const sections = links
+        .map(function (link) { return document.getElementById(link.getAttribute("data-toc-link") ?? ""); })
+        .filter(Boolean);
 
-    if (links.length > 0 && sections.length > 0) {
-      const activate = (id) => {
-        links.forEach((link) => {
-          const active = link.getAttribute("data-toc-link") === id;
-          link.classList.toggle("toc-active", active);
-          link.classList.toggle("text-cyan-300", active);
-          link.classList.toggle("font-medium", active);
-          link.classList.toggle("text-slate-400", !active);
-        });
-      };
+      if (links.length > 0 && sections.length > 0) {
+        var activate = function (id) {
+          links.forEach(function (link) {
+            var active = link.getAttribute("data-toc-link") === id;
+            link.classList.toggle("toc-active", active);
+            link.classList.toggle("text-cyan-300", active);
+            link.classList.toggle("font-medium", active);
+            link.classList.toggle("text-slate-400", !active);
+          });
+        };
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          const visible = entries
-            .filter((entry) => entry.isIntersecting)
-            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-          if (visible?.target?.id) activate(visible.target.id);
-        },
-        { rootMargin: "-20% 0px -70% 0px", threshold: 0.1 }
-      );
+        var observer = new IntersectionObserver(
+          function (entries) {
+            var visible = entries
+              .filter(function (entry) { return entry.isIntersecting; })
+              .sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; })[0];
+            if (visible && visible.target && visible.target.id) activate(visible.target.id);
+          },
+          { rootMargin: "-20% 0px -70% 0px", threshold: 0.1 }
+        );
 
-      sections.forEach((section) => observer.observe(section));
-      activate(sections[0].id);
-    }
+        sections.forEach(function (section) { observer.observe(section); });
+        activate(sections[0].id);
+      }
+    })();
   </script>
 </BaseLayout>

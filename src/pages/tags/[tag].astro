@@ -1,16 +1,15 @@
 ---
-import { getCollection } from "astro:content";
+import { getPublishedBlogPosts, getPublishedCtfPosts } from "../../lib/content";
+import { withBase, difficultyChipClass } from "../../utils";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 export async function getStaticPaths() {
-  const blog = await getCollection("blog", ({ data }) => !data.draft);
-  const ctf = await getCollection("ctf", ({ data }) => !data.draft);
-
+  const blog = await getPublishedBlogPosts();
+  const ctf = await getPublishedCtfPosts();
   const tagSet = new Set<string>();
   for (const entry of [...blog, ...ctf]) {
     for (const tag of entry.data.tags ?? []) tagSet.add(String(tag));
   }
-
   return Array.from(tagSet).map((tag) => ({
     params: { tag },
     props: { tag }
@@ -19,13 +18,10 @@ export async function getStaticPaths() {
 
 const { tag } = Astro.props as { tag: string };
 
-const withBase = (p: string) =>
-  `${import.meta.env.BASE_URL.replace(/\/?$/, "/")}${p.replace(/^\//, "")}`;
-
-const blog = (await getCollection("blog", ({ data }) => !data.draft)).filter((e) =>
+const blog = (await getPublishedBlogPosts()).filter((e) =>
   (e.data.tags ?? []).includes(tag)
 );
-const ctf = (await getCollection("ctf", ({ data }) => !data.draft)).filter((e) =>
+const ctf = (await getPublishedCtfPosts()).filter((e) =>
   (e.data.tags ?? []).includes(tag)
 );
 
@@ -55,7 +51,7 @@ ctf.sort(sortByDateDesc);
             <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
               <span class="chip">{entry.data.date.toLocaleDateString("en-CA")}</span>
               <span class="chip">{entry.data.platform}</span>
-              {entry.data.difficulty && <span class="chip">{entry.data.difficulty}</span>}
+              {entry.data.difficulty && <span class={`chip ${difficultyChipClass(entry.data.difficulty)}`}>{entry.data.difficulty}</span>}
             </div>
             <a href={withBase(`/ctf/${entry.id}/`)} class="text-2xl font-medium leading-tight text-zinc-100 hover:text-cyan-300">
               {entry.data.title}
@@ -87,4 +83,3 @@ ctf.sort(sortByDateDesc);
     </section>
   )}
 </BaseLayout>
-
