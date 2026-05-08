@@ -26,34 +26,34 @@ const searchable = [
 
 <BaseLayout title="Kyrux | Cyber Security Research Blog">
   <section class="mb-12">
-    <h1 class="text-4xl font-bold tracking-tight text-slate-100">Kyrux</h1>
-    <p class="mt-4 max-w-2xl text-slate-300">
+    <h1 class="text-4xl font-bold tracking-tight text-neutral-100">Kyrux</h1>
+    <p class="mt-4 max-w-2xl text-neutral-300">
       Đây là nơi mình chia sẻ về các vấn đề liên quan đến cybersecurity, bao gồm các CTF write-ups, các blog chuyên môn và các research note.
     </p>
-    <p class="mt-4 max-w-2xl text-slate-300">
+    <p class="mt-4 max-w-2xl text-neutral-300">
       This is where I share my thoughts on cybersecurity, including CTF write-ups, technical blog posts, and research notes.
     </p>
   </section>
 
   <section class="mb-12">
     <div class="panel p-5">
-      <h2 class="text-xl font-semibold text-slate-100">Quick Search</h2>
-      <p class="mt-2 text-sm text-slate-400">Find write-ups and research notes by title, tags, platform, or keywords.</p>
+      <h2 class="text-xl font-semibold text-neutral-100">Quick Search</h2>
+      <p class="mt-2 text-sm text-neutral-400">Find write-ups and research notes by title, tags, platform, or keywords.</p>
       <input
         id="home-search"
         type="search"
         placeholder="Try: ssrf, hackthebox, grpc, race condition..."
-        class="mt-4 w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+        class="mt-4 w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-cyan-500 focus:outline-none"
       />
       <ul id="home-search-results" class="mt-4 space-y-2">
         {
           searchable.slice(0, 6).map((item) => (
             <li
-              class="hidden rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2"
+              class="hidden rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
               data-search={`${item.title} ${item.summary}`.toLowerCase()}
               data-href={withBase(item.href)}
             >
-              <a href={withBase(item.href)} class="text-sm text-slate-200 hover:text-cyan-300">
+              <a href={withBase(item.href)} class="text-sm text-neutral-200 hover:text-cyan-300">
                 <span class="mr-2 chip">{item.type}</span>{item.title}
               </a>
             </li>
@@ -65,17 +65,17 @@ const searchable = [
 
   <section class="mb-12">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-2xl font-semibold text-slate-100">Latest CTF Write-ups</h2>
+      <h2 class="text-2xl font-semibold text-neutral-100">Latest CTF Write-ups</h2>
       <a href={withBase("/ctf/")} class="text-sm text-cyan-300 hover:text-cyan-200">View all</a>
     </div>
     <ul class="space-y-4">
       {
         latestCtf.map((entry) => (
-          <li class="rounded-lg border border-slate-800 bg-slate-900/40 p-4">
-            <a href={withBase(`/ctf/${entry.id}/`)} class="text-lg font-medium text-slate-100 hover:text-cyan-300">
+          <li class="group rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 transition hover:border-l-cyan-500">
+            <a href={withBase(`/ctf/${entry.id}/`)} class="text-lg font-medium text-neutral-100 group-hover:text-cyan-300">
               {entry.data.title}
             </a>
-            <p class="mt-2 text-sm text-slate-400">
+            <p class="mt-2 text-sm text-neutral-400">
               {entry.data.platform} - {entry.data.vulnerability_type}
             </p>
           </li>
@@ -86,17 +86,17 @@ const searchable = [
 
   <section>
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-2xl font-semibold text-slate-100">Latest Blog Posts</h2>
+      <h2 class="text-2xl font-semibold text-neutral-100">Latest Blog Posts</h2>
       <a href={withBase("/blog/")} class="text-sm text-cyan-300 hover:text-cyan-200">View all</a>
     </div>
     <ul class="space-y-4">
       {
         latestBlogs.map((entry) => (
-          <li class="rounded-lg border border-slate-800 bg-slate-900/40 p-4">
-            <a href={withBase(`/blog/${entry.id}/`)} class="text-lg font-medium text-slate-100 hover:text-cyan-300">
+          <li class="group rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 transition hover:border-l-cyan-500">
+            <a href={withBase(`/blog/${entry.id}/`)} class="text-lg font-medium text-neutral-100 group-hover:text-cyan-300">
               {entry.data.title}
             </a>
-            <p class="mt-2 text-sm text-slate-400">{entry.data.description}</p>
+            <p class="mt-2 text-sm text-neutral-400">{entry.data.description}</p>
           </li>
         ))
       }

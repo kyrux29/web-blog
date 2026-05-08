@@ -8,27 +8,21 @@
     "Liberation Mono", "Courier New", monospace;
 }
 
+/* ---------- base ---------- */
 html,
 body {
-  @apply bg-zinc-950 text-zinc-100 antialiased;
-  background-image:
-    radial-gradient(circle at 40% -20%, rgba(34, 211, 238, 0.10), transparent 40%),
-    radial-gradient(circle at 90% 10%, rgba(244, 63, 94, 0.06), transparent 35%),
-    radial-gradient(circle at 10% 20%, rgba(245, 158, 11, 0.06), transparent 30%);
+  @apply bg-neutral-950 text-neutral-100 antialiased;
 }
 
 html[data-theme="dim"] body {
-  @apply bg-[#0a0a0a] text-zinc-200;
-  background-image:
-    radial-gradient(circle at 40% -25%, rgba(34, 211, 238, 0.08), transparent 42%),
-    radial-gradient(circle at 90% 10%, rgba(244, 63, 94, 0.05), transparent 35%),
-    radial-gradient(circle at 10% 20%, rgba(245, 158, 11, 0.05), transparent 30%);
+  @apply bg-[#0a0a0a] text-neutral-200;
 }
 
 ::selection {
-  @apply bg-cyan-500/25 text-slate-50;
+  @apply bg-cyan-500/25 text-neutral-50;
 }
 
+/* ---------- links ---------- */
 a {
   @apply text-cyan-400 transition-colors hover:text-cyan-300;
 }
@@ -36,23 +30,21 @@ a {
 a:focus-visible,
 button:focus-visible,
 summary:focus-visible {
-  @apply outline-none ring-2 ring-cyan-500/80 ring-offset-2 ring-offset-slate-950;
+  @apply outline-none ring-2 ring-cyan-500/80 ring-offset-2 ring-offset-neutral-950;
 }
 
+/* ---------- panel (card surface) ---------- */
 .panel {
-  @apply rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-md;
+  @apply rounded-xl border border-neutral-800 bg-neutral-900;
 }
 
 .panel:hover {
-  box-shadow:
-    0 18px 55px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(34, 211, 238, 0.08),
-    0 0 35px rgba(34, 211, 238, 0.06);
+  border-color: rgb(38 38 38); /* neutral-800 → neutral-700 on hover */
 }
 
+/* ---------- chip / tag ---------- */
 .chip {
-  @apply inline-flex items-center rounded-full border border-white/5 bg-white/[0.03] px-2.5 py-1 text-[11px] uppercase tracking-wider text-zinc-300;
-  font-family: var(--font-mono);
+  @apply inline-flex items-center rounded-full border border-neutral-800 bg-neutral-900 px-2.5 py-1 text-[10px] tracking-wide text-neutral-400;
 }
 
 .chip--easy {
@@ -72,9 +64,10 @@ summary:focus-visible {
 }
 
 .chip--unknown {
-  @apply border-white/5 bg-white/[0.03] text-zinc-300;
+  @apply border-neutral-800 bg-neutral-900 text-neutral-400;
 }
 
+/* ---------- prose overrides ---------- */
 .prose pre code {
   background: transparent !important;
   color: inherit !important;
@@ -82,7 +75,7 @@ summary:focus-visible {
 }
 
 .prose :not(pre) > code {
-  @apply rounded bg-slate-800 px-1.5 py-0.5 text-cyan-200;
+  @apply rounded bg-neutral-800 px-1.5 py-0.5 text-cyan-200;
 }
 
 .prose pre {
@@ -106,15 +99,24 @@ summary:focus-visible {
 }
 
 .prose img {
-  @apply my-6 rounded-2xl border border-slate-800/80 bg-slate-950/40 shadow-lg;
+  @apply my-6 rounded-2xl border border-neutral-800/80 bg-neutral-950/40 shadow-lg;
 }
 
 .prose img[data-zoomable="true"] {
   cursor: zoom-in;
 }
 
+.prose hr {
+  @apply border-neutral-800;
+}
+
+.prose kbd {
+  @apply rounded border border-neutral-700 bg-neutral-900 px-1.5 py-0.5 font-mono text-xs text-neutral-200;
+}
+
+/* ---------- lightbox ---------- */
 .lightbox {
-  @apply fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/80 p-3 sm:p-6;
+  @apply fixed inset-0 z-[60] hidden items-center justify-center bg-neutral-950/80 p-3 sm:p-6;
 }
 
 .lightbox[data-open="true"] {
@@ -122,46 +124,40 @@ summary:focus-visible {
 }
 
 .lightbox-panel {
-  @apply relative w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl;
+  @apply relative w-full max-w-5xl overflow-hidden rounded-2xl border border-neutral-700 bg-neutral-950 shadow-2xl;
 }
 
 .lightbox-toolbar {
-  @apply flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-2;
+  @apply flex items-center justify-between gap-3 border-b border-neutral-800 px-4 py-2;
 }
 
 .lightbox-title {
-  @apply truncate font-mono text-xs uppercase tracking-wider text-slate-400;
+  @apply truncate font-mono text-xs tracking-wider text-neutral-400;
 }
 
 .lightbox-close {
-  @apply rounded-md border border-slate-700 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300 hover:border-cyan-500 hover:text-cyan-300;
+  @apply rounded-md border border-neutral-700 bg-neutral-900/60 px-3 py-1.5 text-xs text-neutral-300 hover:border-cyan-500 hover:text-cyan-300;
 }
 
 .lightbox-body {
-  @apply max-h-[80vh] overflow-auto bg-slate-950 p-2 sm:p-4;
+  @apply max-h-[80vh] overflow-auto bg-neutral-950 p-2 sm:p-4;
   -webkit-overflow-scrolling: touch;
 }
 
 .lightbox-img {
-  @apply mx-auto h-auto w-auto max-w-full rounded-xl border border-slate-800/80 bg-slate-950/40;
+  @apply mx-auto h-auto w-auto max-w-full rounded-xl border border-neutral-800/80 bg-neutral-950/40;
 }
 
-.prose hr {
-  @apply border-slate-800;
-}
-
-.prose kbd {
-  @apply rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5 font-mono text-xs text-slate-200;
-}
-
+/* ---------- table of contents ---------- */
 .toc-link {
   @apply block rounded-md border-l-2 border-transparent px-2 py-1 transition-colors;
 }
 
 .toc-link.toc-active {
-  @apply border-cyan-500 bg-slate-900/70 text-cyan-300;
+  @apply border-cyan-500 bg-neutral-900/70 text-cyan-300;
 }
 
+/* ---------- copy button ---------- */
 .copy-code-btn {
   @apply font-medium tracking-wide;
 }

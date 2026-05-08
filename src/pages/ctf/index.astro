@@ -14,8 +14,8 @@ const difficulties = Array.from(
 
 <BaseLayout title="CTF Write-ups | Kyrux">
   <section class="mb-6">
-    <h1 class="text-4xl font-semibold tracking-tight text-zinc-100">CTF Archives</h1>
-    <p class="mt-3 max-w-3xl text-zinc-400">
+    <h1 class="text-4xl font-semibold tracking-tight text-neutral-100">CTF Archives</h1>
+    <p class="mt-3 max-w-3xl text-neutral-400">
       Hands-on challenge solutions, exploit notes, post-exploitation reasoning, and payload strategy breakdowns.
     </p>
     <div class="mt-5 grid gap-3 md:grid-cols-3">
@@ -23,20 +23,20 @@ const difficulties = Array.from(
         id="ctf-search"
         type="search"
         placeholder="Search by title, platform, type, or tags..."
-        class="w-full rounded-xl border border-white/5 bg-white/[0.03] px-4 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500 focus:outline-none md:col-span-3"
+        class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-cyan-500 focus:outline-none md:col-span-3"
       />
-      <select id="ctf-platform-filter" class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 text-sm text-zinc-200 focus:border-cyan-500 focus:outline-none">
+      <select id="ctf-platform-filter" class="rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 focus:border-cyan-500 focus:outline-none">
         <option value="">All Platforms</option>
         {platforms.map((platform) => <option value={platform.toLowerCase()}>{platform}</option>)}
       </select>
-      <select id="ctf-difficulty-filter" class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 text-sm text-zinc-200 focus:border-cyan-500 focus:outline-none">
+      <select id="ctf-difficulty-filter" class="rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 focus:border-cyan-500 focus:outline-none">
         <option value="">All Difficulties</option>
         {difficulties.map((difficulty) => <option value={difficulty.toLowerCase()}>{difficulty}</option>)}
       </select>
-      <button id="ctf-clear-filters" type="button" class="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-300">
+      <button id="ctf-clear-filters" type="button" class="rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-300 hover:border-cyan-500/40 hover:text-cyan-300">
         Clear Filters
       </button>
-      <select id="ctf-sort" class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 text-sm text-zinc-200 focus:border-cyan-500 focus:outline-none md:col-span-3">
+      <select id="ctf-sort" class="rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 focus:border-cyan-500 focus:outline-none md:col-span-3">
         <option value="newest">Sort: Newest</option>
         <option value="oldest">Sort: Oldest</option>
         <option value="difficulty-asc">Sort: Difficulty (Easy → Hard)</option>
@@ -49,7 +49,7 @@ const difficulties = Array.from(
     {
       ctfEntries.map((entry) => (
         <li
-          class="panel group p-5 transition hover:border-cyan-500/30 hover:bg-white/[0.04]"
+          class="panel group p-5 transition hover:border-cyan-500/30"
           data-search={`${entry.data.title} ${entry.data.platform} ${entry.data.vulnerability_type ?? ""} ${entry.data.difficulty ?? ""} ${entry.data.tags.join(" ")}`.toLowerCase()}
           data-platform={entry.data.platform.toLowerCase()}
           data-difficulty={(entry.data.difficulty ?? "").toLowerCase()}
@@ -61,10 +61,10 @@ const difficulties = Array.from(
             {entry.data.difficulty && <span class={`chip chip--${(entry.data.difficulty ?? "").toLowerCase()}`}>{entry.data.difficulty}</span>}
             {(entry.data.password || entry.data.password_env) && <span class="chip chip--hard">Protected</span>}
           </div>
-          <a href={withBase(`/ctf/${entry.id}/`)} class="text-2xl font-medium leading-tight text-zinc-100 hover:text-cyan-300">
+          <a href={withBase(`/ctf/${entry.id}/`)} class="text-2xl font-medium leading-tight text-neutral-100 hover:text-cyan-300">
             {entry.data.title}
           </a>
-          <p class="mt-3 text-sm text-zinc-400">
+          <p class="mt-3 text-sm text-neutral-400">
             {entry.data.vulnerability_type ?? entry.data.category ?? "Security research"}
           </p>
           <div class="mt-4 flex items-center justify-between gap-3">
@@ -75,14 +75,14 @@ const difficulties = Array.from(
                 </a>
               ))}
             </div>
-            <span class="text-lg text-zinc-500 transition group-hover:text-cyan-300" aria-hidden="true">→</span>
+            <span class="text-lg text-neutral-500 transition group-hover:text-cyan-300" aria-hidden="true">→</span>
           </div>
         </li>
       ))
     }
   </ul>
 
-  <p id="ctf-empty" class="mt-6 hidden text-sm text-zinc-400">No matching write-ups found.</p>
+  <p id="ctf-empty" class="mt-6 hidden text-sm text-neutral-400">No matching write-ups found.</p>
 
   <script is:inline>
     const ctfSearch = document.getElementById("ctf-search");

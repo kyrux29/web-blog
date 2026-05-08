@@ -21,24 +21,24 @@ const statusStyles: Record<string, string> = {
 ---
 
 <section class="panel overflow-hidden">
-  <header class="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-2">
-    <p class="text-xs uppercase tracking-wider text-zinc-300" style="font-family: var(--font-mono);">{title}</p>
-    <span class="text-[11px] text-zinc-500" style="font-family: var(--font-mono);">pipeline</span>
+  <header class="flex items-center justify-between gap-3 border-b border-neutral-800 px-4 py-2">
+    <p class="text-xs tracking-wider text-neutral-300" style="font-family: var(--font-mono);">{title}</p>
+    <span class="text-[11px] text-neutral-500" style="font-family: var(--font-mono);">pipeline</span>
   </header>
 
   <ol class="grid gap-3 px-4 py-4">
     {steps.map((step, idx) => (
-      <li class="relative rounded-xl border border-white/5 bg-white/[0.02] p-4">
+      <li class="relative rounded-xl border border-neutral-800 bg-neutral-900 p-4">
         <div class="mb-2 flex flex-wrap items-center gap-2">
           <span class="chip">{String(idx + 1).padStart(2, "0")}</span>
-          <span class="text-sm font-semibold text-zinc-100">{step.title}</span>
+          <span class="text-sm font-semibold text-neutral-100">{step.title}</span>
           {step.status && (
             <span class={`chip ${statusStyles[step.status] ?? statusStyles.note}`}>
               {step.status}
             </span>
           )}
         </div>
-        {step.detail && <p class="text-sm text-zinc-400">{step.detail}</p>}
+        {step.detail && <p class="text-sm text-neutral-400">{step.detail}</p>}
       </li>
     ))}
   </ol>

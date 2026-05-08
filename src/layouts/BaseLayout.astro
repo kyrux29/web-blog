@@ -96,24 +96,24 @@ const terminalItems = {
   </head>
   <body class="min-h-screen">
     <!-- Skip-to-content -->
-    <a href="#content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-slate-900 focus:px-3 focus:py-2 focus:text-cyan-300">
+    <a href="#content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-neutral-900 focus:px-3 focus:py-2 focus:text-cyan-300">
       Skip to content
     </a>
 
-    <!-- Reading progress bar (tiny inline script – kept here for performance) -->
+    <!-- Reading progress bar -->
     <div id="reading-progress" class="fixed left-0 top-0 z-50 h-0.5 w-0 bg-cyan-400/90"></div>
 
     <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 lg:px-8">
       <header class="mb-8 sm:mb-10">
-        <div class="panel mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-4 py-2">
+        <div class="mx-auto flex max-w-4xl items-center gap-4">
           <a
             href={withBase("/")}
-            class="rounded-full border border-slate-700 bg-slate-950 px-4 py-1.5 text-sm font-semibold tracking-wider text-slate-100"
+            class="text-lg font-semibold tracking-tight text-neutral-100 hover:text-cyan-300"
           >
-            KYRUX_LABS
+            kyrux
           </a>
           <nav aria-label="Main Navigation" class="min-w-0 flex-1">
-            <ul class="flex min-w-0 items-center gap-4 overflow-x-auto whitespace-nowrap text-xs [scrollbar-width:none] sm:gap-7 sm:text-sm">
+            <ul class="flex min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap text-sm [scrollbar-width:none]">
               {
                 navLinks.map((link) => (
                   <li>
@@ -122,8 +122,8 @@ const terminalItems = {
                       target={link.external ? "_blank" : undefined}
                       rel={link.external ? "noreferrer" : undefined}
                       class:list={[
-                        "rounded-md px-2 py-1 text-slate-400 hover:text-cyan-300",
-                        !link.external && currentPath === new URL(link.href, Astro.url).pathname ? "bg-slate-950/60 text-cyan-300" : ""
+                        "rounded-md px-2 py-1 text-neutral-400 hover:text-cyan-300",
+                        !link.external && currentPath === new URL(link.href, Astro.url).pathname ? "text-cyan-300" : ""
                       ]}
                     >
                       {link.label}
@@ -135,8 +135,8 @@ const terminalItems = {
           </nav>
           <div class="ml-auto flex items-center gap-2">
             <ThemeToggle />
-            <button id="terminal-toggle" type="button" class="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300 hover:border-cyan-500 hover:text-cyan-300">
-              Terminal
+            <button id="terminal-toggle" type="button" class="rounded-md px-2 py-1 font-mono text-sm text-neutral-400 hover:text-cyan-300" title="Open terminal">
+              >_
             </button>
           </div>
         </div>
@@ -146,8 +146,8 @@ const terminalItems = {
         <slot />
       </main>
 
-      <footer class="mt-14 border-t border-slate-800 pt-6 text-sm text-slate-500">
-        <p>&copy; {new Date().getFullYear()} Kyrux | Vu Trong Quoc Khanh.</p>
+      <footer class="mt-14 border-t border-neutral-800 pt-6 text-sm text-neutral-500">
+        <p>&copy; {new Date().getFullYear()} Kyrux &mdash; Vu Trong Quoc Khanh.</p>
       </footer>
     </div>
 

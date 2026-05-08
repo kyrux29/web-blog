@@ -1,32 +1,32 @@
 <!--
   ThemeToggle – switches between "dark" (default) and "dim" mode.
-  Persists preference to localStorage. Delivered as an Astro island (client:load)
-  so it hydrates immediately without blocking the page.
+  Persists preference to localStorage.
 -->
 <script>
   const root = document.documentElement;
   const saved = localStorage.getItem("kyrux-theme") ?? "dark";
   root.dataset.theme = saved;
 
-  function updateLabel(btn: HTMLElement | null) {
+  function updateIcon(btn: HTMLElement | null) {
     if (!btn) return;
-    btn.textContent = root.dataset.theme === "dim" ? "Dark" : "Dim";
+    btn.textContent = root.dataset.theme === "dim" ? "☀️" : "🌙";
   }
 
   const toggle = document.getElementById("theme-toggle");
-  updateLabel(toggle);
+  updateIcon(toggle);
 
   toggle?.addEventListener("click", () => {
     root.dataset.theme = root.dataset.theme === "dim" ? "dark" : "dim";
     localStorage.setItem("kyrux-theme", root.dataset.theme);
-    updateLabel(toggle);
+    updateIcon(toggle);
   });
 </script>
 
 <button
   id="theme-toggle"
   type="button"
-  class="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300 hover:border-cyan-500 hover:text-cyan-300"
+  class="rounded-md px-2 py-1 text-sm text-neutral-400 hover:text-cyan-300"
+  title="Toggle theme"
 >
-  Dim
+  🌙
 </button>

@@ -19,26 +19,26 @@ const accent = accents[variant] ?? accents.info;
 ---
 
 <section class={`panel border ${accent.border} overflow-hidden`}>
-  <header class="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-2">
+  <header class="flex items-center justify-between gap-3 border-b border-neutral-800 px-4 py-2">
     <div class="flex items-center gap-2">
       <span class={`h-2 w-2 rounded-full ${accent.dot}`}></span>
-      <p class="text-xs uppercase tracking-wider text-zinc-300" style="font-family: var(--font-mono);">
+      <p class="text-xs tracking-wider text-neutral-300" style="font-family: var(--font-mono);">
         {title}
       </p>
     </div>
-    <span class="text-[11px] text-zinc-500" style="font-family: var(--font-mono);">kyrux@labs</span>
+    <span class="text-[11px] text-neutral-500" style="font-family: var(--font-mono);">kyrux@labs</span>
   </header>
 
-  <div class={`px-4 py-4 shadow-[0_0_40px] ${accent.glow}`}>
+  <div class={`px-4 py-4`}>
     {command && (
-      <pre class="m-0 overflow-x-auto rounded-xl border border-white/5 bg-white/[0.03] p-4 text-sm text-zinc-100"><code style="font-family: var(--font-mono);">$ {command}</code></pre>
+      <pre class="m-0 overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-900 p-4 text-sm text-neutral-100"><code style="font-family: var(--font-mono);">$ {command}</code></pre>
     )}
 
     {items.length > 0 && (
-      <ul class="mt-4 space-y-2 text-sm text-zinc-300">
+      <ul class="mt-4 space-y-2 text-sm text-neutral-300">
         {items.map((item) => (
           <li class="flex gap-3">
-            <span class="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-white/20"></span>
+            <span class="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-neutral-700"></span>
             <span>{item}</span>
           </li>
         ))}

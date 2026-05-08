@@ -43,14 +43,14 @@ const related = allEntries
   <Content />
   {related.length > 0 && (
     <section class="panel mt-10 p-5">
-      <h2 class="mb-4 text-xl font-semibold text-zinc-100">Related CTF Write-ups</h2>
+      <h2 class="mb-4 text-xl font-semibold text-neutral-100">Related CTF Write-ups</h2>
       <ul class="space-y-3">
         {related.map((item) => (
           <li>
-            <a href={withBase(`/ctf/${item.id}/`)} class="text-zinc-200 hover:text-cyan-300">
+            <a href={withBase(`/ctf/${item.id}/`)} class="text-neutral-200 hover:text-cyan-300">
               {item.data.title}
             </a>
-            <p class="mt-1 text-sm text-zinc-400">
+            <p class="mt-1 text-sm text-neutral-400">
               {item.data.platform}
               {item.data.vulnerability_type ? ` · ${item.data.vulnerability_type}` : ""}
             </p>
