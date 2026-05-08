@@ -1,0 +1,167 @@
+<!--
+  CommandPalette – Cmd+K / Ctrl+K global search modal.
+  Uses pagefind for full-text search. Renders an overlay with
+  fuzzy-filtered results and keyboard navigation.
+-->
+<div id="cmdk-overlay" class="cmdk-overlay" role="dialog" aria-modal="true" aria-label="Command palette">
+  <div class="cmdk-panel">
+    <input
+      id="cmdk-input"
+      class="cmdk-input"
+      type="text"
+      placeholder="Search posts and write-ups..."
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <div id="cmdk-results" class="cmdk-results"></div>
+    <div class="cmdk-footer">
+      <span class="cmdk-hint"><kbd>↑↓</kbd> Navigate</span>
+      <span class="cmdk-hint"><kbd>Enter</kbd> Open</span>
+      <span class="cmdk-hint"><kbd>Esc</kbd> Close</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const overlay = document.getElementById("cmdk-overlay");
+  const input = document.getElementById("cmdk-input") as HTMLInputElement | null;
+  const results = document.getElementById("cmdk-results");
+  const body = document.body;
+
+  let pagefindPromise: Promise<any> | null = null;
+  let activeIndex = -1;
+  let resultItems: { url: string; title: string; excerpt: string }[] = [];
+
+  const loadPagefind = async () => {
+    const base = document.documentElement.baseURI;
+    const u = new URL(base);
+    const basePath = u.pathname.replace(/\/[^/]*\/?$/, "/");
+    await import(`${basePath}pagefind/pagefind.js`);
+    await (window as any).pagefind?.init?.();
+    return (window as any).pagefind;
+  };
+
+  const renderResults = (items: typeof resultItems) => {
+    if (!results) return;
+    results.innerHTML = "";
+    if (items.length === 0) {
+      const div = document.createElement("div");
+      div.className = "cmdk-item";
+      div.textContent = "No results found.";
+      results.appendChild(div);
+      return;
+    }
+    items.forEach((item, i) => {
+      const div = document.createElement("div");
+      div.className = "cmdk-item";
+      div.setAttribute("data-index", String(i));
+      div.setAttribute("data-href", item.url);
+      div.innerHTML = `
+        <span class="flex-1 min-w-0">
+          <span class="block truncate font-medium text-neutral-100">${escapeHtml(item.title)}</span>
+          ${item.excerpt ? `<span class="block mt-0.5 truncate text-xs text-neutral-500">${escapeHtml(item.excerpt)}</span>` : ""}
+        </span>
+        <span class="cmdk-badge">→</span>
+      `;
+      div.addEventListener("click", () => navigateTo(item.url));
+      results.appendChild(div);
+    });
+  };
+
+  const escapeHtml = (s: string) => {
+    const d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  };
+
+  const navigateTo = (url: string) => {
+    closePalette();
+    window.location.href = url;
+  };
+
+  const updateActive = () => {
+    const items = Array.from(results?.querySelectorAll(".cmdk-item[data-href]") ?? []);
+    items.forEach((el, i) => {
+      el.setAttribute("data-active", String(i === activeIndex));
+      if (i === activeIndex) el.scrollIntoView({ block: "nearest" });
+    });
+  };
+
+  const openPalette = () => {
+    overlay?.setAttribute("data-open", "true");
+    body.style.overflow = "hidden";
+    activeIndex = -1;
+    resultItems = [];
+    if (results) results.innerHTML = "";
+    setTimeout(() => input?.focus(), 50);
+  };
+
+  const closePalette = () => {
+    overlay?.removeAttribute("data-open");
+    body.style.overflow = "";
+    if (input) input.value = "";
+    activeIndex = -1;
+  };
+
+  const runSearch = async () => {
+    const q = (input?.value ?? "").trim();
+    if (!q) {
+      resultItems = [];
+      renderResults([]);
+      return;
+    }
+
+    if (!pagefindPromise) pagefindPromise = loadPagefind();
+    const pf = await pagefindPromise;
+    const res = await pf.search(q);
+    const data = await Promise.all(res.results.slice(0, 8).map((r: any) => r.data()));
+    resultItems = data.map((d: any) => ({
+      title: d.meta?.title ?? d.url,
+      url: d.url,
+      excerpt: d.excerpt ?? ""
+    }));
+    renderResults(resultItems);
+  };
+
+  // Keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    const isOpen = overlay?.getAttribute("data-open") === "true";
+
+    // Toggle: Cmd+K or Ctrl+K
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault();
+      isOpen ? closePalette() : openPalette();
+      return;
+    }
+
+    if (!isOpen) return;
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closePalette();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, resultItems.length - 1);
+      updateActive();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      updateActive();
+    } else if (e.key === "Enter" && activeIndex >= 0 && activeIndex < resultItems.length) {
+      e.preventDefault();
+      navigateTo(resultItems[activeIndex].url);
+    }
+  });
+
+  // Debounced search
+  let timer: number;
+  input?.addEventListener("input", () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(runSearch, 100);
+  });
+
+  // Close on backdrop click
+  overlay?.addEventListener("click", (e) => {
+    if (e.target === overlay) closePalette();
+  });
+</script>

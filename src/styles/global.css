@@ -9,6 +9,10 @@
 }
 
 /* ---------- base ---------- */
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   @apply bg-neutral-950 text-neutral-100 antialiased;
@@ -20,6 +24,42 @@ html[data-theme="dim"] body {
 
 ::selection {
   @apply bg-cyan-500/25 text-neutral-50;
+}
+
+/* Smooth scroll offset for heading anchors */
+:target {
+  scroll-margin-top: 5rem;
+}
+
+/* ---------- motion: fade-up reveal ---------- */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.reveal.reveal-active {
+  animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ---------- card lift ---------- */
+.card-lift {
+  @apply transition duration-300;
+}
+
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* ---------- links ---------- */
@@ -160,4 +200,68 @@ summary:focus-visible {
 /* ---------- copy button ---------- */
 .copy-code-btn {
   @apply font-medium tracking-wide;
+}
+
+/* ---------- command palette (Cmd+K) ---------- */
+.cmdk-overlay {
+  @apply fixed inset-0 z-[70] hidden items-start justify-center bg-neutral-950/80 pt-[15vh];
+}
+
+.cmdk-overlay[data-open="true"] {
+  @apply flex;
+}
+
+.cmdk-panel {
+  @apply w-full max-w-xl rounded-2xl border border-neutral-700 bg-neutral-900 shadow-2xl overflow-hidden;
+  animation: fade-up 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cmdk-input {
+  @apply w-full border-0 border-b border-neutral-800 bg-transparent px-5 py-4 text-base text-neutral-100 placeholder:text-neutral-500 focus:outline-none;
+  font-family: var(--font-mono);
+}
+
+.cmdk-results {
+  @apply max-h-[320px] overflow-y-auto;
+}
+
+.cmdk-item {
+  @apply flex items-center gap-3 px-5 py-3 text-sm text-neutral-300 cursor-pointer border-l-2 border-l-transparent transition-colors;
+}
+
+.cmdk-item[data-active="true"],
+.cmdk-item:hover {
+  @apply bg-neutral-800/60 text-neutral-100 border-l-cyan-500;
+}
+
+.cmdk-badge {
+  @apply inline-flex items-center rounded-full border border-neutral-700 px-2 py-0.5 text-[10px] tracking-wide text-neutral-500;
+  font-family: var(--font-mono);
+}
+
+.cmdk-footer {
+  @apply flex items-center gap-4 border-t border-neutral-800 px-5 py-2.5;
+}
+
+.cmdk-hint {
+  @apply flex items-center gap-1.5 text-[11px] text-neutral-600;
+}
+
+.cmdk-hint kbd {
+  @apply rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 font-mono text-[10px] text-neutral-400;
+}
+
+/* ---------- back to top ---------- */
+.back-to-top {
+  @apply fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900 text-neutral-400 opacity-0 transition-all duration-300 pointer-events-none;
+  transform: translateY(10px);
+}
+
+.back-to-top.visible {
+  @apply opacity-100 pointer-events-auto;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  @apply border-cyan-500 text-cyan-300;
 }

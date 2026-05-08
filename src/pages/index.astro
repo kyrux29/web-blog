@@ -1,5 +1,5 @@
 ---
-import { getPublishedBlogPosts, getPublishedCtfPosts } from "../lib/content";
+import { getPublishedBlogPosts, getPublishedCtfPosts, getTagCounts } from "../lib/content";
 import { withBase } from "../utils";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
@@ -8,6 +8,14 @@ const latestBlogs = (await getPublishedBlogPosts()).slice(0, 3);
 
 const allCtf = await getPublishedCtfPosts();
 const allBlog = await getPublishedBlogPosts();
+const tagCounts = await getTagCounts();
+
+const stats = [
+  { label: "CTF Write-ups", value: allCtf.length },
+  { label: "Research Notes", value: allBlog.length },
+  { label: "Tags", value: tagCounts.length },
+];
+
 const searchable = [
   ...allCtf.map((entry) => ({
     type: "ctf",
@@ -25,17 +33,33 @@ const searchable = [
 ---
 
 <BaseLayout title="Kyrux | Cyber Security Research Blog">
-  <section class="mb-12">
-    <h1 class="text-4xl font-bold tracking-tight text-neutral-100">Kyrux</h1>
+  <!-- Hero -->
+  <section class="mb-10 reveal">
+    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+      <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 bg-clip-text text-transparent">
+        Kyrux
+      </span>
+    </h1>
     <p class="mt-4 max-w-2xl text-neutral-300">
       Đây là nơi mình chia sẻ về các vấn đề liên quan đến cybersecurity, bao gồm các CTF write-ups, các blog chuyên môn và các research note.
     </p>
-    <p class="mt-4 max-w-2xl text-neutral-300">
+    <p class="mt-3 max-w-2xl text-neutral-400">
       This is where I share my thoughts on cybersecurity, including CTF write-ups, technical blog posts, and research notes.
     </p>
   </section>
 
-  <section class="mb-12">
+  <!-- Stats bar -->
+  <div class="reveal mb-10 grid grid-cols-3 gap-3">
+    {stats.map((stat) => (
+      <div class="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-4 text-center">
+        <p class="text-2xl font-bold text-cyan-300" style="font-family: var(--font-mono);">{stat.value}</p>
+        <p class="mt-1 text-[10px] tracking-wide text-neutral-500">{stat.label}</p>
+      </div>
+    ))}
+  </div>
+
+  <!-- Quick Search -->
+  <section class="reveal mb-10">
     <div class="panel p-5">
       <h2 class="text-xl font-semibold text-neutral-100">Quick Search</h2>
       <p class="mt-2 text-sm text-neutral-400">Find write-ups and research notes by title, tags, platform, or keywords.</p>
@@ -63,15 +87,16 @@ const searchable = [
     </div>
   </section>
 
-  <section class="mb-12">
+  <!-- Latest CTF -->
+  <section class="reveal mb-10">
     <div class="mb-4 flex items-center justify-between">
       <h2 class="text-2xl font-semibold text-neutral-100">Latest CTF Write-ups</h2>
-      <a href={withBase("/ctf/")} class="text-sm text-cyan-300 hover:text-cyan-200">View all</a>
+      <a href={withBase("/ctf/")} class="text-sm text-cyan-300 hover:text-cyan-200">View all →</a>
     </div>
     <ul class="space-y-4">
       {
         latestCtf.map((entry) => (
-          <li class="group rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 transition hover:border-l-cyan-500">
+          <li class="group card-lift rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 hover:border-l-cyan-500">
             <a href={withBase(`/ctf/${entry.id}/`)} class="text-lg font-medium text-neutral-100 group-hover:text-cyan-300">
               {entry.data.title}
             </a>
@@ -84,15 +109,16 @@ const searchable = [
     </ul>
   </section>
 
-  <section>
+  <!-- Latest Blog -->
+  <section class="reveal">
     <div class="mb-4 flex items-center justify-between">
       <h2 class="text-2xl font-semibold text-neutral-100">Latest Blog Posts</h2>
-      <a href={withBase("/blog/")} class="text-sm text-cyan-300 hover:text-cyan-200">View all</a>
+      <a href={withBase("/blog/")} class="text-sm text-cyan-300 hover:text-cyan-200">View all →</a>
     </div>
     <ul class="space-y-4">
       {
         latestBlogs.map((entry) => (
-          <li class="group rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 transition hover:border-l-cyan-500">
+          <li class="group card-lift rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 hover:border-l-cyan-500">
             <a href={withBase(`/blog/${entry.id}/`)} class="text-lg font-medium text-neutral-100 group-hover:text-cyan-300">
               {entry.data.title}
             </a>

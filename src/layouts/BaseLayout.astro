@@ -9,6 +9,8 @@ import ThemeToggle from "../components/ThemeToggle.astro";
 import Terminal from "../components/Terminal.astro";
 import CopyButton from "../components/CopyButton.astro";
 import ImageLightbox from "../components/ImageLightbox.astro";
+import CommandPalette from "../components/CommandPalette.astro";
+import BackToTop from "../components/BackToTop.astro";
 
 interface Props {
   title: string;
@@ -122,8 +124,10 @@ const terminalItems = {
                       target={link.external ? "_blank" : undefined}
                       rel={link.external ? "noreferrer" : undefined}
                       class:list={[
-                        "rounded-md px-2 py-1 text-neutral-400 hover:text-cyan-300",
-                        !link.external && currentPath === new URL(link.href, Astro.url).pathname ? "text-cyan-300" : ""
+                        "relative rounded-md px-2 py-1 text-neutral-400 hover:text-cyan-300 transition-colors",
+                        !link.external && currentPath === new URL(link.href, Astro.url).pathname
+                          ? "text-cyan-300 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-1/2 after:rounded-full after:bg-cyan-400"
+                          : ""
                       ]}
                     >
                       {link.label}
@@ -155,6 +159,14 @@ const terminalItems = {
     <CopyButton />
     <ImageLightbox />
     <Terminal />
+    <CommandPalette />
+    <BackToTop />
+
+    <!-- Cmd+K hint (shows on hover/press) -->
+    <div id="cmdk-hint" class="fixed bottom-6 left-6 z-40 hidden items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900/95 px-3 py-2 text-xs text-neutral-500 backdrop-blur-sm lg:flex" style="font-family: var(--font-mono);">
+      <kbd class="rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-neutral-300">Cmd+K</kbd>
+      <span>Search</span>
+    </div>
 
     <!-- Terminal data payload (read by Terminal island) -->
     <script is:inline id="terminal-data" type="application/json" set:html={JSON.stringify(terminalItems)}></script>
@@ -171,6 +183,28 @@ const terminalItems = {
       };
       window.addEventListener("scroll", updateProgress, { passive: true });
       updateProgress();
+    </script>
+
+    <!-- Scroll-reveal observer -->
+    <script is:inline>
+      (function () {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("reveal-active");
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.1, rootMargin: "0px 0px -30px 0px" }
+        );
+        document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+        // Observe dynamically added .reveal elements
+        new MutationObserver(() => {
+          document.querySelectorAll(".reveal:not(.reveal-active)").forEach((el) => observer.observe(el));
+        }).observe(document.body, { childList: true, subtree: true });
+      })();
     </script>
   </body>
 </html>

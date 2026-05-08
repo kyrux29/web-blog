@@ -29,3 +29,14 @@ export function truncate(str: string, maxLen: number): string {
 export function formatDateCA(d: Date): string {
   return d.toLocaleDateString("en-CA");
 }
+
+/**
+ * Estimate reading time from word count.
+ * @param text  The plain text content to measure.
+ * @param wpm   Words per minute (default 200, technical content).
+ * @returns      Approximate reading time in minutes, minimum 1.
+ */
+export function estimateReadingTime(text: string, wpm = 200): number {
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / wpm));
+}

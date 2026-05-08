@@ -1,0 +1,43 @@
+<!--
+  404 – terminal-style "command not found" page.
+-->
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBase } from "../utils";
+---
+
+<BaseLayout title="404 | Kyrux">
+  <div class="flex flex-col items-center justify-center py-20 text-center">
+    <pre class="mb-6 select-none text-7xl leading-none tracking-wider text-neutral-700" aria-hidden="true" style="font-family: var(--font-mono);">
+ _  _    ___    _  _
+| || |  / _ \  | || |
+| || |_| | | | | || |_
+|__   _| |_| | |__   _|
+   |_|  \___/    |_|
+    </pre>
+
+    <p class="mb-2 text-xl font-semibold text-neutral-100" style="font-family: var(--font-mono);">
+      <span class="text-cyan-300">$</span> open /page-not-found
+    </p>
+    <p class="mb-8 text-sm text-neutral-500" style="font-family: var(--font-mono);">
+      bash: open: command not found &mdash; the page you're looking for doesn't exist.
+    </p>
+
+    <a
+      href={withBase("/")}
+      class="inline-flex items-center gap-2 rounded-xl border border-neutral-700 bg-neutral-900 px-5 py-2.5 text-sm text-neutral-200 hover:border-cyan-500 hover:text-cyan-300 transition-colors"
+    >
+      <span class="text-cyan-400">$</span> cd ~/
+    </a>
+
+    <div class="mt-12 max-w-md text-left">
+      <p class="mb-3 text-xs tracking-wider text-neutral-500" style="font-family: var(--font-mono);">You might be looking for:</p>
+      <ul class="space-y-2 text-sm text-neutral-400">
+        <li><a href={withBase("/ctf/")} class="hover:text-cyan-300">/ctf/</a> &mdash; CTF write-ups</li>
+        <li><a href={withBase("/blog/")} class="hover:text-cyan-300">/blog/</a> &mdash; Research notes</li>
+        <li><a href={withBase("/tags/")} class="hover:text-cyan-300">/tags/</a> &mdash; Browse by tag</li>
+        <li><a href={withBase("/search/")} class="hover:text-cyan-300">/search/</a> &mdash; Full-text search</li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>
