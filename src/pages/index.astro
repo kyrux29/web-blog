@@ -10,27 +10,16 @@ const allCtf = await getPublishedCtfPosts();
 const allBlog = await getPublishedBlogPosts();
 const tagCounts = await getTagCounts();
 
-const stats = [
-  { cmd: "ls ctf/ | wc -l", value: allCtf.length, label: "CTF write-ups" },
-  { cmd: "ls blog/ | wc -l", value: allBlog.length, label: "Research posts" },
-  { cmd: "ls tags/ | wc -l", value: tagCounts.length, label: "Topics covered" },
-];
-
-// Pick a random cybersecurity quote
-const quotes = [
-  { text: "The quieter you become, the more you are able to hear.", author: "— Kali Linux motd", glitch: false },
-  { text: "There is no patch for human stupidity.", author: "— Kevin Mitnick", glitch: true },
-  { text: "Trust, but verify. Then verify again.", author: "— Offensive Security mantra", glitch: false },
-  { text: "Shells don't ask for permission.", author: "— Unknown", glitch: true },
-  { text: "If you know the enemy and know yourself, you need not fear the result of a hundred battles.", author: "— Sun Tzu", glitch: false },
-  { text: "Every defensive measure is just an offensive measure waiting to be reversed.", author: "— Kyrux", glitch: true },
-];
-const quote = quotes[Math.floor(Math.random() * quotes.length)];
+const terminalStats = {
+  ctf: allCtf.length,
+  blog: allBlog.length,
+  tags: tagCounts.length,
+};
 ---
 
 <BaseLayout title="Kyrux | Cyber Security Research Blog">
   <!-- Hero -->
-  <section class="mb-10">
+  <section class="mb-8">
     <div class="mb-3 font-mono text-[11px] tracking-[0.25em] text-neutral-600">
       [kyrux@labs ~]$ whoami
     </div>
@@ -50,31 +39,26 @@ const quote = quotes[Math.floor(Math.random() * quotes.length)];
     </p>
   </section>
 
-  <!-- Stats bar — terminal-style -->
-  <div class="mb-10 grid gap-2 sm:grid-cols-3">
-    {stats.map((stat) => (
-      <div class="group/card rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-3">
-        <p class="font-mono text-[10px] tracking-wide text-neutral-600">
-          <span class="text-cyan-500/70">$</span> {stat.cmd}
-        </p>
-        <p class="mt-1.5 font-mono text-2xl font-bold text-neutral-100 group-hover/card:text-cyan-300 transition-colors">
-          {stat.value}
-        </p>
-        <p class="mt-0.5 text-[10px] tracking-wide text-neutral-600">{stat.label}</p>
-      </div>
-    ))}
-  </div>
-
-  <!-- Random quote -->
+  <!-- Terminal prompt widget — click to reveal stats -->
   <div class="reveal mb-10">
-    <div class="border-l-2 border-cyan-500/30 bg-neutral-900/50 px-4 py-3">
-      <p class="font-mono text-sm leading-relaxed text-neutral-400">
-        "{quote.text}"
-      </p>
-      <p class="mt-1.5 font-mono text-[10px] tracking-wide text-neutral-600">
-        {quote.author}
-      </p>
-    </div>
+    <button id="hero-terminal-trigger" type="button" class="group w-full rounded-lg border border-neutral-800 bg-neutral-950/80 px-4 py-4 text-left transition-colors hover:border-cyan-500/60 hover:bg-neutral-900/80">
+      <div class="flex items-center gap-3">
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-neutral-700 bg-neutral-900 font-mono text-xs text-cyan-400 group-hover:border-cyan-500/50 group-hover:text-cyan-300">
+          >_
+        </span>
+        <div class="min-w-0">
+          <p class="font-mono text-sm text-neutral-300 group-hover:text-neutral-100">
+            <span class="text-cyan-400">$</span> stats
+          </p>
+          <p class="mt-0.5 font-mono text-[11px] text-neutral-600 group-hover:text-neutral-500">
+            View repository statistics — CTF write-ups, research posts, topics
+          </p>
+        </div>
+        <span class="ml-auto shrink-0 font-mono text-[10px] text-neutral-700 group-hover:text-cyan-500">
+          ENTER ↵
+        </span>
+      </div>
+    </button>
   </div>
 
   <!-- Latest CTF -->
@@ -140,4 +124,21 @@ const quote = quotes[Math.floor(Math.random() * quotes.length)];
       }
     </ul>
   </section>
+
+  <!-- Terminal stats payload for auto-run -->
+  <script is:inline id="terminal-stats" type="application/json" set:html={JSON.stringify(terminalStats)}></script>
+
+  <!-- Hero terminal trigger: opens terminal + auto-runs "stats" -->
+  <script is:inline>
+    (function() {
+      var trigger = document.getElementById("hero-terminal-trigger");
+      var toggle = document.getElementById("terminal-toggle");
+      if (trigger && toggle) {
+        trigger.addEventListener("click", function() {
+          window.__terminalAutoCmd = "stats";
+          toggle.click();
+        });
+      }
+    })();
+  </script>
 </BaseLayout>
