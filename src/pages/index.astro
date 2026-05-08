@@ -1,144 +1,80 @@
 ---
-import { getPublishedBlogPosts, getPublishedCtfPosts, getTagCounts } from "../lib/content";
+import { getPublishedBlogPosts, getPublishedCtfPosts } from "../lib/content";
 import { estimateReadingTime, withBase } from "../utils";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const latestCtf = (await getPublishedCtfPosts()).slice(0, 3);
 const latestBlogs = (await getPublishedBlogPosts()).slice(0, 3);
-
-const allCtf = await getPublishedCtfPosts();
-const allBlog = await getPublishedBlogPosts();
-const tagCounts = await getTagCounts();
-
-const terminalStats = {
-  ctf: allCtf.length,
-  blog: allBlog.length,
-  tags: tagCounts.length,
-};
 ---
 
 <BaseLayout title="Kyrux | Cyber Security Research Blog">
-  <!-- Hero -->
-  <section class="mb-8">
-    <div class="mb-3 font-mono text-[11px] tracking-[0.25em] text-neutral-600">
+  <section class="mb-10">
+    <p class="mb-2 font-mono text-[11px] tracking-[0.25em] text-neutral-600">
       [kyrux@labs ~]$ whoami
-    </div>
-    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-      <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 bg-clip-text text-transparent">
-        Kyrux
-      </span>
+    </p>
+    <h1 class="text-4xl font-bold tracking-tight text-neutral-100 sm:text-5xl md:text-6xl">
+      Kyrux
     </h1>
-    <p class="mt-4 max-w-2xl font-mono text-sm leading-6 text-neutral-400">
-      <span class="text-cyan-400">></span> Web exploitation specialist & CTF player.
-    </p>
-    <p class="mt-1 max-w-2xl font-mono text-sm leading-6 text-neutral-500">
-      <span class="text-neutral-700">></span> Turning attack chains into reproducible write-ups.
-    </p>
-    <p class="mt-1 max-w-2xl font-mono text-sm leading-6 text-neutral-600">
-      <span class="text-neutral-800">></span> Home lab: ParrotOS · Neovim · Obsidian · Python/C/Golang.
+    <p class="mt-4 max-w-xl font-mono text-sm leading-6 text-neutral-400">
+      Web exploitation & CTF write-ups.
     </p>
   </section>
 
-  <!-- Terminal prompt widget — click to reveal stats -->
-  <div class="reveal mb-10">
-    <button id="hero-terminal-trigger" type="button" class="group w-full rounded-lg border border-neutral-800 bg-neutral-950/80 px-4 py-4 text-left transition-colors hover:border-cyan-500/60 hover:bg-neutral-900/80">
-      <div class="flex items-center gap-3">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-neutral-700 bg-neutral-900 font-mono text-xs text-cyan-400 group-hover:border-cyan-500/50 group-hover:text-cyan-300">
-          >_
-        </span>
-        <div class="min-w-0">
-          <p class="font-mono text-sm text-neutral-300 group-hover:text-neutral-100">
-            <span class="text-cyan-400">$</span> stats
-          </p>
-          <p class="mt-0.5 font-mono text-[11px] text-neutral-600 group-hover:text-neutral-500">
-            View repository statistics — CTF write-ups, research posts, topics
-          </p>
-        </div>
-        <span class="ml-auto shrink-0 font-mono text-[10px] text-neutral-700 group-hover:text-cyan-500">
-          ENTER ↵
-        </span>
-      </div>
-    </button>
-  </div>
-
-  <!-- Latest CTF -->
   <section class="reveal mb-10">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="font-mono text-lg text-neutral-300">
-        <span class="text-cyan-400">~/ctf</span><span class="text-neutral-500">/</span>
+      <h2 class="font-mono text-sm text-neutral-400">
+        <span class="text-cyan-400">~/ctf</span>
       </h2>
-      <a href={withBase("/ctf/")} class="font-mono text-xs text-cyan-400 hover:text-cyan-300">ls -la →</a>
+      <a href={withBase("/ctf/")} class="font-mono text-xs text-neutral-600 hover:text-cyan-400">all →</a>
     </div>
-    <ul class="space-y-3">
-      {
-        latestCtf.map((entry) => (
-          <li class="group card-lift rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 hover:border-l-cyan-500">
-            <a href={withBase(`/ctf/${entry.id}/`)} class="text-base font-medium text-neutral-100 group-hover:text-cyan-300">
-              {entry.data.title}
-            </a>
-            <div class="mt-1.5 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide">
-              <span class="text-neutral-600">{entry.data.platform}</span>
-              <span class="text-neutral-800">·</span>
-              <span class="text-neutral-600">{entry.data.vulnerability_type || entry.data.category}</span>
-              {entry.data.difficulty && (
-                <>
-                  <span class="text-neutral-800">·</span>
-                  <span class={`chip chip--${entry.data.difficulty.toLowerCase()}`}>{entry.data.difficulty}</span>
-                </>
-              )}
-            </div>
-          </li>
-        ))
-      }
+    <ul class="space-y-2">
+      {latestCtf.map((entry) => (
+        <li class="group rounded-lg border border-neutral-900 bg-neutral-950 px-4 py-3 hover:border-neutral-800">
+          <a href={withBase(`/ctf/${entry.id}/`)} class="text-sm font-medium text-neutral-300 group-hover:text-cyan-300">
+            {entry.data.title}
+          </a>
+          <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-neutral-600">
+            <span>{entry.data.platform}</span>
+            <span class="text-neutral-800">·</span>
+            <span>{entry.data.vulnerability_type || entry.data.category}</span>
+            {entry.data.difficulty && (
+              <>
+                <span class="text-neutral-800">·</span>
+                <span class={`chip chip--${entry.data.difficulty.toLowerCase()}`}>{entry.data.difficulty}</span>
+              </>
+            )}
+          </div>
+        </li>
+      ))}
     </ul>
   </section>
 
-  <!-- Latest Blog -->
   <section class="reveal">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="font-mono text-lg text-neutral-300">
-        <span class="text-cyan-400">~/blog</span><span class="text-neutral-500">/</span>
+      <h2 class="font-mono text-sm text-neutral-400">
+        <span class="text-cyan-400">~/blog</span>
       </h2>
-      <a href={withBase("/blog/")} class="font-mono text-xs text-cyan-400 hover:text-cyan-300">ls -la →</a>
+      <a href={withBase("/blog/")} class="font-mono text-xs text-neutral-600 hover:text-cyan-400">all →</a>
     </div>
-    <ul class="space-y-3">
-      {
-        latestBlogs.map((entry) => (
-          <li class="group card-lift rounded-lg border-l-2 border-l-transparent bg-neutral-900 p-4 hover:border-l-cyan-500">
-            <a href={withBase(`/blog/${entry.id}/`)} class="text-base font-medium text-neutral-100 group-hover:text-cyan-300">
-              {entry.data.title}
-            </a>
-            <div class="mt-1.5 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide">
-              <span class="text-neutral-600">{entry.data.date.toLocaleDateString("en-CA")}</span>
-              <span class="text-neutral-800">·</span>
-              <span class="text-neutral-600">{estimateReadingTime(entry.body || entry.data.description || "")} min read</span>
-              {entry.data.tags.slice(0, 2).map((tag) => (
-                <>
-                  <span class="text-neutral-800">·</span>
-                  <span class="text-neutral-500">{tag}</span>
-                </>
-              ))}
-            </div>
-          </li>
-        ))
-      }
+    <ul class="space-y-2">
+      {latestBlogs.map((entry) => (
+        <li class="group rounded-lg border border-neutral-900 bg-neutral-950 px-4 py-3 hover:border-neutral-800">
+          <a href={withBase(`/blog/${entry.id}/`)} class="text-sm font-medium text-neutral-300 group-hover:text-cyan-300">
+            {entry.data.title}
+          </a>
+          <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-neutral-600">
+            <span>{entry.data.date.toLocaleDateString("en-CA")}</span>
+            <span class="text-neutral-800">·</span>
+            <span>{estimateReadingTime(entry.body || entry.data.description || "")} min read</span>
+            {entry.data.tags.slice(0, 2).map((tag) => (
+              <>
+                <span class="text-neutral-800">·</span>
+                <span>{tag}</span>
+              </>
+            ))}
+          </div>
+        </li>
+      ))}
     </ul>
   </section>
-
-  <!-- Terminal stats payload for auto-run -->
-  <script is:inline id="terminal-stats" type="application/json" set:html={JSON.stringify(terminalStats)}></script>
-
-  <!-- Hero terminal trigger: opens terminal + auto-runs "stats" -->
-  <script is:inline>
-    (function() {
-      var trigger = document.getElementById("hero-terminal-trigger");
-      var toggle = document.getElementById("terminal-toggle");
-      if (trigger && toggle) {
-        trigger.addEventListener("click", function() {
-          window.__terminalAutoCmd = "stats";
-          toggle.click();
-        });
-      }
-    })();
-  </script>
 </BaseLayout>

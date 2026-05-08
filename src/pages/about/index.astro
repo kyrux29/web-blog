@@ -1,19 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
-const skills = [
-  { name: "Web Exploitation", level: 5 },
-  { name: "Python", level: 5 },
-  { name: "Golang", level: 3 },
-  { name: "C/C++", level: 3 },
-  { name: "Java", level: 3 },
-  { name: "CTF (Jeopardy)", level: 4 },
-  { name: "Pentesting", level: 3 },
-  { name: "Reverse Engineering", level: 2 },
-  { name: "Cryptography", level: 2 },
-  { name: "Forensics", level: 2 },
-];
-
 const tools = [
   { name: "ParrotOS", desc: "Daily driver OS" },
   { name: "Neovim", desc: "Code editor" },
@@ -29,7 +16,6 @@ const links = [
   { label: "CTFtime", href: "https://ctftime.org/user/kyrux29", icon: "▸" },
 ];
 
-const maxLevel = 5;
 ---
 
 <BaseLayout title="About | Kyrux">
@@ -65,31 +51,6 @@ const maxLevel = 5;
           When I'm not hunting flags, I'm building offensive tooling, studying compiler internals,
           or diving deep into web protocol internals (HTTP/2, gRPC, WebSockets).
         </p>
-      </div>
-    </section>
-
-    <!-- Skills bar -->
-    <section class="reveal">
-      <h2 class="mb-4 font-mono text-sm text-neutral-400">
-        <span class="text-cyan-400">$</span> cat /etc/skills.conf
-      </h2>
-      <div class="space-y-3">
-        {skills.map((skill) => (
-          <div class="flex items-center gap-3">
-            <span class="w-28 flex-none font-mono text-[11px] text-neutral-500 sm:w-36">{skill.name}</span>
-            <div class="flex gap-1">
-              {Array.from({ length: maxLevel }).map((_, i) => (
-                <span
-                  class={`h-1.5 w-6 rounded-full ${
-                    i < skill.level
-                      ? "bg-gradient-to-r from-cyan-500 to-cyan-400"
-                      : "bg-neutral-800"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
       </div>
     </section>
 

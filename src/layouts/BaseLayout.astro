@@ -3,7 +3,7 @@
 // Composes: ViewTransitions, CSP, font preloads, nav, footer, and
 // interactive islands (ThemeToggle, Terminal, CopyButton, ImageLightbox).
 import "../styles/global.css";
-import { getPublishedBlogPosts, getPublishedCtfPosts } from "../lib/content";
+import { getPublishedBlogPosts, getPublishedCtfPosts, getTagCounts } from "../lib/content";
 import { withBase } from "../utils";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import Terminal from "../components/Terminal.astro";
@@ -54,6 +54,9 @@ const terminalItems = {
     url: withBase(`/ctf/${entry.id}/`),
   })),
 };
+
+const tagCounts = await getTagCounts();
+const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: tagCounts.length };
 ---
 
 <!doctype html>
@@ -174,6 +177,8 @@ const terminalItems = {
 
     <!-- Terminal data payload (read by Terminal island) -->
     <script is:inline id="terminal-data" type="application/json" set:html={JSON.stringify(terminalItems)}></script>
+
+    <script is:inline id="terminal-stats" type="application/json" set:html={JSON.stringify(terminalStats)}></script>
 
     <!-- Reading progress bar script (tiny, kept inline for zero-overhead) -->
     <script is:inline>
