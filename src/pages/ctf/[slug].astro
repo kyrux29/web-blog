@@ -34,7 +34,7 @@ const related = await getRelatedPosts(entry, 4);
   bodyText={entry.body}
   relatedPosts={related}
 >
-  <div class="panel mb-6 flex flex-wrap items-center gap-2 px-4 py-3 text-xs">
+  <div class="glass-panel mb-6 flex flex-wrap items-center gap-2 px-4 py-3 font-mono text-xs">
     <span class="chip">{entry.data.platform}</span>
     {entry.data.vulnerability_type && <span class="chip">{entry.data.vulnerability_type}</span>}
     {entry.data.difficulty && <span class={`chip ${difficultyChipClass(entry.data.difficulty)}`}>{entry.data.difficulty}</span>}

@@ -303,6 +303,32 @@ summary:focus-visible {
   @apply rounded border border-neutral-700 bg-neutral-900 px-1.5 py-0.5 font-mono text-xs text-neutral-200;
 }
 
+/* ---------- glass panel (backdrop-blur card) ---------- */
+.glass-panel {
+  @apply rounded-xl border border-neutral-800/60 bg-neutral-900/70 backdrop-blur-md;
+}
+
+.glass-panel:hover {
+  border-color: rgb(64 64 64 / 0.6); /* neutral-700 tint on hover */
+}
+
+/* ---------- prose mono (JetBrains Mono for all content text) ---------- */
+.prose-mono,
+.prose-mono h1,
+.prose-mono h2,
+.prose-mono h3,
+.prose-mono h4,
+.prose-mono h5,
+.prose-mono h6,
+.prose-mono p,
+.prose-mono li,
+.prose-mono blockquote,
+.prose-mono th,
+.prose-mono td,
+.prose-mono figcaption {
+  font-family: var(--font-mono) !important;
+}
+
 /* ---------- lightbox ---------- */
 .lightbox {
   @apply fixed inset-0 z-[60] hidden items-center justify-center bg-neutral-950/80 p-3 sm:p-6;

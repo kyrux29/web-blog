@@ -86,29 +86,6 @@ const links = [
       </div>
     </section>
 
-    <!-- ====== Attack Surface ====== -->
-    <section class="reveal">
-      <h2 class="mb-4 font-mono text-[10px] tracking-[0.25em] text-neutral-500 uppercase">
-        <span class="text-cyan-400"># </span>Attack Surface <span class="text-neutral-700">($ cat /etc/vulns)</span>
-      </h2>
-      <div class="grid gap-2 sm:grid-cols-2">
-        {vulnClasses.map((v) => (
-          <div class="panel group flex items-start gap-4 px-4 py-3.5 hover:border-cyan-500/30 transition-colors">
-            <div class="mt-0.5 flex-shrink-0">
-              <span class={`inline-block h-2.5 w-2.5 rounded-sm ${v.color}`}></span>
-            </div>
-            <div class="min-w-0">
-              <div class="flex items-baseline gap-2 mb-0.5">
-                <p class="font-mono text-xs text-neutral-200 group-hover:text-cyan-300 transition-colors">{v.name}</p>
-                <span class="font-mono text-[9px] text-neutral-600">{v.level}%</span>
-              </div>
-              <p class="font-mono text-[10px] leading-relaxed text-neutral-500">{v.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
     <!-- ====== Toolbox ====== -->
     <section class="reveal">
       <h2 class="mb-4 font-mono text-[10px] tracking-[0.25em] text-neutral-500 uppercase">
@@ -162,38 +139,6 @@ const links = [
             <p class="font-mono text-[10px] text-emerald-600">Active: running · Accepting security collaborations & CTF team-ups</p>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- ====== PGP Key ====== -->
-    <section class="reveal">
-      <h2 class="mb-4 font-mono text-[10px] tracking-[0.25em] text-neutral-500 uppercase">
-        <span class="text-cyan-400"># </span>PGP Key <span class="text-neutral-700">($ gpg --export kyrux)</span>
-      </h2>
-      <div class="panel p-4" id="pgp-key-block">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="font-mono text-[9px] text-cyan-400 tracking-wider flex-shrink-0">FINGERPRINT</span>
-            <code class="font-mono text-[10px] text-neutral-300 truncate">ABCD EFGH IJKL MNOP QRST UVWX YZ12 3456 7890 ABC</code>
-          </div>
-          <a href="/pgp-key.asc" download class="flex-shrink-0 font-mono text-[10px] text-neutral-400 hover:text-cyan-300 transition-colors underline underline-offset-2">
-            ⬇ key.asc
-          </a>
-        </div>
-        <pre class="font-mono text-[10px] leading-relaxed text-neutral-500 overflow-x-auto max-h-44 bg-neutral-950 rounded-lg p-3 border border-neutral-800"><code>-----BEGIN PGP PUBLIC KEY BLOCK-----
-
-mQINBGabcdefBEACw1234ABCDEFGHIJKLMNOPQRSTUVWXYZ
-abcdefghijkl0123456789+/ABCDEFGHIJKLMNOPQRSTUVWXYZ
-abcdefghijklmnopqrstuvwxyz0123456789+/ABCDEFGHIJKLM
-NOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
-ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxy
-z0123456789+/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl
-mnopqrstuvwxyz0123456789+/ABCDEFGHIJK==
-=ABCD
------END PGP PUBLIC KEY BLOCK-----</code></pre>
-        <p class="mt-2 font-mono text-[9px] text-neutral-600">
-          Key ID: <code class="font-mono text-neutral-500">0xDEADBEEF</code> · Encrypt sensitive communications
-        </p>
       </div>
     </section>
 
