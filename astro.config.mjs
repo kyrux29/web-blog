@@ -20,8 +20,13 @@ export default defineConfig({
   markdown: {
     syntaxHighlight: 'shiki',
     shikiConfig: {
-      theme: 'github-dark',
-      wrap: true
+      // Sync with blog dark/dim theme (proposal 14)
+      theme: 'material-theme-darker',
+      wrap: true,
+      themes: {
+        light: 'github-light',
+        dark: 'material-theme-darker',
+      }
     }
   }
 });

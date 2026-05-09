@@ -1,0 +1,120 @@
+<script>
+  (function () {
+    // Only run on non-touch devices
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.id = "cursor-trail";
+    canvas.style.cssText =
+      "position:fixed;inset:0;z-index:9999;pointer-events:none;display:none;";
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+
+    const particles: {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      maxLife: number;
+      char: string;
+    }[] = [];
+
+    const chars = "0123456789abcdef";
+    const maxParticles = 50;
+    let mouseX = -100;
+    let mouseY = -100;
+    let animId = 0;
+    let active = false;
+
+    const defaultCursor = document.body.style.cursor;
+
+    function randomChar() {
+      return chars[Math.floor(Math.random() * chars.length)];
+    }
+
+    function spawnParticle(x: number, y: number) {
+      if (particles.length >= maxParticles) return;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.5 + Math.random() * 2;
+      particles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed + 1,
+        life: 1,
+        maxLife: 20 + Math.random() * 30,
+        char: randomChar(),
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life++;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const alpha = 1 - p.life / p.maxLife;
+        ctx.font = "13px monospace";
+        ctx.fillStyle = `rgba(34, 211, 238, ${(alpha * 0.8).toFixed(2)})`; /* cyan-400 */
+        ctx.fillText(p.char, p.x, p.y);
+
+        if (p.life >= p.maxLife || p.y > h + 20 || p.x < -20 || p.x > w + 20) {
+          particles.splice(i, 1);
+        }
+      }
+    }
+
+    function loop() {
+      if (!active) return;
+      if (mouseX > 0 && mouseY > 0) {
+        spawnParticle(mouseX, mouseY);
+        spawnParticle(mouseX, mouseY);
+      }
+      draw();
+      animId = requestAnimationFrame(loop);
+    }
+
+    function start() {
+      if (active) return;
+      active = true;
+      canvas.style.display = "block";
+      document.body.style.cursor = "none";
+      loop();
+    }
+
+    function stop() {
+      active = false;
+      cancelAnimationFrame(animId);
+      canvas.style.display = "none";
+      document.body.style.cursor = defaultCursor;
+      ctx.clearRect(0, 0, w, h);
+      particles.length = 0;
+    }
+
+    window.addEventListener("mousemove", (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    window.addEventListener("resize", () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    });
+
+    // Expose global API
+    (window as any).cursorTrailAPI = { start, stop };
+
+    // Listen for terminal commands
+    window.addEventListener("cursor-trail-start", start);
+    window.addEventListener("cursor-trail-stop", stop);
+  })();
+</script>

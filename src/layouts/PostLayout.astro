@@ -4,6 +4,8 @@
 // reading-time TOC scroll-spy.
 import BaseLayout from "./BaseLayout.astro";
 import { estimateReadingTime, withBase } from "../utils";
+import CommandCard from "../components/CommandCard.astro";
+import KillChain from "../components/KillChain.astro";
 
 interface Props {
   title: string;
@@ -20,6 +22,8 @@ interface Props {
   bodyText?: string;
   /** Last modified date (defaults to date) */
   lastModified?: Date;
+  /** Related posts calculated by tag overlap */
+  relatedPosts?: any[];
 }
 
 const {
@@ -33,6 +37,7 @@ const {
   collectionType = "blog",
   bodyText,
   lastModified,
+  relatedPosts = [],
 } = Astro.props;
 
 const chipLabel = collectionType === "ctf" ? "CTF Write-up" : "Research";
@@ -120,7 +125,7 @@ const jsonLd = {
         </details>
       )}
 
-      <div class="mx-auto max-w-3xl">
+      <div class="mx-auto max-w-3xl" data-pagefind-body>
         <div
           class="prose prose-invert max-w-none prose-headings:mt-10 prose-headings:tracking-tight prose-h2:text-2xl sm:prose-h2:text-3xl prose-p:leading-7 sm:prose-p:leading-8 prose-pre:rounded-2xl prose-pre:border prose-pre:border-neutral-800 prose-pre:bg-neutral-900 prose-pre:p-4 sm:prose-pre:p-5 prose-pre:text-neutral-100 prose-code:before:content-none prose-code:after:content-none prose-blockquote:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-cyan-500/80 prose-blockquote:bg-neutral-900 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:text-neutral-300"
         >
@@ -181,4 +186,45 @@ const jsonLd = {
       }
     })();
   </script>
+
+  <!-- Related Posts (proposal 13) -->
+  {relatedPosts.length > 0 && (
+    <section class="mt-16 border-t border-neutral-800 pt-8">
+      <h2 class="mb-6 flex items-center gap-2 font-mono text-sm uppercase tracking-widest text-neutral-400">
+        <span class="text-cyan-400">→</span> RELATED RESEARCH
+      </h2>
+      <div class="grid gap-6 md:grid-cols-2">
+        {relatedPosts.slice(0, 4).map((post: any) => (
+          <CommandCard
+            title={post.data.title}
+            command={collectionType === "ctf" ? "cat " + post.id : "open " + post.id}
+            items={[
+              post.data.platform || post.data.date.toLocaleDateString("en-CA"),
+              ...(post.data.tags || []).slice(0, 2)
+            ]}
+            variant="info"
+          >
+            <a href={withBase(`/${collectionType}/${post.id}/`)} class="block text-xs text-cyan-400 hover:underline">
+              Read full write-up →
+            </a>
+          </CommandCard>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- KillChain integration for CTF (proposal 17) -->
+  {collectionType === "ctf" && (
+    <div class="mt-12">
+      <KillChain 
+        title="Attack Chain"
+        steps={[
+          { title: "Recon", detail: "Enumerate endpoints and technologies", status: "owned" },
+          { title: "Initial Access", detail: "Find injection or auth bypass", status: "owned" },
+          { title: "Privilege Escalation", detail: "Escalate to admin/system", status: "bypass" },
+          { title: "Persistence & Exfil", detail: "Maintain access and extract flag", status: "owned" }
+        ]}
+      />
+    </div>
+  )}
 </BaseLayout>

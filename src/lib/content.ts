@@ -8,17 +8,17 @@ import { getCollection, type CollectionEntry } from "astro:content";
 type BlogEntry = CollectionEntry<"blog">;
 type CtfEntry = CollectionEntry<"ctf">;
 
-/** Return non-draft blog posts, sorted newest first. */
-export async function getPublishedBlogPosts(): Promise<BlogEntry[]> {
+/** Return non-draft blog posts, sorted newest first. Supports draft preview in dev. */
+export async function getPublishedBlogPosts(includeDrafts = import.meta.env.DEV): Promise<BlogEntry[]> {
   return (
-    await getCollection("blog", ({ data }) => !data.draft)
+    await getCollection("blog", ({ data }) => includeDrafts || !data.draft)
   ).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 }
 
-/** Return non-draft CTF write-ups, sorted newest first. */
-export async function getPublishedCtfPosts(): Promise<CtfEntry[]> {
+/** Return non-draft CTF write-ups, sorted newest first. Supports draft preview in dev. */
+export async function getPublishedCtfPosts(includeDrafts = import.meta.env.DEV): Promise<CtfEntry[]> {
   return (
-    await getCollection("ctf", ({ data }) => !data.draft)
+    await getCollection("ctf", ({ data }) => includeDrafts || !data.draft)
   ).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 }
 
@@ -64,4 +64,26 @@ export async function getPostsByTag(tag: string): Promise<{
     (e.data.tags ?? []).includes(tag)
   );
   return { blog: blogs, ctf: ctfs };
+}
+
+/** Get related posts based on tag overlap score (for proposal 13). */
+export async function getRelatedPosts(
+  currentEntry: BlogEntry | CtfEntry,
+  limit = 3
+): Promise<(BlogEntry | CtfEntry)[]> {
+  const allPosts = await getAllPublishedPosts();
+  const currentTags = new Set(currentEntry.data.tags ?? []);
+
+  const scored = allPosts
+    .filter((post) => post.id !== currentEntry.id)
+    .map((post) => {
+      const postTags = new Set(post.data.tags ?? []);
+      const overlap = [...currentTags].filter((tag) => postTags.has(tag)).length;
+      const score = overlap * 10 + (post.data.date > currentEntry.data.date ? 2 : 0);
+      return { post, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
+
+  return scored.map((item) => item.post);
 }

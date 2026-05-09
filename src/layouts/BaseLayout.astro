@@ -7,6 +7,7 @@ import { getPublishedBlogPosts, getPublishedCtfPosts, getTagCounts } from "../li
 import { withBase } from "../utils";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import Terminal from "../components/Terminal.astro";
+import CursorTrail from "../components/CursorTrail.astro";
 import CopyButton from "../components/CopyButton.astro";
 import ImageLightbox from "../components/ImageLightbox.astro";
 import CommandPalette from "../components/CommandPalette.astro";
@@ -114,7 +115,8 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
       <div class="relative mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <a
           href={withBase("/")}
-          class="shrink-0 text-lg font-semibold tracking-tight text-neutral-100 hover:text-cyan-300 transition-colors"
+          class="shrink-0 text-lg font-semibold tracking-tight text-neutral-100 hover:text-cyan-300 transition-colors glitch logo-glitch"
+          data-text="kyrux"
         >
           kyrux
         </a>
@@ -165,6 +167,7 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
     <!-- Interactive islands (bare Astro components – scripts auto-bundled by Astro) -->
     <CopyButton />
     <ImageLightbox />
+    <CursorTrail />
     <Terminal />
     <CommandPalette />
     <BackToTop />
@@ -194,7 +197,7 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
       updateProgress();
     </script>
 
-    <!-- Easter eggs: konami code, glitch -->
+    <!-- Easter eggs: konami code, glitch + terminal toggle (Ctrl+`) -->
     <script is:inline>
       (function() {
         // Konami code: ↑↑↓↓←→←→BA
@@ -220,6 +223,35 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
             }
           } else {
             pos = 0;
+          }
+
+          // Ctrl + ` (grave accent) to toggle terminal - uses exposed terminalAPI
+          if (e.ctrlKey && e.key === "`") {
+            e.preventDefault();
+            const api = window.terminalAPI;
+            if (api && typeof api.open === "function") {
+              const modal = document.getElementById("terminal-modal");
+              if (modal && modal.classList.contains("flex")) {
+                api.close();
+              } else if (api.open) {
+                api.open();
+              }
+            } else {
+              // Fallback if API not ready
+              console.warn("[Terminal] API not initialized yet");
+              const modal = document.getElementById("terminal-modal");
+              if (modal) {
+                if (modal.classList.contains("flex")) {
+                  modal.classList.add("hidden");
+                  modal.classList.remove("flex");
+                } else {
+                  modal.classList.remove("hidden");
+                  modal.classList.add("flex");
+                  const input = document.getElementById("terminal-input");
+                  if (input) input.focus();
+                }
+              }
+            }
           }
         });
 
@@ -256,6 +288,27 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
           header.style.borderBottomColor = scrolled ? "rgba(38,38,38,0.6)" : "transparent";
           header.style.boxShadow = scrolled ? "0 1px 2px 0 rgba(0,0,0,0.3)" : "none";
         }, { passive: true });
+      })();
+    </script>
+
+    <!-- Restore CRT / cursor trail state from localStorage -->
+    <script is:inline>
+      (function() {
+        // CRT scanlines
+        if (localStorage.getItem("crt-enabled") === "true") {
+          document.documentElement.setAttribute("data-crt", "true");
+        }
+        // Cursor trail (delay until API is ready)
+        if (localStorage.getItem("cursor-trail-enabled") === "true") {
+          var check = setInterval(function() {
+            if (window.cursorTrailAPI && window.cursorTrailAPI.start) {
+              window.cursorTrailAPI.start();
+              clearInterval(check);
+            }
+          }, 100);
+          // Timeout after 5 seconds
+          setTimeout(function() { clearInterval(check); }, 5000);
+        }
       })();
     </script>
 

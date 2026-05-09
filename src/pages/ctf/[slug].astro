@@ -1,5 +1,5 @@
 ---
-import { getPublishedCtfPosts } from "../../lib/content";
+import { getPublishedCtfPosts, getRelatedPosts } from "../../lib/content";
 import { withBase, difficultyChipClass } from "../../utils";
 import PostLayout from "../../layouts/PostLayout.astro";
 import { render } from "astro:content";
@@ -19,44 +19,25 @@ const isProtected = Boolean(entry.data.password || entry.data.password_env);
 const siteUrl = Astro.site ?? new URL("https://kyrux29.github.io");
 const canonicalUrl = new URL(withBase(`/ctf/${entry.id}/`), siteUrl).toString();
 
-const allEntries = await getPublishedCtfPosts();
-const related = allEntries
-  .filter((item) => item.id !== entry.id)
-  .map((item) => {
-    const overlap = item.data.tags.filter((tag) => entry.data.tags.includes(tag)).length;
-    const samePlatform = item.data.platform === entry.data.platform ? 1 : 0;
-    const score = overlap * 2 + samePlatform;
-    return { item, score };
-  })
-  .filter(({ score }) => score > 0)
-  .sort((a, b) => b.score - a.score || b.item.data.date.valueOf() - a.item.data.date.valueOf())
-  .slice(0, 3)
-  .map(({ item }) => item);
+const related = await getRelatedPosts(entry, 4);
 ---
 
-<PostLayout title={entry.data.title} date={entry.data.date} description={entry.data.vulnerability_type} tags={entry.data.tags} headings={headings} protected={isProtected} canonicalUrl={canonicalUrl} collectionType="ctf" bodyText={entry.body}>
+<PostLayout 
+  title={entry.data.title} 
+  date={entry.data.date} 
+  description={entry.data.vulnerability_type || (entry.data as any).description || "CTF Write-up"} 
+  tags={entry.data.tags} 
+  headings={headings} 
+  protected={isProtected} 
+  canonicalUrl={canonicalUrl} 
+  collectionType="ctf" 
+  bodyText={entry.body}
+  relatedPosts={related}
+>
   <div class="panel mb-6 flex flex-wrap items-center gap-2 px-4 py-3 text-xs">
     <span class="chip">{entry.data.platform}</span>
     {entry.data.vulnerability_type && <span class="chip">{entry.data.vulnerability_type}</span>}
     {entry.data.difficulty && <span class={`chip ${difficultyChipClass(entry.data.difficulty)}`}>{entry.data.difficulty}</span>}
   </div>
   <Content />
-  {related.length > 0 && (
-    <section class="reveal panel mt-10 p-5">
-      <h2 class="mb-4 text-xl font-semibold text-neutral-100">Related CTF Write-ups</h2>
-      <ul class="space-y-3">
-        {related.map((item) => (
-          <li>
-            <a href={withBase(`/ctf/${item.id}/`)} class="text-neutral-200 hover:text-cyan-300">
-              {item.data.title}
-            </a>
-            <p class="mt-1 text-sm text-neutral-400">
-              {item.data.platform}
-              {item.data.vulnerability_type ? ` · ${item.data.vulnerability_type}` : ""}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
 </PostLayout>

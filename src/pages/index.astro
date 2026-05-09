@@ -2,12 +2,15 @@
 import { getPublishedBlogPosts, getPublishedCtfPosts } from "../lib/content";
 import { estimateReadingTime, withBase } from "../utils";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import AsciiBanner from "../components/AsciiBanner.astro";
 
 const latestCtf = (await getPublishedCtfPosts()).slice(0, 3);
 const latestBlogs = (await getPublishedBlogPosts()).slice(0, 3);
 ---
 
 <BaseLayout title="Kyrux | Cyber Security Research Blog">
+  <AsciiBanner />
+
   <section class="mb-10">
     <p class="mb-2 font-mono text-[11px] tracking-[0.25em] text-neutral-600">
       [kyrux@labs ~]$ whoami
@@ -16,7 +19,7 @@ const latestBlogs = (await getPublishedBlogPosts()).slice(0, 3);
       Kyrux
     </h1>
     <p class="mt-4 max-w-xl font-mono text-sm leading-6 text-neutral-400">
-      Web exploitation & CTF write-ups.
+      Web exploitation & CTF write-ups. <span class="text-rose-400">0xDEADBEEF</span>.
     </p>
   </section>
 

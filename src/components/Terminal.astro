@@ -8,7 +8,11 @@
       <p class="text-xs tracking-wider text-neutral-400">kyrux@labs:~</p>
       <button id="terminal-close" type="button" class="text-sm text-neutral-400 hover:text-cyan-300">Close</button>
     </div>
-    <div id="terminal-output" class="h-[60vh] max-h-[520px] overflow-y-auto bg-neutral-950 px-4 py-3 font-mono text-sm text-neutral-200"></div>
+    <div class="relative">
+      <!-- Matrix canvas (hidden by default) -->
+      <canvas id="matrix-canvas" class="absolute inset-0 z-0 hidden bg-black/90 pointer-events-none" width="800" height="400"></canvas>
+      <div id="terminal-output" class="h-[60vh] max-h-[520px] overflow-y-auto bg-neutral-950 px-4 py-3 font-mono text-sm text-neutral-200 relative z-10"></div>
+    </div>
     <form id="terminal-form" class="flex items-center gap-2 border-t border-neutral-800 px-4 py-3">
       <span class="font-mono text-sm text-cyan-300">$</span>
       <div class="relative flex-1">
@@ -66,6 +70,9 @@
   const output = document.getElementById("terminal-output");
   const input = document.getElementById("terminal-input") as HTMLInputElement | null;
   const modal = document.getElementById("terminal-modal");
+  const matrixCanvas = document.getElementById("matrix-canvas") as HTMLCanvasElement | null;
+  let matrixInterval: number | null = null;
+  let matrixCtx: CanvasRenderingContext2D | null = null;
 
   const printLine = (text: string) => {
     if (!output) return;
@@ -108,9 +115,15 @@
   };
 
   const close = () => {
+    stopMatrix(); // stop matrix rain if active
     modal?.classList.add("hidden");
     modal?.classList.remove("flex");
+    const toggleBtn = document.getElementById("terminal-toggle");
+    if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
   };
+
+  // Expose for BaseLayout keyboard shortcut (Ctrl+`)
+  (window as any).terminalAPI = { open, close };
 
   const normalizePath = (p: string) => {
     if (!p) return "/";
@@ -170,6 +183,7 @@
     const commands = [
       "help", "ls", "cd", "pwd", "cat", "open",
       "whoami", "clear", "tree", "search", "stats",
+      "fortune", "matrix", "neofetch", "crt", "cursor",
     ];
     const fileSystem =
       cwd === "/"
@@ -191,6 +205,11 @@
     printLine("  search <keyword> - search across blog + ctf");
     printLine("  stats            - repository statistics");
     printLine("  whoami           - about");
+    printLine("  fortune          - random hacker wisdom");
+    printLine("  matrix           - matrix rain (in terminal)");
+    printLine("  neofetch         - show system info");
+    printLine("  crt [on|off]     - toggle CRT scanlines overlay");
+    printLine("  cursor [on|off]  - toggle matrix cursor trail");
     printLine("  clear            - clear screen (Ctrl+L)");
   };
 
@@ -213,6 +232,56 @@
       <span style="color:#a3a3a3">│</span>
       <span style="color:#a3a3a3">└── total:</span> <span style="color:#06b6d4;font-weight:bold">${total}</span> published articles
     `.split("\n").map(s => s.trim()).join("\n").trim());
+  };
+
+  // Matrix rain effect (proposal 10)
+  const startMatrix = () => {
+    if (!matrixCanvas) return;
+    matrixCanvas.classList.remove("hidden");
+    matrixCanvas.width = matrixCanvas.offsetWidth;
+    matrixCanvas.height = matrixCanvas.offsetHeight;
+    matrixCtx = matrixCanvas.getContext("2d");
+    if (!matrixCtx) return;
+
+    const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン0123456789".split("");
+    const fontSize = 14;
+    const columns = matrixCanvas.width / fontSize;
+    const drops: number[] = [];
+
+    for (let x = 0; x < columns; x++) drops[x] = Math.random() * matrixCanvas.height / fontSize;
+
+    const draw = () => {
+      if (!matrixCtx) return;
+      matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      matrixCtx.fillRect(0, 0, matrixCanvas!.width, matrixCanvas!.height);
+      matrixCtx.fillStyle = "#22d3ee";
+      matrixCtx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > matrixCanvas!.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    };
+
+    matrixInterval = window.setInterval(draw, 35);
+    printLine("Matrix rain started. Type 'matrix stop' to exit.");
+  };
+
+  const stopMatrix = () => {
+    if (matrixInterval) {
+      clearInterval(matrixInterval);
+      matrixInterval = null;
+    }
+    if (matrixCanvas) {
+      matrixCanvas.classList.add("hidden");
+      const ctx = matrixCanvas.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+    }
+    printLine("Matrix rain stopped.");
   };
 
   const runSearch = (query: string) => {
@@ -250,6 +319,27 @@
     if (cmd === "ls") {
       if (cwd === "/") { lsRoot(); }
       else { printLine(listDir().join("  ")); }
+      return;
+    }
+
+    // fortune - random hacker wisdom / cyber tips
+    if (cmd === "fortune") {
+      const quotes = [
+        "There is no patch for human stupidity. — 0x41414141",
+        "The quieter you become, the more you can hear. — hacker proverb",
+        "Trust but verify. Especially your own code.",
+        "If you can't fix it with duct tape, you haven't used enough.",
+        "RTFM before you ask in #offsec.",
+        "All your base are belong to us. — 1991",
+        "Never trust a computer you can't throw out a window.",
+        "Debugging is twice as hard as writing the code in the first place.",
+        "The best way to predict the future is to create it. — with exploits.",
+        "In God we trust. All others must bring data... and a shell.",
+        "rm -rf / is not a solution. It's a cry for help.",
+        "There are 10 types of people: those who understand binary and those who don't."
+      ];
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      printHtml(`<span style="color:#eab308">★</span> ${randomQuote}`);
       return;
     }
 
@@ -302,6 +392,61 @@
     if (cmd === "stats") { printStats(); return; }
     if (cmd === "whoami") {
       printLine("kyrux (security researcher | web exploitation | CTF player)");
+      return;
+    }
+
+    if (cmd === "neofetch") {
+      printHtml(`
+        <span style="color:#22d3ee">       ▄▄████▄▄</span>    <span style="color:#a3a3a3">kyrux@labs</span>
+        <span style="color:#22d3ee">     ▄██████████▄</span>  <span style="color:#eab308">OS</span>: Kyrux Labs OS v2.1
+        <span style="color:#22d3ee">   ▄███▀▀    ▀▀███▄</span> <span style="color:#eab308">Host</span>: GitHub Pages
+        <span style="color:#22d3ee">  ▄██▀          ▀██▄</span> <span style="color:#eab308">Uptime</span>: since 2024
+        <span style="color:#22d3ee">  ██              ██</span>  <span style="color:#eab308">Shell</span>: kyrux-terminal
+        <span style="color:#22d3ee">  ██   ████████   ██</span>  <span style="color:#eab308">CPU</span>: Intel i9 (metaphorical)
+        <span style="color:#22d3ee">  ▀██▄          ▄██▀</span>  <span style="color:#eab308">Memory</span>: ${terminalStats ? terminalStats.blog + terminalStats.ctf : '?'} articles
+        <span style="color:#22d3ee">    ▀███▄▄    ▄███▀</span>   <span style="color:#eab308">Terminal</span>: v2.1
+        <span style="color:#22d3ee">      ▀██████████▀</span>    <span style="color:#eab308">Resolution</span>: 1337x420
+        <span style="color:#22d3ee">        ▀▀████▀▀</span>
+      `.trim());
+      return;
+    }
+
+    if (cmd === "matrix") {
+      const subCmd = args[0];
+      if (subCmd === "stop") {
+        stopMatrix();
+      } else {
+        startMatrix();
+      }
+      return;
+    }
+
+    if (cmd === "crt") {
+      const subCmd = args[0];
+      const html = document.documentElement;
+      if (subCmd === "off") {
+        html.removeAttribute("data-crt");
+        localStorage.setItem("crt-enabled", "false");
+        printLine("CRT mode disabled.");
+      } else {
+        html.setAttribute("data-crt", "true");
+        localStorage.setItem("crt-enabled", "true");
+        printLine("CRT mode enabled. Scanlines, vignette, and flicker active.");
+      }
+      return;
+    }
+
+    if (cmd === "cursor") {
+      const subCmd = args[0];
+      if (subCmd === "off") {
+        window.dispatchEvent(new CustomEvent("cursor-trail-stop"));
+        localStorage.setItem("cursor-trail-enabled", "false");
+        printLine("Cursor trail disabled.");
+      } else {
+        window.dispatchEvent(new CustomEvent("cursor-trail-start"));
+        localStorage.setItem("cursor-trail-enabled", "true");
+        printLine("Cursor trail enabled. Move your mouse to see matrix particles.");
+      }
       return;
     }
 

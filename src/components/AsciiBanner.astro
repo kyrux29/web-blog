@@ -1,0 +1,41 @@
+---
+/**
+ * AsciiBanner.astro - Cyberpunk ASCII art banner for homepage.
+ * Uses pre-generated figlet-style art with subtle flicker animation.
+ */
+const banner = `
+  ██╗  ██╗██╗   ██╗██████╗ ██╗   ██╗██╗  ██╗
+  ██║ ██╔╝╚██╗ ██╔╝██╔══██╗██║   ██║╚██╗██╔╝
+  █████╔╝  ╚████╔╝ ██████╔╝██║   ██║ ╚███╔╝ 
+  ██╔═██╗   ╚██╔╝  ██╔══██╗██║   ██║ ██╔██╗ 
+  ██║  ██╗   ██║   ██║  ██║╚██████╔╝██╔╝ ██╗
+  ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝
+`.trim();
+---
+
+<div class="ascii-banner mx-auto mb-8 select-none text-center font-mono text-[10px] leading-none tracking-[2px] text-cyan-400/90">
+  <pre class="inline-block text-left">{banner}</pre>
+  <div class="mt-2 text-[10px] text-neutral-500 tracking-[4px] font-light">K Y R U X  •  L A B S</div>
+</div>
+
+<style>
+  .ascii-banner {
+    animation: cyber-flicker 4s infinite alternate ease-in-out;
+    text-shadow: 
+      0 0 5px #22d3ee,
+      0 0 10px #22d3ee,
+      0 0 20px #06b6d4;
+    filter: contrast(1.2);
+  }
+
+  @keyframes cyber-flicker {
+    0%, 19% { opacity: 1; }
+    20%, 21% { opacity: 0.4; }
+    22%, 23% { opacity: 1; }
+    24%, 100% { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ascii-banner { animation: none; }
+  }
+</style>
