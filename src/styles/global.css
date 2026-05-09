@@ -303,13 +303,24 @@ summary:focus-visible {
   @apply rounded border border-neutral-700 bg-neutral-900 px-1.5 py-0.5 font-mono text-xs text-neutral-200;
 }
 
-/* ---------- glass panel (backdrop-blur card) ---------- */
+/* ---------- glass panel (iOS-style backdrop-blur card) ---------- */
 .glass-panel {
-  @apply rounded-xl border border-neutral-800/60 bg-neutral-900/70 backdrop-blur-md;
+  @apply rounded-xl border border-neutral-800/50 bg-neutral-900/60 backdrop-blur-xl;
+  /* iOS-style saturation boost on the blur */
+  --tw-backdrop-saturate: saturate(1.25);
 }
 
 .glass-panel:hover {
-  border-color: rgb(64 64 64 / 0.6); /* neutral-700 tint on hover */
+  border-color: rgb(64 64 64 / 0.5);
+}
+
+/* Glass content wrapper – iOS reading-card style for prose areas */
+.glass-content {
+  @apply rounded-2xl border border-neutral-800/40 bg-neutral-950/55 backdrop-blur-xl p-5 sm:p-7;
+  /* Subtle inner highlight (top edge) for iOS depth */
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.03) inset,
+    0 8px 32px 0 rgb(0 0 0 / 0.25);
 }
 
 /* ---------- prose mono (JetBrains Mono for all content text) ---------- */
@@ -327,6 +338,14 @@ summary:focus-visible {
 .prose-mono td,
 .prose-mono figcaption {
   font-family: var(--font-mono) !important;
+}
+
+/* Ensure Shiki code blocks stay dark (never white background) */
+.prose pre,
+.prose pre code,
+.prose pre code span {
+  background: rgb(23 23 23) !important; /* neutral-900 */
+  color: inherit !important;
 }
 
 /* ---------- lightbox ---------- */
