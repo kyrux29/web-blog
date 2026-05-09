@@ -1,84 +1,39 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
-const skills = [
-  { name: "Web Exploitation", level: 90, cat: "offensive" },
-  { name: "Python", level: 85, cat: "lang" },
-  { name: "JavaScript / Node.js", level: 80, cat: "lang" },
-  { name: "SQL Injection", level: 88, cat: "offensive" },
-  { name: "Burp Suite", level: 85, cat: "tool" },
-  { name: "Docker", level: 75, cat: "devops" },
-  { name: "Linux Admin", level: 82, cat: "sys" },
-  { name: "Reverse Engineering", level: 60, cat: "offensive" },
-  { name: "Go / Rust", level: 55, cat: "lang" },
-  { name: "Network Pentesting", level: 70, cat: "offensive" },
-  { name: "CI/CD Security", level: 65, cat: "devops" },
-  { name: "Cryptography", level: 50, cat: "offensive" },
-];
-
-const certifications = [
-  { name: "HTB Certified Penetration Testing Specialist", org: "Hack The Box", year: 2025, status: "in-progress" },
-  { name: "PortSwigger Web Security Academy", org: "PortSwigger", year: 2024, status: "completed" },
-  { name: "TryHackMe Top 1%", org: "TryHackMe", year: 2024, status: "completed" },
-];
-
-const timeline = [
-  { year: "2026", title: "Published 10+ CTF write-ups", desc: "Documented advanced web exploitation techniques on kyrux blog. Covered SSRF chains, prototype pollution, and deserialization attacks." },
-  { year: "2025", title: "Began HTB CPTS Certification", desc: "Started professional penetration testing certification through Hack The Box Academy." },
-  { year: "2024", title: "Started Cybersecurity Blog", desc: "Launched kyrux.github.io to document CTF solutions and security research. Built with Astro and custom terminal UI." },
-  { year: "2023", title: "First CTF Competition", desc: "Participated in first Capture The Flag competition. Discovered passion for web exploitation and offensive security." },
-  { year: "2022", title: "Started Programming", desc: "Began learning Python and web development. Built first full-stack applications with Flask and React." },
+const vulnClasses = [
+  { name: "SSRF", level: 92, desc: "Server-Side Request Forgery chains — cloud metadata, internal pivoting", color: "bg-rose-500" },
+  { name: "SQL Injection", level: 88, desc: "Error-based, UNION, blind, out-of-band exfiltration", color: "bg-amber-500" },
+  { name: "Prototype Pollution", level: 85, desc: "Client & server-side PP, gadget chain discovery", color: "bg-violet-500" },
+  { name: "Insecure Deserialization", level: 78, desc: "PHP, Python pickle, Java ysoserial gadget chains", color: "bg-cyan-500" },
+  { name: "Auth Bypass", level: 80, desc: "JWT manipulation, OAuth misconfig, race conditions", color: "bg-emerald-500" },
+  { name: "XSS / CSTI", level: 75, desc: "Stored, DOM, mutation, Angular/React template injection", color: "bg-orange-500" },
 ];
 
 const tools = [
-  { name: "ParrotOS", desc: "Daily driver OS", icon: "🦜", cat: "os" },
-  { name: "Neovim", desc: "Code editor", icon: "", cat: "editor" },
-  { name: "Obsidian", desc: "Knowledge base", icon: "📓", cat: "notes" },
-  { name: "Burp Suite", desc: "Web proxy & intercept", icon: "🔍", cat: "security" },
-  { name: "Docker", desc: "Lab environments", icon: "🐳", cat: "devops" },
-  { name: "Git", desc: "Version control", icon: "⎇", cat: "devops" },
-  { name: "Wireshark", desc: "Network analysis", icon: "🦈", cat: "security" },
-  { name: "Ghidra", desc: "Reverse engineering", icon: "🐉", cat: "re" },
-  { name: "Metasploit", desc: "Exploitation framework", icon: "💀", cat: "security" },
-  { name: "nmap", desc: "Network discovery", icon: "🎯", cat: "security" },
-  { name: "sqlmap", desc: "SQLi automation", icon: "💉", cat: "security" },
-  { name: "ffuf", desc: "Web fuzzing", icon: "⚡", cat: "security" },
+  { name: "Burp Suite", desc: "Web proxy & intercept", icon: ">>", cat: "primary" },
+  { name: "Caido", desc: "Modern web auditing", icon: ">>", cat: "primary" },
+  { name: "sqlmap", desc: "SQLi automation", icon: ">>", cat: "primary" },
+  { name: "ffuf", desc: "Web fuzzing engine", icon: ">>", cat: "primary" },
+  { name: "nuclei", desc: "Template-based scanning", icon: ">>", cat: "primary" },
+  { name: "Python", desc: "Exploit scripting", icon: ">>", cat: "lang" },
+  { name: "Docker", desc: "Lab environments", icon: ">>", cat: "support" },
+  { name: "Neovim", desc: "Code editor", icon: ">>", cat: "support" },
+  { name: "ParrotOS", desc: "Daily driver", icon: ">>", cat: "support" },
 ];
 
 const links = [
-  { label: "GitHub", href: "https://github.com/kyrux29", icon: "▸", desc: "Open source projects & CTF scripts" },
-  { label: "HackTheBox", href: "https://app.hackthebox.com/users/kyrux29", icon: "▸", desc: "Rank: Hacker | Pro Labs" },
-  { label: "CTFtime", href: "https://ctftime.org/user/kyrux29", icon: "▸", desc: "Team: Solo / Freelance" },
+  { label: "GitHub", href: "https://github.com/kyrux29", desc: "Exploit PoCs, tooling, CTF scripts" },
+  { label: "HackTheBox", href: "https://app.hackthebox.com/users/kyrux29", desc: "Rank: Hacker · Pro Labs" },
+  { label: "CTFtime", href: "https://ctftime.org/user/kyrux29", desc: "Solo player · Web specialist" },
 ];
-
-const catLabels: Record<string, string> = {
-  offensive: "Offensive",
-  lang: "Language",
-  tool: "Tool",
-  devops: "DevOps",
-  sys: "System",
-};
-
-const catColors: Record<string, string> = {
-  offensive: "bg-rose-500",
-  lang: "bg-cyan-500",
-  tool: "bg-amber-500",
-  devops: "bg-emerald-500",
-  sys: "bg-violet-500",
-};
-
-const statusColors: Record<string, string> = {
-  "completed": "text-emerald-400 border-emerald-500/30 bg-emerald-950/20",
-  "in-progress": "text-amber-400 border-amber-500/30 bg-amber-950/20",
-};
 ---
 
 <BaseLayout title="About | Kyrux">
   <div class="mx-auto max-w-3xl space-y-12">
-    <!-- ====== Header with avatar ====== -->
+    <!-- ====== Header ====== -->
     <section>
       <div class="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-        <!-- Avatar -->
         <div class="relative flex-shrink-0">
           <div class="flex h-24 w-24 items-center justify-center rounded-xl border-2 border-cyan-500/30 bg-neutral-900 ring-1 ring-cyan-500/10">
             <span class="font-mono text-4xl font-bold text-cyan-400 glitch" data-text="K">K</span>
@@ -87,19 +42,16 @@ const statusColors: Record<string, string> = {
             <span class="block h-2 w-2 rounded-full bg-neutral-950"></span>
           </span>
         </div>
-
         <div class="min-w-0">
           <p class="font-mono text-[10px] tracking-[0.3em] text-neutral-600 uppercase">Vu Trong Quoc Khanh</p>
-          <h1 class="text-3xl font-bold tracking-tight text-neutral-100 sm:text-4xl">
-            Kyrux
-          </h1>
+          <h1 class="font-mono text-3xl font-bold tracking-tight text-neutral-100 sm:text-4xl">Kyrux</h1>
           <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
             <span class="font-mono text-cyan-400">~$ whoami</span>
-            <span class="text-neutral-500">→</span>
+            <span class="font-mono text-neutral-500">→</span>
             <span class="font-mono text-neutral-300">cybersecurity researcher</span>
           </div>
           <p class="mt-3 max-w-xl font-mono text-sm leading-relaxed text-neutral-400">
-            Web exploitation specialist. I dissect applications, chain vulnerabilities, and document every step.
+            <span class="text-rose-400">flag{</span>web_app_exploitation<span class="text-rose-400">}</span>
           </p>
         </div>
       </div>
@@ -110,10 +62,10 @@ const statusColors: Record<string, string> = {
       ───────────────────────────────────────────────
     </div>
 
-    <!-- ====== Bio ====== -->
+    <!-- ====== Philosophy ====== -->
     <section class="reveal">
-      <h2 class="mb-4 font-mono text-xs tracking-[0.2em] text-neutral-500 uppercase">
-        <span class="text-cyan-400">#</span> Philosophy
+      <h2 class="mb-4 font-mono text-[10px] tracking-[0.25em] text-neutral-500 uppercase">
+        <span class="text-cyan-400"># </span>Philosophy
       </h2>
       <div class="panel p-5 space-y-4">
         <p class="font-mono text-sm leading-relaxed text-neutral-300">
@@ -123,124 +75,62 @@ const statusColors: Record<string, string> = {
         </p>
         <p class="font-mono text-sm leading-relaxed text-neutral-400">
           <span class="text-neutral-600">></span> When I'm not hunting flags, I'm building offensive tooling, studying protocol internals
-          (HTTP/2, gRPC, WebSockets), or reverse-engineering binaries with Ghidra.
+          (HTTP/2, gRPC, WebSockets), or reverse-engineering web frameworks for zero-day research.
         </p>
         <div class="border-t border-neutral-800 pt-3">
-          <p class="font-mono text-[11px] text-neutral-600">
-            <span class="text-cyan-500">const</span> <span class="text-neutral-300">mindset</span> = <span class="text-emerald-400">"Think like an attacker, document like a scientist"</span>;
-          </p>
+          <pre class="font-mono text-[10px] leading-relaxed text-neutral-500 overflow-x-auto">
+<span class="text-neutral-600">/* mindset.ts */</span>
+<span class="text-rose-400">export const</span> <span class="text-neutral-300">mindset</span> = <span class="text-emerald-400">"Think like an attacker, document like a scientist"</span>;
+<span class="text-neutral-600">// compile with: curiosity + persistence</span></pre>
         </div>
       </div>
     </section>
 
-    <!-- ====== Skills Matrix ====== -->
+    <!-- ====== Attack Surface ====== -->
     <section class="reveal">
-      <h2 class="mb-4 font-mono text-xs tracking-[0.2em] text-neutral-500 uppercase">
-        <span class="text-cyan-400">#</span> Skills Matrix
+      <h2 class="mb-4 font-mono text-[10px] tracking-[0.25em] text-neutral-500 uppercase">
+        <span class="text-cyan-400"># </span>Attack Surface <span class="text-neutral-700">($ cat /etc/vulns)</span>
       </h2>
-      <div class="panel p-5">
-        <div class="space-y-3">
-          {skills.map((skill) => (
-            <div class="flex items-center gap-3">
-              <div class="w-28 flex-shrink-0 sm:w-36">
-                <div class="flex items-center gap-1.5">
-                  <span class={`inline-block h-1.5 w-1.5 rounded-full ${catColors[skill.cat] ?? 'bg-neutral-500'}`}></span>
-                  <span class="font-mono text-[11px] text-neutral-300 truncate">{skill.name}</span>
-                </div>
+      <div class="grid gap-2 sm:grid-cols-2">
+        {vulnClasses.map((v) => (
+          <div class="panel group flex items-start gap-4 px-4 py-3.5 hover:border-cyan-500/30 transition-colors">
+            <div class="mt-0.5 flex-shrink-0">
+              <span class={`inline-block h-2.5 w-2.5 rounded-sm ${v.color}`}></span>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-baseline gap-2 mb-0.5">
+                <p class="font-mono text-xs text-neutral-200 group-hover:text-cyan-300 transition-colors">{v.name}</p>
+                <span class="font-mono text-[9px] text-neutral-600">{v.level}%</span>
               </div>
-              <div class="flex-1 h-2 rounded-full bg-neutral-800 overflow-hidden">
-                <div
-                  class={`h-full rounded-full transition-all duration-700 ease-out ${catColors[skill.cat] ?? 'bg-neutral-500'}`}
-                  style={`width: ${skill.level}%`}
-                ></div>
-              </div>
-              <span class="w-9 text-right font-mono text-[10px] text-neutral-600">{skill.level}%</span>
-            </div>
-          ))}
-        </div>
-        <!-- Legend -->
-        <div class="mt-4 flex flex-wrap gap-3 border-t border-neutral-800 pt-3">
-          {Object.entries(catLabels).map(([key, label]) => (
-            <div class="flex items-center gap-1.5">
-              <span class={`inline-block h-2 w-2 rounded-full ${catColors[key] ?? ''}`}></span>
-              <span class="font-mono text-[10px] text-neutral-500">{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== Certifications ====== -->
-    <section class="reveal">
-      <h2 class="mb-4 font-mono text-xs tracking-[0.2em] text-neutral-500 uppercase">
-        <span class="text-cyan-400">#</span> Certifications
-      </h2>
-      <div class="space-y-2">
-        {certifications.map((cert) => (
-          <div class={`panel flex items-center gap-4 px-4 py-3 ${statusColors[cert.status] ?? ''}`}>
-            <div class="flex-shrink-0">
-              <span class={`font-mono text-lg ${cert.status === 'completed' ? 'text-emerald-400' : 'text-amber-400'}`}>
-                {cert.status === 'completed' ? '✓' : '⟳'}
-              </span>
-            </div>
-            <div class="min-w-0 flex-1">
-              <p class="font-mono text-sm text-neutral-200">{cert.name}</p>
-              <p class="font-mono text-[10px] text-neutral-500">{cert.org} &middot; {cert.year}</p>
-            </div>
-            <span class={`flex-shrink-0 font-mono text-[9px] tracking-wider uppercase px-2 py-0.5 rounded-full border ${cert.status === 'completed' ? 'border-emerald-500/30 text-emerald-400' : 'border-amber-500/30 text-amber-400'}`}>
-              {cert.status === 'completed' ? 'Done' : 'Active'}
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- ====== Timeline ====== -->
-    <section class="reveal">
-      <h2 class="mb-4 font-mono text-xs tracking-[0.2em] text-neutral-500 uppercase">
-        <span class="text-cyan-400">#</span> Timeline
-      </h2>
-      <div class="relative border-l-2 border-neutral-800 ml-3 space-y-6">
-        {timeline.map((item) => (
-          <div class="relative pl-8">
-            <!-- Dot -->
-            <div class="absolute left-0 top-1 -translate-x-1/2 flex items-center justify-center">
-              <span class="block h-2.5 w-2.5 rounded-full border-2 border-cyan-500 bg-neutral-950 ring-2 ring-neutral-950"></span>
-            </div>
-            <div class="panel p-4">
-              <div class="flex items-baseline gap-2 mb-1">
-                <span class="font-mono text-xs text-cyan-400 font-semibold">{item.year}</span>
-                <span class="font-mono text-[10px] text-neutral-600">// {item.title}</span>
-              </div>
-              <p class="font-mono text-[11px] leading-relaxed text-neutral-400">{item.desc}</p>
+              <p class="font-mono text-[10px] leading-relaxed text-neutral-500">{v.desc}</p>
             </div>
           </div>
         ))}
       </div>
     </section>
 
-    <!-- ====== Tools Grid ====== -->
+    <!-- ====== Toolbox ====== -->
     <section class="reveal">
-      <h2 class="mb-4 font-mono text-xs tracking-[0.2em] text-neutral-500 uppercase">
-        <span class="text-cyan-400">#</span> Toolbox <span class="text-neutral-700">($ ls /opt/)</span>
+      <h2 class="mb-4 font-mono text-[10px] tracking-[0.25em] text-neutral-500 uppercase">
+        <span class="text-cyan-400"># </span>Toolbox <span class="text-neutral-700">($ ls /opt/)</span>
       </h2>
       <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {tools.map((tool) => (
           <div class="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900/80 px-3.5 py-2.5 hover:border-cyan-500/30 hover:bg-neutral-900 transition-colors group cursor-default">
-            <span class="flex-shrink-0 font-mono text-base" aria-hidden="true">{tool.icon}</span>
+            <span class="flex-shrink-0 font-mono text-[10px] text-cyan-500 group-hover:text-cyan-300 transition-colors">{tool.icon}</span>
             <div class="min-w-0">
               <p class="font-mono text-[11px] text-neutral-200 group-hover:text-cyan-300 transition-colors">{tool.name}</p>
-              <p class="text-[9px] tracking-wide text-neutral-600">{tool.desc}</p>
+              <p class="font-mono text-[9px] text-neutral-600">{tool.desc}</p>
             </div>
           </div>
         ))}
       </div>
     </section>
 
-    <!-- ====== Links ====== -->
+    <!-- ====== Presence ====== -->
     <section class="reveal">
-      <h2 class="mb-4 font-mono text-xs tracking-[0.2em] text-neutral-500 uppercase">
-        <span class="text-cyan-400">#</span> Presence <span class="text-neutral-700">($ dig kyrux -t ANY)</span>
+      <h2 class="mb-4 font-mono text-[10px] tracking-[0.25em] text-neutral-500 uppercase">
+        <span class="text-cyan-400"># </span>Presence <span class="text-neutral-700">($ dig kyrux -t ANY)</span>
       </h2>
       <div class="grid gap-2 sm:grid-cols-3">
         {links.map((link) => (
@@ -251,9 +141,9 @@ const statusColors: Record<string, string> = {
             class="panel group flex flex-col gap-1 px-4 py-3 hover:border-cyan-500/40 transition-colors"
           >
             <span class="font-mono text-sm text-neutral-200 group-hover:text-cyan-300 transition-colors">
-              <span class="text-cyan-400">{link.icon}</span> {link.label}
+              <span class="text-cyan-400">▸ </span>{link.label}
             </span>
-            <span class="font-mono text-[9px] text-neutral-600 leading-relaxed">{link.desc}</span>
+            <span class="font-mono text-[9px] leading-relaxed text-neutral-600">{link.desc}</span>
           </a>
         ))}
       </div>
@@ -268,17 +158,17 @@ const statusColors: Record<string, string> = {
             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
           </span>
           <div>
-            <p class="font-mono text-sm text-emerald-300">System Online</p>
-            <p class="font-mono text-[10px] text-emerald-600">Accepting security collaborations & CTF team-ups</p>
+            <p class="font-mono text-sm text-emerald-300">$ systemctl status kyrux.service</p>
+            <p class="font-mono text-[10px] text-emerald-600">Active: running · Accepting security collaborations & CTF team-ups</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ====== PGP Public Key ====== -->
+    <!-- ====== PGP Key ====== -->
     <section class="reveal">
-      <h2 class="mb-4 font-mono text-xs tracking-[0.2em] text-neutral-500 uppercase">
-        <span class="text-cyan-400">#</span> PGP Key <span class="text-neutral-700">($ gpg --export kyrux)</span>
+      <h2 class="mb-4 font-mono text-[10px] tracking-[0.25em] text-neutral-500 uppercase">
+        <span class="text-cyan-400"># </span>PGP Key <span class="text-neutral-700">($ gpg --export kyrux)</span>
       </h2>
       <div class="panel p-4" id="pgp-key-block">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -302,17 +192,13 @@ mnopqrstuvwxyz0123456789+/ABCDEFGHIJK==
 =ABCD
 -----END PGP PUBLIC KEY BLOCK-----</code></pre>
         <p class="mt-2 font-mono text-[9px] text-neutral-600">
-          Key ID: <code class="text-neutral-500">0xDEADBEEF</code> &middot; Encrypt sensitive communications
+          Key ID: <code class="font-mono text-neutral-500">0xDEADBEEF</code> · Encrypt sensitive communications
         </p>
       </div>
     </section>
 
-    <!-- ====== Footer ASCII art ====== -->
-    <div class="ascii-divider" aria-hidden="true">
-      ───────────────────────────────────────────────
-    </div>
-    <p class="text-center font-mono text-[10px] text-neutral-700">
-      </> with ☕ by kyrux &middot; Est. 2024
-    </p>
+    <!-- ====== Footer ====== -->
+    <div class="ascii-divider" aria-hidden="true">───────────────────────────────────────────────</div>
+    <p class="text-center font-mono text-[10px] text-neutral-700"></> with ☕ by kyrux · Est. 2024</p>
   </div>
 </BaseLayout>
