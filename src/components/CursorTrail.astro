@@ -54,6 +54,7 @@
     }
 
     function draw() {
+      if (!ctx) return;
       ctx.clearRect(0, 0, w, h);
 
       for (let i = particles.length - 1; i >= 0; i--) {
@@ -96,7 +97,7 @@
       cancelAnimationFrame(animId);
       canvas.style.display = "none";
       document.body.style.cursor = defaultCursor;
-      ctx.clearRect(0, 0, w, h);
+      if (ctx) ctx.clearRect(0, 0, w, h);
       particles.length = 0;
     }
 
