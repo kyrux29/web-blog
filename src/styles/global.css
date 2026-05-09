@@ -396,6 +396,16 @@ summary:focus-visible {
   @apply font-medium tracking-wide;
 }
 
+/* ---------- code block header row ---------- */
+.prose pre {
+  @apply pt-9;
+}
+
+.code-lang-badge {
+  @apply uppercase;
+  letter-spacing: 0.1em;
+}
+
 /* ---------- command palette (Cmd+K) ---------- */
 .cmdk-overlay {
   @apply fixed inset-0 z-[70] hidden items-start justify-center bg-neutral-950/80 pt-[15vh];

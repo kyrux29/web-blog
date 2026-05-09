@@ -1,6 +1,5 @@
 <!--
-  CopyButton – attaches "Copy" buttons to every <pre> block inside .prose.
-  Uses client:visible to avoid work on off-screen content.
+  CopyButton – attaches "Copy" buttons + language badges to every <pre> block inside .prose.
 -->
 <script>
   const preBlocks = Array.from(document.querySelectorAll(".prose pre"));
@@ -9,6 +8,17 @@
     if (pre.querySelector(".copy-code-btn")) return;
     pre.classList.add("relative");
 
+    // --- Language badge from data-language ---
+    const lang = pre.getAttribute("data-language");
+    if (lang && !pre.querySelector(".code-lang-badge")) {
+      const badge = document.createElement("span");
+      badge.textContent = lang;
+      badge.className =
+        "code-lang-badge absolute left-3 top-3 rounded border border-neutral-700/60 bg-neutral-800/80 backdrop-blur-sm px-2 py-0.5 font-mono text-[10px] tracking-wider text-neutral-500";
+      pre.appendChild(badge);
+    }
+
+    // --- Copy button ---
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = "Copy";
