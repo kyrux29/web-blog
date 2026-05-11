@@ -4,8 +4,6 @@
 // reading-time TOC scroll-spy.
 import BaseLayout from "./BaseLayout.astro";
 import { estimateReadingTime, withBase } from "../utils";
-import CommandCard from "../components/CommandCard.astro";
-import KillChain from "../components/KillChain.astro";
 
 interface Props {
   title: string;
@@ -73,49 +71,49 @@ const jsonLd = {
   <!-- JSON-LD -->
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-  <article class="mx-auto max-w-7xl lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
+  <article class="mx-auto max-w-7xl pt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_240px] lg:gap-6">
     <div class="min-w-0">
-      <header class="glass-panel mb-6 p-5 sm:p-6">
-        <div class="mb-3 flex flex-wrap items-center gap-2">
+      <!-- Post Header -->
+      <header class="glass-panel mb-6 p-6 sm:p-8">
+        <div class="mb-4 flex flex-wrap items-center gap-2">
           <span class="chip">{chipLabel}</span>
           {isProtected && <span class="chip chip--hard">Protected</span>}
           {
             tags.map((tag) => (
-              <a class="chip hover:text-cyan-300" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>
+              <a class="chip hover:text-cyan-300 hover:border-cyan-500/20" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>
                 {tag}
               </a>
             ))
           }
         </div>
-        <div class="mb-3 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide">
-          <span class="text-neutral-500">
-            <time datetime={date.toISOString()}>{date.toLocaleDateString("en-CA")}</time>
-          </span>
+        <div class="mb-4 flex flex-wrap items-center gap-3 font-mono text-[11px] tracking-wide text-neutral-500">
+          <time datetime={date.toISOString()}>{date.toLocaleDateString("en-CA")}</time>
           {bodyText && (
             <>
-              <span class="text-neutral-800">·</span>
-              <span class="text-neutral-500">{estimateReadingTime(bodyText)} min read</span>
+              <span class="text-neutral-700">·</span>
+              <span>{estimateReadingTime(bodyText)} min read</span>
             </>
           )}
           {lastModified && lastModified > date && (
             <>
-              <span class="text-neutral-800">·</span>
+              <span class="text-neutral-700">·</span>
               <span class="text-neutral-600">updated {lastModified.toLocaleDateString("en-CA")}</span>
             </>
           )}
         </div>
-        <h1 class="font-mono text-3xl font-semibold leading-tight text-neutral-100 sm:text-4xl md:text-5xl">{title}</h1>
-        {description && <p class="mt-3 max-w-2xl font-mono text-sm text-neutral-400 sm:text-base">{description}</p>}
+        <h1 class="text-3xl font-bold leading-tight text-neutral-100 sm:text-4xl">{title}</h1>
+        {description && <p class="mt-4 max-w-2xl text-sm text-neutral-400 leading-relaxed sm:text-base">{description}</p>}
       </header>
 
+      <!-- Quick Nav (mobile) -->
       {tocHeadings.length > 0 && (
         <details class="glass-panel mb-5 p-4 lg:hidden">
           <summary class="cursor-pointer font-mono text-xs font-semibold tracking-wider text-neutral-300">
             Quick Nav
           </summary>
-          <ul class="mt-3 space-y-2 font-mono text-sm">
+          <ul class="mt-3 space-y-1.5 font-mono text-sm">
             {tocHeadings.map((heading) => (
-              <li class={heading.depth === 3 ? "ml-3" : ""}>
+              <li class={heading.depth === 3 ? "ml-4" : ""}>
                 <a href={`#${heading.slug}`} class="toc-link text-neutral-400 hover:text-cyan-300">
                   {heading.text}
                 </a>
@@ -125,20 +123,22 @@ const jsonLd = {
         </details>
       )}
 
-      <div class="mx-auto max-w-3xl glass-content" data-pagefind-body>
+      <!-- Post Content -->
+      <div class="glass-content" data-pagefind-body>
         <div
-          class="prose prose-invert prose-mono max-w-none prose-headings:mt-10 prose-headings:tracking-tight prose-h2:text-2xl sm:prose-h2:text-3xl prose-p:leading-7 sm:prose-p:leading-8 prose-pre:rounded-2xl prose-pre:border prose-pre:border-neutral-800/60 prose-pre:bg-neutral-900/80 prose-pre:p-4 sm:prose-pre:p-5 prose-pre:text-neutral-100 prose-code:before:content-none prose-code:after:content-none prose-blockquote:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-cyan-500/80 prose-blockquote:bg-neutral-900/70 prose-blockquote:backdrop-blur-sm prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:text-neutral-300"
+          class="prose prose-invert prose-mono max-w-none prose-headings:mt-10 prose-headings:tracking-tight prose-h2:text-2xl sm:prose-h2:text-3xl prose-p:leading-7 sm:prose-p:leading-8 prose-pre:rounded-sm prose-pre:border-2 prose-pre:border-white/[0.06] prose-pre:bg-neutral-900/60 prose-pre:backdrop-blur-md prose-pre:p-4 sm:prose-pre:p-5 prose-pre:text-neutral-100 prose-code:before:content-none prose-code:after:content-none prose-blockquote:rounded-sm prose-blockquote:border-l-4 prose-blockquote:border-cyan-400/60 prose-blockquote:bg-white/[0.02] prose-blockquote:backdrop-blur-sm prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:text-neutral-300"
         >
         <slot />
         </div>
       </div>
     </div>
 
+    <!-- TOC Sidebar (desktop) -->
     {tocHeadings.length > 0 && (
       <aside class="hidden lg:block">
-        <div class="glass-panel sticky top-6 p-4">
-          <h2 class="mb-3 font-mono text-xs font-semibold tracking-wider text-neutral-400">Quick Nav</h2>
-          <ul class="space-y-2 font-mono text-sm">
+        <div class="glass-panel sticky top-20 p-5">
+          <h2 class="mb-4 font-mono text-xs font-semibold tracking-wider text-neutral-400">Quick Nav</h2>
+          <ul class="space-y-1 font-mono text-[13px]">
             {tocHeadings.map((heading) => (
               <li class={heading.depth === 3 ? "ml-3" : ""}>
                 <a href={`#${heading.slug}`} data-toc-link={heading.slug} class="toc-link text-neutral-400 hover:text-cyan-300">
@@ -152,7 +152,7 @@ const jsonLd = {
     )}
   </article>
 
-  <!-- TOC scroll-spy (kept inline for performance, tightly coupled to this layout) -->
+  <!-- TOC scroll-spy -->
   <script is:inline>
     (function () {
       const links = Array.from(document.querySelectorAll("[data-toc-link]"));
@@ -187,44 +187,28 @@ const jsonLd = {
     })();
   </script>
 
-  <!-- Related Posts (proposal 13) -->
+  <!-- Related Posts (simple terminal-style list) -->
   {relatedPosts.length > 0 && (
-    <section class="mt-16 border-t border-neutral-800 pt-8">
-      <h2 class="mb-6 flex items-center gap-2 font-mono text-sm uppercase tracking-widest text-neutral-400">
-        <span class="text-cyan-400">→</span> RELATED RESEARCH
-      </h2>
-      <div class="grid gap-6 md:grid-cols-2">
+    <section class="mt-12 border-t-2 border-white/[0.06] pt-8">
+      <p class="mb-4 font-mono text-xs tracking-wider text-neutral-500">
+        <span class="text-cyan-400">$</span> ls ./related/
+      </p>
+      <ul class="space-y-2">
         {relatedPosts.slice(0, 4).map((post: any) => (
-          <CommandCard
-            title={post.data.title}
-            command={collectionType === "ctf" ? "cat " + post.id : "open " + post.id}
-            items={[
-              post.data.platform || post.data.date.toLocaleDateString("en-CA"),
-              ...(post.data.tags || []).slice(0, 2)
-            ]}
-            variant="info"
-          >
-            <a href={withBase(`/${collectionType}/${post.id}/`)} class="block text-xs text-cyan-400 hover:underline">
-              Read full write-up →
+          <li>
+            <a
+              href={withBase(`/${collectionType}/${post.id}/`)}
+              class="group flex items-center gap-3 rounded-sm px-3 py-2 font-mono text-sm text-neutral-300 hover:bg-white/[0.04] hover:text-cyan-300 border-2 border-transparent hover:border-white/[0.1] transition-all duration-100"
+            >
+              <span class="text-neutral-600 group-hover:text-cyan-400">▸</span>
+              <span class="truncate">{post.data.title}</span>
+              <span class="ml-auto flex-shrink-0 text-[10px] text-neutral-600">
+                {post.data.platform || post.data.date?.toLocaleDateString("en-CA") || ""}
+              </span>
             </a>
-          </CommandCard>
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
-  )}
-
-  <!-- KillChain integration for CTF (proposal 17) -->
-  {collectionType === "ctf" && (
-    <div class="mt-12">
-      <KillChain 
-        title="Attack Chain"
-        steps={[
-          { title: "Recon", detail: "Enumerate endpoints and technologies", status: "owned" },
-          { title: "Initial Access", detail: "Find injection or auth bypass", status: "owned" },
-          { title: "Privilege Escalation", detail: "Escalate to admin/system", status: "bypass" },
-          { title: "Persistence & Exfil", detail: "Maintain access and extract flag", status: "owned" }
-        ]}
-      />
-    </div>
   )}
 </BaseLayout>

@@ -11,11 +11,17 @@
 /* ---------- base ---------- */
 html {
   scroll-behavior: smooth;
+  cursor: crosshair;
 }
 
 html,
 body {
   @apply bg-neutral-950 text-neutral-100 antialiased;
+  background-image: url('/images/minecraft-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 html[data-theme="dim"] body {
@@ -23,45 +29,34 @@ html[data-theme="dim"] body {
 }
 
 ::selection {
-  @apply bg-cyan-500/25 text-neutral-50;
+  @apply bg-cyan-500/20 text-cyan-50;
 }
 
-/* ---------- glitch selection (personal touch) ---------- */
-@keyframes glitch-shift {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-1px); }
-  40% { transform: translateX(1px); }
-  60% { transform: translateX(-0.5px); }
-  80% { transform: translateX(0.5px); }
-}
-
-::selection {
-  animation: glitch-shift 0.3s ease;
-}
-
-/* ---------- custom scrollbar ---------- */
+/* ---------- custom scrollbar (blocky / chest-style) ---------- */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgb(10 10 10 / 0.6);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(38 38 38); /* neutral-800 */
-  border-radius: 3px;
+  background: rgb(64 64 64 / 0.8);
+  border-radius: 0;
+  border: 1px solid rgb(38 38 38);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(6 182 212); /* cyan-500 */
+  background: rgb(6 182 212 / 0.5);
+  border-radius: 0;
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(38 38 38) transparent;
+  scrollbar-color: rgb(64 64 64 / 0.8) rgb(10 10 10 / 0.6);
 }
 
 /* Smooth scroll offset for heading anchors */
@@ -69,11 +64,70 @@ html[data-theme="dim"] body {
   scroll-margin-top: 5rem;
 }
 
+/* ---------- ambient block mesh (Glass-Craft) ---------- */
+.ambient-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Dark overlay on top of the Minecraft background image */
+  background-color: rgb(5 5 5 / 0.88);
+  /* Subtle block grid on top of the overlay */
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: center center;
+}
+
+.ambient-mesh::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle at center, rgb(6 182 212 / 0.08) 0%, transparent 60%);
+  filter: blur(100px);
+  animation: mesh-drift-1 30s linear infinite alternate;
+}
+
+.ambient-mesh::after {
+  content: "";
+  position: absolute;
+  bottom: -15%;
+  right: -10%;
+  width: 55%;
+  height: 55%;
+  background: radial-gradient(circle at center, rgb(139 92 246 / 0.06) 0%, transparent 60%);
+  filter: blur(100px);
+  animation: mesh-drift-2 35s linear infinite alternate;
+}
+
+@keyframes mesh-drift-1 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(8%, 12%) scale(1.08); }
+  100% { transform: translate(-4%, 6%) scale(0.95); }
+}
+
+@keyframes mesh-drift-2 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10%, -8%) scale(1.1); }
+  100% { transform: translate(5%, -5%) scale(0.96); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-mesh::before,
+  .ambient-mesh::after {
+    animation: none;
+  }
+}
+
 /* ---------- motion: fade-up reveal ---------- */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -83,132 +137,24 @@ html[data-theme="dim"] body {
 
 .reveal {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(20px);
 }
 
 .reveal.reveal-active {
-  animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* ---------- card lift ---------- */
+/* ---------- card lift / minecraft hover ---------- */
 .card-lift {
-  @apply transition duration-300;
+  @apply transition-all duration-100 ease-in-out;
+  border: 2px solid transparent;
 }
 
 .card-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-}
-
-/* ---------- GLITCH EFFECT (Visual Signature) ---------- */
-.glitch {
-  position: relative;
-  color: #22d3ee;
-  font-weight: 700;
-  letter-spacing: 2px;
-  animation: glitch-skew 4s infinite linear alternate-reverse;
-}
-
-.glitch::before,
-.glitch::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.glitch::before {
-  animation: glitch-anim 2s infinite linear alternate-reverse;
-  left: 2px;
-  text-shadow: -2px 0 #ff00c1;
-  clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
-  opacity: 0.8;
-}
-
-.glitch::after {
-  animation: glitch-anim2 1.5s infinite linear alternate-reverse;
-  left: -2px;
-  text-shadow: 2px 0 #00ffff;
-  clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
-  opacity: 0.8;
-}
-
-@keyframes glitch-anim {
-  0% { clip-path: polygon(0 2%, 100% 2%, 100% 5%, 0 5%); }
-  5% { clip-path: polygon(0 15%, 100% 15%, 100% 20%, 0 20%); }
-  10% { clip-path: polygon(0 30%, 100% 30%, 100% 35%, 0 35%); }
-  15% { clip-path: polygon(0 45%, 100% 45%, 100% 50%, 0 50%); }
-  20% { clip-path: polygon(0 60%, 100% 60%, 100% 70%, 0 70%); }
-  100% { clip-path: polygon(0 80%, 100% 80%, 100% 85%, 0 85%); }
-}
-
-@keyframes glitch-anim2 {
-  0% { clip-path: polygon(0 10%, 100% 10%, 100% 15%, 0 15%); }
-  15% { clip-path: polygon(0 25%, 100% 25%, 100% 30%, 0 30%); }
-  30% { clip-path: polygon(0 40%, 100% 40%, 100% 45%, 0 45%); }
-  45% { clip-path: polygon(0 55%, 100% 55%, 100% 60%, 0 60%); }
-  60% { clip-path: polygon(0 75%, 100% 75%, 100% 80%, 0 80%); }
-  100% { clip-path: polygon(0 90%, 100% 90%, 100% 95%, 0 95%); }
-}
-
-@keyframes glitch-skew {
-  0% { transform: skew(0deg); }
-  10% { transform: skew(2deg); }
-  20% { transform: skew(-2deg); }
-  100% { transform: skew(0deg); }
-}
-
-/* Apply to logo and major headings */
-h1.glitch, .logo-glitch {
-  animation: glitch-skew 3s infinite linear alternate-reverse;
-}
-
-/* ---------- CRT SCANLINES OVERLAY ---------- */
-/* Toggle via data-crt="true" on <html> */
-html[data-crt="true"]::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  pointer-events: none;
-  /* Scanlines */
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.06) 0px,
-    rgba(0, 0, 0, 0.06) 1px,
-    transparent 2px,
-    transparent 4px
-  );
-}
-
-/* Vignette */
-html[data-crt="true"]::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 99;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.45) 100%);
-}
-
-/* Flicker animation on body when CRT is active */
-html[data-crt="true"] {
-  animation: crt-flicker 0.15s infinite alternate;
-}
-
-@keyframes crt-flicker {
-  0% { opacity: 0.998; }
-  50% { opacity: 1; }
-  100% { opacity: 0.997; }
-}
-
-/* Reduce motion: disable CRT flicker */
-@media (prefers-reduced-motion: reduce) {
-  html[data-crt="true"] {
-    animation: none;
-  }
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.5);
 }
 
 /* ---------- links ---------- */
@@ -219,41 +165,66 @@ a {
 a:focus-visible,
 button:focus-visible,
 summary:focus-visible {
-  @apply outline-none ring-2 ring-cyan-500/80 ring-offset-2 ring-offset-neutral-950;
+  @apply outline-none ring-2 ring-cyan-500/60 ring-offset-2 ring-offset-neutral-950;
 }
 
-/* ---------- panel (card surface) ---------- */
+/* ---------- glass panel (primary surface, pseudo-3D) ---------- */
+.glass-panel {
+  @apply rounded-sm bg-neutral-900/40 backdrop-blur-xl;
+  border: 2px solid;
+  border-color: rgba(255,255,255,0.08) rgba(0,0,0,0.25) rgba(0,0,0,0.25) rgba(255,255,255,0.08);
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-panel:hover {
+  border-color: rgba(255,255,255,0.15) rgba(0,0,0,0.3) rgba(0,0,0,0.3) rgba(255,255,255,0.15);
+}
+
+/* ---------- solid panel fallback ---------- */
 .panel {
-  @apply rounded-xl border border-neutral-800 bg-neutral-900;
+  @apply rounded-sm border-2 border-white/[0.04] bg-neutral-900/60 backdrop-blur-md;
 }
 
 .panel:hover {
-  border-color: rgb(38 38 38); /* neutral-800 → neutral-700 on hover */
+  @apply border-white/[0.1];
+}
+
+/* ---------- glass content (reading area – high contrast for readability) ---------- */
+.glass-content {
+  @apply rounded-sm bg-neutral-950/80 backdrop-blur-2xl p-5 sm:p-8;
+  border: 2px solid;
+  border-color: rgba(255,255,255,0.06) rgba(0,0,0,0.3) rgba(0,0,0,0.3) rgba(255,255,255,0.06);
+  box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 0.4);
 }
 
 /* ---------- chip / tag ---------- */
 .chip {
-  @apply inline-flex items-center rounded-full border border-neutral-800 bg-neutral-900 px-2.5 py-1 text-[10px] tracking-wide text-neutral-400;
+  @apply inline-flex items-center rounded-sm border-2 border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[10px] tracking-wide text-neutral-400 backdrop-blur-sm;
+  transition: all 0.1s ease;
+}
+
+.chip:hover {
+  @apply border-white/[0.12] bg-white/[0.06];
 }
 
 .chip--easy {
-  @apply border-emerald-500/35 bg-emerald-950/30 text-emerald-200;
+  @apply border-emerald-500/20 bg-emerald-500/[0.08] text-emerald-300;
 }
 
 .chip--medium {
-  @apply border-amber-500/35 bg-amber-950/30 text-amber-200;
+  @apply border-amber-500/20 bg-amber-500/[0.08] text-amber-300;
 }
 
 .chip--hard {
-  @apply border-rose-500/35 bg-rose-950/30 text-rose-200;
+  @apply border-rose-500/20 bg-rose-500/[0.08] text-rose-300;
 }
 
 .chip--insane {
-  @apply border-violet-500/35 bg-violet-950/30 text-violet-200;
+  @apply border-violet-500/20 bg-violet-500/[0.08] text-violet-300;
 }
 
 .chip--unknown {
-  @apply border-neutral-800 bg-neutral-900 text-neutral-400;
+  @apply border-white/[0.08] bg-white/[0.04] text-neutral-400;
 }
 
 /* ---------- prose overrides ---------- */
@@ -264,7 +235,7 @@ summary:focus-visible {
 }
 
 .prose :not(pre) > code {
-  @apply rounded bg-neutral-800 px-1.5 py-0.5 text-cyan-200;
+  @apply rounded-sm bg-white/[0.06] px-1.5 py-0.5 text-cyan-200 border border-white/[0.06];
 }
 
 .prose pre {
@@ -288,7 +259,8 @@ summary:focus-visible {
 }
 
 .prose img {
-  @apply my-6 rounded-2xl border border-neutral-800/80 bg-neutral-950/40 shadow-lg;
+  @apply my-6 rounded-sm border-2 border-white/[0.06] bg-neutral-950/40;
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.3);
 }
 
 .prose img[data-zoomable="true"] {
@@ -296,31 +268,11 @@ summary:focus-visible {
 }
 
 .prose hr {
-  @apply border-neutral-800;
+  @apply border-white/[0.06];
 }
 
 .prose kbd {
-  @apply rounded border border-neutral-700 bg-neutral-900 px-1.5 py-0.5 font-mono text-xs text-neutral-200;
-}
-
-/* ---------- glass panel (iOS-style backdrop-blur card) ---------- */
-.glass-panel {
-  @apply rounded-xl border border-neutral-800/50 bg-neutral-900/60 backdrop-blur-xl;
-  /* iOS-style saturation boost on the blur */
-  --tw-backdrop-saturate: saturate(1.25);
-}
-
-.glass-panel:hover {
-  border-color: rgb(64 64 64 / 0.5);
-}
-
-/* Glass content wrapper – iOS reading-card style for prose areas */
-.glass-content {
-  @apply rounded-2xl border border-neutral-800/40 bg-neutral-950/55 backdrop-blur-xl p-5 sm:p-7;
-  /* Subtle inner highlight (top edge) for iOS depth */
-  box-shadow:
-    0 1px 0 0 rgb(255 255 255 / 0.03) inset,
-    0 8px 32px 0 rgb(0 0 0 / 0.25);
+  @apply rounded-sm border-2 border-white/[0.1] bg-white/[0.05] px-1.5 py-0.5 font-mono text-xs text-neutral-200;
 }
 
 /* ---------- prose mono (JetBrains Mono for all content text) ---------- */
@@ -340,17 +292,15 @@ summary:focus-visible {
   font-family: var(--font-mono) !important;
 }
 
-/* Ensure Shiki code blocks stay dark (never white background) */
+/* Ensure Shiki code blocks stay dark */
 .prose pre,
-.prose pre code,
-.prose pre code span {
-  background: rgb(23 23 23) !important; /* neutral-900 */
-  color: inherit !important;
+.prose pre code {
+  background: rgb(23 23 23 / 0.8) !important;
 }
 
 /* ---------- lightbox ---------- */
 .lightbox {
-  @apply fixed inset-0 z-[60] hidden items-center justify-center bg-neutral-950/80 p-3 sm:p-6;
+  @apply fixed inset-0 z-[60] hidden items-center justify-center bg-neutral-950/70 backdrop-blur-md p-3 sm:p-6;
 }
 
 .lightbox[data-open="true"] {
@@ -358,11 +308,12 @@ summary:focus-visible {
 }
 
 .lightbox-panel {
-  @apply relative w-full max-w-5xl overflow-hidden rounded-2xl border border-neutral-700 bg-neutral-950 shadow-2xl;
+  @apply relative w-full max-w-5xl overflow-hidden rounded-sm border-2 border-white/[0.08] bg-neutral-950/90 backdrop-blur-2xl;
+  box-shadow: 8px 8px 0 0 rgba(0, 0, 0, 0.5);
 }
 
 .lightbox-toolbar {
-  @apply flex items-center justify-between gap-3 border-b border-neutral-800 px-4 py-2;
+  @apply flex items-center justify-between gap-3 border-b-2 border-white/[0.06] px-4 py-2;
 }
 
 .lightbox-title {
@@ -370,25 +321,25 @@ summary:focus-visible {
 }
 
 .lightbox-close {
-  @apply rounded-md border border-neutral-700 bg-neutral-900/60 px-3 py-1.5 text-xs text-neutral-300 hover:border-cyan-500 hover:text-cyan-300;
+  @apply rounded-sm border-2 border-white/[0.08] bg-white/[0.04] px-3 py-1.5 font-mono text-xs text-neutral-300 hover:border-cyan-500/40 hover:text-cyan-300 backdrop-blur-sm transition-colors;
 }
 
 .lightbox-body {
-  @apply max-h-[80vh] overflow-auto bg-neutral-950 p-2 sm:p-4;
+  @apply max-h-[80vh] overflow-auto bg-neutral-950/50 p-2 sm:p-4;
   -webkit-overflow-scrolling: touch;
 }
 
 .lightbox-img {
-  @apply mx-auto h-auto w-auto max-w-full rounded-xl border border-neutral-800/80 bg-neutral-950/40;
+  @apply mx-auto h-auto w-auto max-w-full rounded-sm border-2 border-white/[0.06] bg-neutral-950/40;
 }
 
 /* ---------- table of contents ---------- */
 .toc-link {
-  @apply block rounded-md border-l-2 border-transparent px-2 py-1 transition-colors;
+  @apply block rounded-none border-l-2 border-transparent px-3 py-1.5 text-sm transition-all duration-100;
 }
 
 .toc-link.toc-active {
-  @apply border-cyan-500 bg-neutral-900/70 text-cyan-300;
+  @apply border-cyan-400 bg-cyan-500/[0.06] text-cyan-300;
 }
 
 /* ---------- copy button ---------- */
@@ -408,7 +359,7 @@ summary:focus-visible {
 
 /* ---------- command palette (Cmd+K) ---------- */
 .cmdk-overlay {
-  @apply fixed inset-0 z-[70] hidden items-start justify-center bg-neutral-950/80 pt-[15vh];
+  @apply fixed inset-0 z-[70] hidden items-start justify-center bg-neutral-950/60 backdrop-blur-md pt-[15vh];
 }
 
 .cmdk-overlay[data-open="true"] {
@@ -416,12 +367,13 @@ summary:focus-visible {
 }
 
 .cmdk-panel {
-  @apply w-full max-w-xl rounded-2xl border border-neutral-700 bg-neutral-900 shadow-2xl overflow-hidden;
-  animation: fade-up 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  @apply w-full max-w-xl rounded-sm border-2 border-white/[0.08] bg-neutral-900/80 backdrop-blur-2xl overflow-hidden;
+  box-shadow: 8px 8px 0 0 rgba(0, 0, 0, 0.5);
+  animation: fade-up 0.1s ease-out;
 }
 
 .cmdk-input {
-  @apply w-full border-0 border-b border-neutral-800 bg-transparent px-5 py-4 text-base text-neutral-100 placeholder:text-neutral-500 focus:outline-none;
+  @apply w-full border-0 border-b-2 border-white/[0.06] bg-transparent px-5 py-4 text-base text-neutral-100 placeholder:text-neutral-500 focus:outline-none;
   font-family: var(--font-mono);
 }
 
@@ -430,21 +382,21 @@ summary:focus-visible {
 }
 
 .cmdk-item {
-  @apply flex items-center gap-3 px-5 py-3 text-sm text-neutral-300 cursor-pointer border-l-2 border-l-transparent transition-colors;
+  @apply flex items-center gap-3 px-5 py-3 text-sm text-neutral-300 cursor-pointer border-l-2 border-l-transparent transition-all duration-200;
 }
 
 .cmdk-item[data-active="true"],
 .cmdk-item:hover {
-  @apply bg-neutral-800/60 text-neutral-100 border-l-cyan-500;
+  @apply bg-white/[0.04] text-neutral-100 border-l-cyan-400;
 }
 
 .cmdk-badge {
-  @apply inline-flex items-center rounded-full border border-neutral-700 px-2 py-0.5 text-[10px] tracking-wide text-neutral-500;
+  @apply inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[10px] tracking-wide text-neutral-500;
   font-family: var(--font-mono);
 }
 
 .cmdk-footer {
-  @apply flex items-center gap-4 border-t border-neutral-800 px-5 py-2.5;
+  @apply flex items-center gap-4 border-t-2 border-white/[0.06] px-5 py-2.5;
 }
 
 .cmdk-hint {
@@ -452,13 +404,14 @@ summary:focus-visible {
 }
 
 .cmdk-hint kbd {
-  @apply rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 font-mono text-[10px] text-neutral-400;
+  @apply rounded-sm border-2 border-white/[0.1] bg-white/[0.05] px-1.5 py-0.5 font-mono text-[10px] text-neutral-400;
 }
 
 /* ---------- back to top ---------- */
 .back-to-top {
-  @apply fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900 text-neutral-400 opacity-0 transition-all duration-300 pointer-events-none;
+  @apply fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-sm border-2 border-white/[0.08] bg-neutral-900/60 backdrop-blur-xl text-neutral-400 opacity-0 transition-all duration-100 pointer-events-none;
   transform: translateY(10px);
+  box-shadow: 3px 3px 0 0 rgba(0, 0, 0, 0.4);
 }
 
 .back-to-top.visible {
@@ -467,29 +420,13 @@ summary:focus-visible {
 }
 
 .back-to-top:hover {
-  @apply border-cyan-500 text-cyan-300;
+  @apply border-cyan-500/40 text-cyan-300 bg-neutral-900/80;
 }
 
 /* ---------- ASCII divider ---------- */
 .ascii-divider {
   @apply my-8 select-none font-mono text-[10px] leading-relaxed tracking-[0.15em] text-neutral-800;
   white-space: pre;
-}
-
-/* ---------- Watermark ---------- */
-body::after {
-  content: "";
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 0;
-  width: 120px;
-  height: 120px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='monospace' font-size='16' fill='%23262626'%3EK%3C/text%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: 0.6;
-  pointer-events: none;
 }
 
 /* ---------- PRINT STYLESHEET ---------- */
@@ -517,6 +454,7 @@ body::after {
   .toc-sidebar,
   .ascii-banner,
   .ascii-divider,
+  .ambient-mesh,
   body::after {
     display: none !important;
   }
@@ -529,7 +467,7 @@ body::after {
     display: none !important;
   }
 
-  /* Kill all animations and glitch effects */
+  /* Kill all animations */
   *,
   *::before,
   *::after {
@@ -541,24 +479,16 @@ body::after {
     box-shadow: none !important;
   }
 
-  /* Glitch text becomes normal */
-  .glitch,
-  .glitch::before,
-  .glitch::after {
-    position: static;
-    color: #111 !important;
-    clip-path: none !important;
-    opacity: 1 !important;
-  }
-
   /* Cards and panels become simple bordered boxes */
   .panel,
+  .glass-panel,
   .card-lift {
     border: 1px solid #ddd !important;
     background: #fff !important;
     box-shadow: none !important;
     transform: none !important;
     break-inside: avoid;
+    backdrop-filter: none !important;
   }
 
   /* Links: show URL in print */

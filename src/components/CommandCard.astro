@@ -8,37 +8,34 @@ interface Props {
 
 const { title = "TL;DR", command, items = [], variant = "info" } = Astro.props;
 
-const accents: Record<string, { border: string; glow: string; dot: string }> = {
-  info: { border: "border-cyan-500/20", glow: "shadow-cyan-500/10", dot: "bg-cyan-400" },
-  success: { border: "border-emerald-500/20", glow: "shadow-emerald-500/10", dot: "bg-emerald-400" },
-  warning: { border: "border-amber-500/20", glow: "shadow-amber-500/10", dot: "bg-amber-400" },
-  danger: { border: "border-rose-500/20", glow: "shadow-rose-500/10", dot: "bg-rose-400" }
+const accents: Record<string, { border: string; dot: string }> = {
+  info: { border: "border-cyan-500/15", dot: "bg-cyan-400" },
+  success: { border: "border-emerald-500/15", dot: "bg-emerald-400" },
+  warning: { border: "border-amber-500/15", dot: "bg-amber-400" },
+  danger: { border: "border-rose-500/15", dot: "bg-rose-400" }
 };
 
 const accent = accents[variant] ?? accents.info;
 ---
 
-<section class={`panel border ${accent.border} overflow-hidden`}>
-  <header class="flex items-center justify-between gap-3 border-b border-neutral-800 px-4 py-2">
-    <div class="flex items-center gap-2">
-      <span class={`h-2 w-2 rounded-full ${accent.dot}`}></span>
-      <p class="text-xs tracking-wider text-neutral-300" style="font-family: var(--font-mono);">
-        {title}
-      </p>
-    </div>
-    <span class="text-[11px] text-neutral-500" style="font-family: var(--font-mono);">kyrux@labs</span>
+<section class={`glass-panel ${accent.border} overflow-hidden`}>
+  <header class="flex items-center justify-between gap-3 border-b-2 border-white/[0.06] px-4 py-2.5">
+    <p class="text-xs font-bold tracking-wider text-neutral-400" style="font-family: var(--font-mono);">
+      {title}
+    </p>
+    <span class="text-[11px] text-neutral-600" style="font-family: var(--font-mono);">kyrux@labs</span>
   </header>
 
-  <div class={`px-4 py-4`}>
+  <div class="px-4 py-4">
     {command && (
-      <pre class="m-0 overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-900 p-4 text-sm text-neutral-100"><code style="font-family: var(--font-mono);">$ {command}</code></pre>
+      <pre class="m-0 overflow-x-auto rounded-sm border-2 border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-4 text-sm text-neutral-100"><code style="font-family: var(--font-mono);">$ {command}</code></pre>
     )}
 
     {items.length > 0 && (
       <ul class="mt-4 space-y-2 text-sm text-neutral-300">
         {items.map((item) => (
           <li class="flex gap-3">
-            <span class="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-neutral-700"></span>
+            <span class={`mt-1.5 h-1.5 w-1.5 flex-none rounded-sm ${accent.dot}`}></span>
             <span>{item}</span>
           </li>
         ))}
@@ -48,4 +45,3 @@ const accent = accents[variant] ?? accents.info;
     <slot />
   </div>
 </section>
-

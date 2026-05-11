@@ -3,29 +3,29 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title="Search | Kyrux">
-  <section class="mb-6">
-    <h1 class="text-4xl font-semibold tracking-tight text-neutral-100">Search</h1>
-    <p class="mt-3 max-w-3xl text-neutral-400">
+  <section class="mb-8 pt-4">
+    <h1 class="text-4xl font-bold tracking-tight text-neutral-100">Search</h1>
+    <p class="mt-3 max-w-2xl text-neutral-400">
       Full-text search across write-ups and research notes (runs locally in your browser).
     </p>
   </section>
 
-  <div class="panel p-5">
+  <div class="glass-panel p-5 sm:p-6">
     <input
       id="search-input"
       type="search"
       placeholder="Try: graphql batching, xss, ssrf, race condition..."
-      class="w-full rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-cyan-500 focus:outline-none"
+      class="w-full rounded-sm border-2 border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-4 py-2.5 font-mono text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-cyan-500/40 focus:bg-white/[0.05] focus:outline-none transition-all duration-100"
     />
     <p id="search-hint" class="mt-3 text-xs text-neutral-500" style="font-family: var(--font-mono);">
       Index loads on first query. Tip: use multiple keywords.
     </p>
   </div>
 
-  <div class="mt-6 panel p-5">
-    <div class="mb-3 flex items-center justify-between gap-3">
-      <p class="text-xs tracking-wider text-neutral-300" style="font-family: var(--font-mono);">Results</p>
-      <p id="search-meta" class="text-xs text-neutral-500" style="font-family: var(--font-mono);"></p>
+  <div class="mt-6 glass-panel p-5 sm:p-6">
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <p class="font-mono text-xs tracking-wider text-neutral-300">Results</p>
+      <p id="search-meta" class="font-mono text-xs text-neutral-500"></p>
     </div>
     <ul id="search-results" class="space-y-3"></ul>
   </div>
@@ -36,15 +36,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     const meta = document.getElementById("search-meta");
 
     const loadPagefind = async () => {
-      // pagefind assets are generated into /pagefind/* after build
       const base = document.documentElement.baseURI;
       const u = new URL(base);
       const basePath = u.pathname.replace(/\/search\/?$/, "/");
       const scriptUrl = `${basePath}pagefind/pagefind.js`;
       await import(scriptUrl);
-      // @ts-ignore
       await window.pagefind?.init?.();
-      // @ts-ignore
       return window.pagefind;
     };
 
@@ -55,13 +52,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       list.innerHTML = "";
       items.forEach((item) => {
         const li = document.createElement("li");
-        li.className = "rounded-xl border border-neutral-800 bg-neutral-900 p-4";
+        li.className = "rounded-sm border-2 border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-4 transition-all duration-100 hover:border-white/[0.15] hover:bg-white/[0.04]";
         const a = document.createElement("a");
         a.href = item.url;
-        a.className = "text-lg font-medium text-neutral-100 hover:text-cyan-300";
+        a.className = "text-base font-medium text-neutral-100 hover:text-cyan-300 transition-colors duration-100";
         a.textContent = item.title || item.url;
         const p = document.createElement("p");
-        p.className = "mt-2 text-sm text-neutral-400";
+        p.className = "mt-2 text-sm text-neutral-400 leading-relaxed";
         p.textContent = item.excerpt || "";
         li.appendChild(a);
         li.appendChild(p);
@@ -86,10 +83,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     };
 
     input?.addEventListener("input", () => {
-      // debounce a little
       window.clearTimeout(window.__kyruxSearchTimer);
       window.__kyruxSearchTimer = window.setTimeout(run, 120);
     });
   </script>
 </BaseLayout>
-

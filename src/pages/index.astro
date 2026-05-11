@@ -1,81 +1,134 @@
 ---
-import { getPublishedBlogPosts, getPublishedCtfPosts } from "../lib/content";
+import { getPublishedBlogPosts, getPublishedCtfPosts, getTagCounts } from "../lib/content";
 import { estimateReadingTime, withBase } from "../utils";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import AsciiBanner from "../components/AsciiBanner.astro";
 
 const latestCtf = (await getPublishedCtfPosts()).slice(0, 3);
 const latestBlogs = (await getPublishedBlogPosts()).slice(0, 3);
+const allCtf = await getPublishedCtfPosts();
+const allBlogs = await getPublishedBlogPosts();
+const tagCounts = await getTagCounts();
 ---
 
 <BaseLayout title="Kyrux | Cyber Security Research Blog">
-  <AsciiBanner />
-
-  <section class="mb-10">
-    <p class="mb-2 font-mono text-[11px] tracking-[0.25em] text-neutral-600">
-      [kyrux@labs ~]$ whoami
-    </p>
-    <h1 class="text-4xl font-bold tracking-tight text-neutral-100 sm:text-5xl md:text-6xl">
-      Kyrux
-    </h1>
-    <p class="mt-4 max-w-xl font-mono text-sm leading-6 text-neutral-400">
-      Web exploitation & CTF write-ups. <span class="text-rose-400">0xDEADBEEF</span>.
-    </p>
+  <!-- Hero -->
+  <section class="py-16 sm:py-24">
+    <div class="max-w-2xl">
+      <p class="mb-4 font-mono text-[11px] tracking-[0.3em] text-neutral-500">
+        [kyrux@labs ~]$ whoami
+      </p>
+      <h1 class="text-5xl font-bold tracking-tight text-neutral-100 sm:text-6xl md:text-7xl">
+        Kyrux<span class="text-cyan-400">.</span>
+      </h1>
+      <p class="mt-5 max-w-xl text-base leading-7 text-neutral-400">
+        Web exploitation research & CTF write-ups. Breaking things to understand how they work.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a href={withBase("/ctf/")} class="inline-flex items-center gap-2 rounded-sm border-2 border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm text-neutral-200 hover:border-white/[0.2] hover:text-cyan-300 hover:bg-white/[0.06] backdrop-blur-sm transition-all duration-100">
+          <span class="text-cyan-400 font-mono">~/ctf</span>
+          <span class="text-neutral-500">→</span>
+        </a>
+        <a href={withBase("/blog/")} class="inline-flex items-center gap-2 rounded-sm border-2 border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm text-neutral-200 hover:border-white/[0.2] hover:text-cyan-300 hover:bg-white/[0.06] backdrop-blur-sm transition-all duration-100">
+          <span class="text-cyan-400 font-mono">~/blog</span>
+          <span class="text-neutral-500">→</span>
+        </a>
+      </div>
+    </div>
   </section>
 
-  <section class="reveal mb-10">
-    <div class="mb-4 flex items-center justify-between">
+  <!-- Stats strip -->
+  <section class="reveal mb-12">
+    <div class="grid grid-cols-3 gap-3">
+      <div class="glass-panel px-4 py-4 text-center">
+        <p class="font-mono text-2xl font-bold text-cyan-400">{allCtf.length}</p>
+        <p class="mt-1 text-[11px] text-neutral-500">CTF Write-ups</p>
+      </div>
+      <div class="glass-panel px-4 py-4 text-center">
+        <p class="font-mono text-2xl font-bold text-cyan-400">{allBlogs.length}</p>
+        <p class="mt-1 text-[11px] text-neutral-500">Research Posts</p>
+      </div>
+      <div class="glass-panel px-4 py-4 text-center">
+        <p class="font-mono text-2xl font-bold text-cyan-400">{tagCounts.length}</p>
+        <p class="mt-1 text-[11px] text-neutral-500">Topics</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest CTF -->
+  <section class="reveal mb-12">
+    <div class="mb-5 flex items-center justify-between">
       <h2 class="font-mono text-sm text-neutral-400">
         <span class="text-cyan-400">~/ctf</span>
+        <span class="ml-2 text-neutral-600">— latest</span>
       </h2>
-      <a href={withBase("/ctf/")} class="font-mono text-xs text-neutral-600 hover:text-cyan-400">all →</a>
+      <a href={withBase("/ctf/")} class="font-mono text-xs text-neutral-500 hover:text-cyan-400 transition-colors">view all →</a>
     </div>
-    <ul class="space-y-2">
+    <ul class="space-y-3">
       {latestCtf.map((entry) => (
-        <li class="group rounded-lg border border-neutral-900 bg-neutral-950 px-4 py-3 hover:border-neutral-800">
-          <a href={withBase(`/ctf/${entry.id}/`)} class="text-sm font-medium text-neutral-300 group-hover:text-cyan-300">
-            {entry.data.title}
+        <li class="glass-panel group card-lift px-5 py-4">
+          <a href={withBase(`/ctf/${entry.id}/`)} class="block">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-neutral-200 group-hover:text-cyan-300 transition-colors duration-100">
+                  {entry.data.title}
+                </p>
+                <div class="mt-2 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-neutral-500">
+                  <span>{entry.data.platform}</span>
+                  {entry.data.vulnerability_type && (
+                    <>
+                      <span class="text-neutral-700">·</span>
+                      <span>{entry.data.vulnerability_type}</span>
+                    </>
+                  )}
+                  {entry.data.difficulty && (
+                    <>
+                      <span class="text-neutral-700">·</span>
+                      <span class={`chip chip--${entry.data.difficulty.toLowerCase()}`}>{entry.data.difficulty}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <span class="mt-1 flex-shrink-0 text-neutral-600 group-hover:text-cyan-400 transition-colors duration-100" aria-hidden="true">→</span>
+            </div>
           </a>
-          <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-neutral-600">
-            <span>{entry.data.platform}</span>
-            <span class="text-neutral-800">·</span>
-            <span>{entry.data.vulnerability_type || entry.data.category}</span>
-            {entry.data.difficulty && (
-              <>
-                <span class="text-neutral-800">·</span>
-                <span class={`chip chip--${entry.data.difficulty.toLowerCase()}`}>{entry.data.difficulty}</span>
-              </>
-            )}
-          </div>
         </li>
       ))}
     </ul>
   </section>
 
+  <!-- Latest Blog -->
   <section class="reveal">
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-5 flex items-center justify-between">
       <h2 class="font-mono text-sm text-neutral-400">
         <span class="text-cyan-400">~/blog</span>
+        <span class="ml-2 text-neutral-600">— latest</span>
       </h2>
-      <a href={withBase("/blog/")} class="font-mono text-xs text-neutral-600 hover:text-cyan-400">all →</a>
+      <a href={withBase("/blog/")} class="font-mono text-xs text-neutral-500 hover:text-cyan-400 transition-colors">view all →</a>
     </div>
-    <ul class="space-y-2">
+    <ul class="space-y-3">
       {latestBlogs.map((entry) => (
-        <li class="group rounded-lg border border-neutral-900 bg-neutral-950 px-4 py-3 hover:border-neutral-800">
-          <a href={withBase(`/blog/${entry.id}/`)} class="text-sm font-medium text-neutral-300 group-hover:text-cyan-300">
-            {entry.data.title}
+        <li class="glass-panel group card-lift px-5 py-4">
+          <a href={withBase(`/blog/${entry.id}/`)} class="block">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-neutral-200 group-hover:text-cyan-300 transition-colors duration-100">
+                  {entry.data.title}
+                </p>
+                <div class="mt-2 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-neutral-500">
+                  <span>{entry.data.date.toLocaleDateString("en-CA")}</span>
+                  <span class="text-neutral-700">·</span>
+                  <span>{estimateReadingTime(entry.body || entry.data.description || "")} min read</span>
+                  {entry.data.tags.slice(0, 2).map((tag) => (
+                    <>
+                      <span class="text-neutral-700">·</span>
+                      <span>{tag}</span>
+                    </>
+                  ))}
+                </div>
+              </div>
+              <span class="mt-1 flex-shrink-0 text-neutral-600 group-hover:text-cyan-400 transition-colors duration-100" aria-hidden="true">→</span>
+            </div>
           </a>
-          <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-neutral-600">
-            <span>{entry.data.date.toLocaleDateString("en-CA")}</span>
-            <span class="text-neutral-800">·</span>
-            <span>{estimateReadingTime(entry.body || entry.data.description || "")} min read</span>
-            {entry.data.tags.slice(0, 2).map((tag) => (
-              <>
-                <span class="text-neutral-800">·</span>
-                <span>{tag}</span>
-              </>
-            ))}
-          </div>
         </li>
       ))}
     </ul>

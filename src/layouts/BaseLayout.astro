@@ -33,9 +33,7 @@ const navLinks = [
   { href: withBase("/ctf/"), label: "CTF" },
   { href: withBase("/blog/"), label: "Blog" },
   { href: withBase("/tags/"), label: "Tags" },
-  { href: withBase("/search/"), label: "Search" },
   { href: withBase("/about/"), label: "About" },
-  { href: "https://github.com/kyrux29", label: "GitHub", external: true },
 ];
 
 const blogEntries = await getPublishedBlogPosts();
@@ -100,25 +98,27 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
     <title>{title}</title>
 
   </head>
-  <body class="min-h-screen">
+  <body class="min-h-screen relative">
+    <!-- Ambient mesh background (glassmorphism foundation) -->
+    <div class="ambient-mesh" aria-hidden="true"></div>
+
     <!-- Skip-to-content -->
     <a href="#content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-neutral-900 focus:px-3 focus:py-2 focus:text-cyan-300">
       Skip to content
     </a>
 
-    <!-- Reading progress bar -->
-    <div id="reading-progress" class="fixed left-0 top-0 z-50 h-0.5 w-0 bg-cyan-400/90"></div>
+    <!-- Reading progress bar (XP bar style) -->
+    <canvas id="xp-bar" class="fixed left-0 top-0 z-50 h-[6px] w-full" style="image-rendering: pixelated;"></canvas>
 
-    <!-- Sticky header — full-width, outside content container -->
+    <!-- Sticky header -->
     <header id="site-header" class="sticky top-0 z-40 w-full border-b border-transparent transition-all duration-300">
-      <div class="absolute inset-0 bg-neutral-950/85 backdrop-blur-md"></div>
+      <div class="absolute inset-0 bg-neutral-950/70 backdrop-blur-2xl"></div>
       <div class="relative mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <a
           href={withBase("/")}
-          class="shrink-0 text-lg font-semibold tracking-tight text-neutral-100 hover:text-cyan-300 transition-colors glitch logo-glitch"
-          data-text="kyrux"
+          class="shrink-0 font-mono text-lg font-semibold tracking-tight text-neutral-100 hover:text-cyan-300 transition-colors"
         >
-          kyrux
+          kyrux<span class="text-cyan-400">.</span>
         </a>
         <nav aria-label="Main Navigation" class="min-w-0 flex-1">
           <ul class="flex min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap text-sm [scrollbar-width:none]">
@@ -127,12 +127,10 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
                 <li>
                   <a
                     href={link.href}
-                    target={link.external ? "_blank" : undefined}
-                    rel={link.external ? "noreferrer" : undefined}
                     class:list={[
-                      "relative rounded-md px-2 py-1 text-neutral-400 hover:text-cyan-300 transition-colors",
-                      !link.external && currentPath === new URL(link.href, Astro.url).pathname
-                        ? "text-cyan-300 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-1/2 after:rounded-full after:bg-cyan-400"
+                      "relative rounded-sm px-3 py-1.5 text-neutral-400 hover:text-cyan-300 hover:bg-white/[0.04] transition-all duration-100",
+                      currentPath === new URL(link.href, Astro.url).pathname
+                        ? "text-cyan-300 bg-white/[0.04] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-4 after:rounded-sm after:bg-cyan-400"
                         : ""
                     ]}
                   >
@@ -143,9 +141,9 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
             }
           </ul>
         </nav>
-        <div class="ml-auto flex shrink-0 items-center gap-2">
+        <div class="ml-auto flex shrink-0 items-center gap-1.5">
           <ThemeToggle />
-          <button id="terminal-toggle" type="button" class="inline-flex items-center gap-1.5 rounded-md border border-neutral-700/80 bg-neutral-900/80 px-2.5 py-1.5 font-mono text-xs text-neutral-300 hover:border-cyan-500 hover:text-cyan-300 hover:bg-neutral-800/80 transition-colors" title="Open terminal (Ctrl+`)">
+          <button id="terminal-toggle" type="button" class="inline-flex items-center gap-1.5 rounded-sm border-2 border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 font-mono text-xs text-neutral-400 hover:border-white/[0.2] hover:text-cyan-300 hover:bg-white/[0.06] backdrop-blur-sm transition-all duration-100" title="Open terminal (Ctrl+`)">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
             <span class="hidden sm:inline">terminal</span>
           </button>
@@ -153,14 +151,20 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
       </div>
     </header>
 
-    <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+    <div class="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 lg:px-8">
 
       <main id="content" class="flex-1">
         <slot />
       </main>
 
-      <footer class="mt-14 border-t border-neutral-800 pt-6 text-sm text-neutral-500">
-        <p>&copy; {new Date().getFullYear()} Kyrux &mdash; Vu Trong Quoc Khanh.</p>
+      <footer class="mt-16 border-t border-white/[0.06] pt-6 pb-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-500">
+          <p>&copy; {new Date().getFullYear()} Kyrux &mdash; Vu Trong Quoc Khanh.</p>
+          <div class="flex items-center gap-4">
+            <a href="https://github.com/kyrux29" target="_blank" rel="noreferrer" class="text-neutral-500 hover:text-cyan-400 transition-colors duration-100">GitHub</a>
+            <a href={withBase("/rss.xml")} class="text-neutral-500 hover:text-cyan-400 transition-colors duration-100">RSS</a>
+          </div>
+        </div>
       </footer>
     </div>
 
@@ -172,9 +176,9 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
     <CommandPalette />
     <BackToTop />
 
-    <!-- Cmd+K hint (shows on hover/press) -->
-    <div id="cmdk-hint" class="fixed bottom-6 left-6 z-40 hidden items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900/95 px-3 py-2 text-xs text-neutral-500 backdrop-blur-sm lg:flex" style="font-family: var(--font-mono);">
-      <kbd class="rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-neutral-300">Cmd+K</kbd>
+    <!-- Cmd+K hint -->
+    <div id="cmdk-hint" class="fixed bottom-6 left-6 z-40 hidden items-center gap-2 rounded-sm border-2 border-white/[0.06] bg-neutral-900/70 backdrop-blur-xl px-3 py-2 text-xs text-neutral-500 lg:flex" style="font-family: var(--font-mono);">
+      <kbd class="rounded-sm border-2 border-white/[0.1] bg-white/[0.05] px-1.5 py-0.5 text-neutral-300">Cmd+K</kbd>
       <span>Search</span>
     </div>
 
@@ -183,21 +187,44 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
 
     <script is:inline id="terminal-stats" type="application/json" set:html={JSON.stringify(terminalStats)}></script>
 
-    <!-- Reading progress bar script (tiny, kept inline for zero-overhead) -->
+    <!-- XP bar progress script -->
     <script is:inline>
-      const progressBar = document.getElementById("reading-progress");
-      const updateProgress = () => {
-        if (!progressBar) return;
-        const scrollTop = window.scrollY;
-        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = scrollHeight > 0 ? Math.min(100, (scrollTop / scrollHeight) * 100) : 0;
-        progressBar.style.width = `${progress}%`;
-      };
-      window.addEventListener("scroll", updateProgress, { passive: true });
-      updateProgress();
+      (function () {
+        const canvas = document.getElementById("xp-bar");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const SEG_W = 6; // pixel width of each XP segment
+        const GAP = 1;   // gap between segments
+        const BAR_H = 6;
+        const COLOR_FILL = "#22d3ee";   // cyan-400
+        const COLOR_EMPTY = "rgba(38,38,38,0.5)";
+
+        const resize = () => {
+          canvas.width = window.innerWidth;
+          canvas.height = BAR_H;
+        };
+        resize();
+        window.addEventListener("resize", resize);
+
+        const draw = () => {
+          const scrollTop = window.scrollY;
+          const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const progress = scrollHeight > 0 ? Math.min(1, scrollTop / scrollHeight) : 0;
+          const totalSegs = Math.floor(canvas.width / (SEG_W + GAP));
+          const filledSegs = Math.round(totalSegs * progress);
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          for (let i = 0; i < totalSegs; i++) {
+            ctx.fillStyle = i < filledSegs ? COLOR_FILL : COLOR_EMPTY;
+            ctx.fillRect(i * (SEG_W + GAP), 0, SEG_W, BAR_H);
+          }
+        };
+        window.addEventListener("scroll", draw, { passive: true });
+        draw();
+      })();
     </script>
 
-    <!-- Easter eggs: konami code, glitch + terminal toggle (Ctrl+`) -->
+    <!-- Easter eggs: konami code + terminal toggle (Ctrl+`) -->
     <script is:inline>
       (function() {
         // Konami code: ↑↑↓↓←→←→BA
@@ -254,27 +281,6 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
             }
           }
         });
-
-        // Glitch hover on the logo (random jitter)
-        var logo = document.querySelector('a[href="/"], a[href$="/"]');
-        if (logo) {
-          var glitchTimer = null;
-          logo.addEventListener("mouseenter", function() {
-            var el = logo;
-            var count = 0;
-            glitchTimer = setInterval(function() {
-              if (count >= 6) { clearInterval(glitchTimer); el.style.transform = ""; return; }
-              var dx = (Math.random() - 0.5) * 3;
-              var dy = (Math.random() - 0.5) * 2;
-              el.style.transform = "translate(" + dx + "px, " + dy + "px)";
-              count++;
-            }, 50);
-          });
-          logo.addEventListener("mouseleave", function() {
-            if (glitchTimer) clearInterval(glitchTimer);
-            logo.style.transform = "";
-          });
-        }
       })();
     </script>
 
@@ -285,19 +291,14 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
         if (!header) return;
         window.addEventListener("scroll", function() {
           var scrolled = window.scrollY > 8;
-          header.style.borderBottomColor = scrolled ? "rgba(38,38,38,0.6)" : "transparent";
-          header.style.boxShadow = scrolled ? "0 1px 2px 0 rgba(0,0,0,0.3)" : "none";
+          header.style.borderBottomColor = scrolled ? "rgba(255,255,255,0.04)" : "transparent";
         }, { passive: true });
       })();
     </script>
 
-    <!-- Restore CRT / cursor trail state from localStorage -->
+    <!-- Restore cursor trail state from localStorage -->
     <script is:inline>
       (function() {
-        // CRT scanlines
-        if (localStorage.getItem("crt-enabled") === "true") {
-          document.documentElement.setAttribute("data-crt", "true");
-        }
         // Cursor trail (delay until API is ready)
         if (localStorage.getItem("cursor-trail-enabled") === "true") {
           var check = setInterval(function() {
@@ -331,6 +332,41 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
         new MutationObserver(() => {
           document.querySelectorAll(".reveal:not(.reveal-active)").forEach((el) => observer.observe(el));
         }).observe(document.body, { childList: true, subtree: true });
+      })();
+    </script>
+    <!-- Click particle (block-break) effect -->
+    <script is:inline>
+      (function () {
+        var PARTICLE_COUNT = 4;
+        var LIFETIME = 350;
+        document.addEventListener("click", function (e) {
+          for (var i = 0; i < PARTICLE_COUNT; i++) {
+            var el = document.createElement("div");
+            var size = 3 + Math.floor(Math.random() * 4); // 3-6px
+            el.style.cssText =
+              "position:fixed;z-index:9999;pointer-events:none;" +
+              "width:" + size + "px;height:" + size + "px;" +
+              "background:#22d3ee;" + // cyan-400
+              "left:" + e.clientX + "px;top:" + e.clientY + "px;" +
+              "opacity:1;transition:none;";
+            document.body.appendChild(el);
+
+            var angle = (Math.PI * 2 * i) / PARTICLE_COUNT + (Math.random() - 0.5);
+            var dist = 18 + Math.random() * 22;
+            var tx = Math.cos(angle) * dist;
+            var ty = Math.sin(angle) * dist + 10; // slight gravity pull
+
+            // Force reflow then animate
+            el.getBoundingClientRect();
+            el.style.transition = "transform " + LIFETIME + "ms ease-out, opacity " + LIFETIME + "ms ease-out";
+            el.style.transform = "translate(" + tx + "px," + ty + "px) rotate(" + (Math.random() * 90) + "deg)";
+            el.style.opacity = "0";
+
+            setTimeout(function (node) {
+              node.remove();
+            }, LIFETIME + 50, el);
+          }
+        });
       })();
     </script>
   </body>
