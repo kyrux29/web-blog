@@ -6,12 +6,13 @@
     Arial, "Noto Sans", "Liberation Sans", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
+  --font-pixel: "Press Start 2P", "Courier New", monospace;
 }
 
 /* ---------- base ---------- */
 html {
   scroll-behavior: smooth;
-  cursor: crosshair;
+  cursor: url('/cursors/mc-pointer.svg') 0 0, auto;
 }
 
 html,
@@ -71,7 +72,7 @@ html[data-theme="dim"] body {
   z-index: 0;
   pointer-events: none;
   /* Dark overlay on top of the Minecraft background image */
-  background-color: rgb(5 5 5 / 0.88);
+  background-color: rgb(5 5 5 / 0.55);
   /* Subtle block grid on top of the overlay */
   background-image: 
     linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
@@ -144,14 +145,19 @@ html[data-theme="dim"] body {
   animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* ---------- card lift / minecraft hover ---------- */
+/* ---------- card lift / minecraft hover (floating item) ---------- */
+@keyframes mc-float {
+  0%, 100% { transform: translateY(-2px); }
+  50% { transform: translateY(-6px); }
+}
+
 .card-lift {
   @apply transition-all duration-100 ease-in-out;
   border: 2px solid transparent;
 }
 
 .card-lift:hover {
-  transform: translateY(-2px);
+  animation: mc-float 2s ease-in-out infinite;
   border: 2px solid rgba(255, 255, 255, 0.2);
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.5);
@@ -160,6 +166,12 @@ html[data-theme="dim"] body {
 /* ---------- links ---------- */
 a {
   @apply text-cyan-400 transition-colors hover:text-cyan-300;
+  cursor: url('/cursors/mc-hand.svg') 4 0, pointer;
+}
+
+/* Interactive elements use Minecraft hand cursor */
+button, [role="button"], input[type="submit"], select, summary {
+  cursor: url('/cursors/mc-hand.svg') 4 0, pointer;
 }
 
 a:focus-visible,
@@ -189,9 +201,11 @@ summary:focus-visible {
   @apply border-white/[0.1];
 }
 
-/* ---------- glass content (reading area – high contrast for readability) ---------- */
+/* ---------- glass content (reading area – frosted glass, heavy blur) ---------- */
 .glass-content {
-  @apply rounded-sm bg-neutral-950/80 backdrop-blur-2xl p-5 sm:p-8;
+  @apply rounded-sm bg-neutral-900/50 p-5 sm:p-8;
+  -webkit-backdrop-filter: blur(40px) saturate(120%);
+  backdrop-filter: blur(40px) saturate(120%);
   border: 2px solid;
   border-color: rgba(255,255,255,0.06) rgba(0,0,0,0.3) rgba(0,0,0,0.3) rgba(255,255,255,0.06);
   box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 0.4);
@@ -225,6 +239,13 @@ summary:focus-visible {
 
 .chip--unknown {
   @apply border-white/[0.08] bg-white/[0.04] text-neutral-400;
+}
+
+/* ---------- pixel font accent for page titles ---------- */
+/* Only applies to standalone page headings, NOT post/article titles */
+section > h1,
+.hero-title {
+  font-family: var(--font-pixel);
 }
 
 /* ---------- prose overrides ---------- */

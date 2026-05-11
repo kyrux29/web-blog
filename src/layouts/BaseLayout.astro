@@ -73,6 +73,10 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
     <!-- Font preloads for better LCP -->
     <link rel="preload" href="/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/geist-sans.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Pixel font for Minecraft accent (logo, headings) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 
     <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
     <link rel="icon" href={withBase("/favicon.ico")} />
@@ -116,7 +120,8 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
       <div class="relative mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <a
           href={withBase("/")}
-          class="shrink-0 font-mono text-lg font-semibold tracking-tight text-neutral-100 hover:text-cyan-300 transition-colors"
+          class="shrink-0 text-sm font-semibold tracking-tight text-neutral-100 hover:text-cyan-300 transition-colors"
+          style="font-family: var(--font-pixel);"
         >
           kyrux<span class="text-cyan-400">.</span>
         </a>
