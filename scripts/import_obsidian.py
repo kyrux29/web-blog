@@ -73,21 +73,24 @@ def parse_source_metadata(source_dir: Path) -> dict[str, str]:
     }
 
 
-def frontmatter_block(meta: dict[str, str], post_date: str) -> str:
-    return "\n".join(
-        [
-            "---",
-            f'title: "{meta["title"]}"',
-            f"date: {post_date}",
-            f'platform: "{meta["platform"]}"',
-            f'category: "{meta["category"]}"',
-            'difficulty: "Medium"',
-            f'tags: ["{slugify(meta["category_raw"])}", "{slugify(meta["platform"])}"]',
-            "draft: false",
-            "---",
-            "",
-        ]
-    )
+def frontmatter_block(meta: dict[str, str], post_date: str, difficulty: str = "Medium", series: str | None = None) -> str:
+    lines = [
+        "---",
+        f'title: "{meta["title"]}"',
+        f"date: {post_date}",
+        f'platform: "{meta["platform"]}"',
+        f'category: "{meta["category"]}"',
+        f'difficulty: "{difficulty}"',
+        f'tags: ["{slugify(meta["category_raw"])}", "{slugify(meta["platform"])}"]',
+    ]
+    if series:
+        lines.append(f'series: "{series}"')
+    lines.extend([
+        "draft: false",
+        "---",
+        "",
+    ])
+    return "\n".join(lines)
 
 
 def find_challenge_dirs(root_dir: Path) -> list[Path]:
@@ -97,15 +100,16 @@ def find_challenge_dirs(root_dir: Path) -> list[Path]:
     return sorted(found)
 
 
-def import_one(source_dir: Path, out_root: Path, post_date: str, overwrite: bool) -> tuple[bool, Path]:
+def import_one(source_dir: Path, out_root: Path, post_date: str, overwrite: bool, series: str | None = None) -> tuple[bool, Path]:
     readme_path = source_dir / "README.md"
     images_path = source_dir / "images"
     if not readme_path.exists():
         raise FileNotFoundError(f"README.md not found at: {readme_path}")
 
     meta = parse_source_metadata(source_dir)
-    bundle_slug = f'{platform_prefix(meta["platform"])}-{slugify(meta["category_raw"])}-{slugify(meta["title"])}'
-    bundle_dir = out_root / bundle_slug
+    folder_group = slugify(series) if series else platform_prefix(meta["platform"])
+    bundle_slug = f'{slugify(meta["category_raw"])}-{slugify(meta["title"])}'
+    bundle_dir = out_root / folder_group / bundle_slug
     index_path = bundle_dir / "index.md"
 
     if bundle_dir.exists():
@@ -121,8 +125,13 @@ def import_one(source_dir: Path, out_root: Path, post_date: str, overwrite: bool
     content = readme_path.read_text(encoding="utf-8")
     content = fix_image_links(content)
 
+    difficulty = "Medium"
+    diff_match = re.search(r"-\s*\*\*Difficulty\*\*:\s*(.*)", content, flags=re.IGNORECASE)
+    if diff_match:
+        difficulty = diff_match.group(1).strip()
+
     if not content.lstrip().startswith("---"):
-        content = f"{frontmatter_block(meta, post_date)}\n{content}"
+        content = f"{frontmatter_block(meta, post_date, difficulty, series)}\n{content}"
 
     index_path.write_text(content, encoding="utf-8")
     return True, bundle_dir
@@ -137,6 +146,7 @@ def main() -> None:
     parser.add_argument("--date", default=str(date.today()), help="Frontmatter date (YYYY-MM-DD)")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing destination bundles")
     parser.add_argument("--bulk", action="store_true", help="Import all README.md challenge folders recursively")
+    parser.add_argument("--series", default=None, help="Optional series name to group related write-ups")
     args = parser.parse_args()
 
     source = Path(args.source).resolve()
@@ -152,10 +162,11 @@ def main() -> None:
 
         imported = 0
         skipped = 0
+
         for challenge_dir in challenge_dirs:
             try:
                 did_import, bundle_dir = import_one(
-                    challenge_dir, out_root, args.date, overwrite=args.overwrite
+                    challenge_dir, out_root, args.date, overwrite=args.overwrite, series=args.series
                 )
                 if did_import:
                     imported += 1
@@ -170,7 +181,7 @@ def main() -> None:
         print(f"Done. Imported: {imported}, Skipped: {skipped}, Total: {len(challenge_dirs)}")
         return
 
-    did_import, bundle_dir = import_one(source, out_root, args.date, overwrite=args.overwrite)
+    did_import, bundle_dir = import_one(source, out_root, args.date, overwrite=args.overwrite, series=args.series)
     if did_import:
         print(f"Imported: {bundle_dir}")
     else:

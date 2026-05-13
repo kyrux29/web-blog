@@ -13,6 +13,7 @@ const ctf = defineCollection({
     tags: z.array(z.string()).default([]),
     password: z.string().optional(),
     password_env: z.string().optional(),
+    series: z.string().optional(),
     draft: z.boolean().default(false)
   })
 });
@@ -26,6 +27,7 @@ const blog = defineCollection({
     tags: z.array(z.string()).default([]),
     password: z.string().optional(),
     password_env: z.string().optional(),
+    series: z.string().optional(),
     draft: z.boolean().default(false)
   })
 });

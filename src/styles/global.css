@@ -241,6 +241,53 @@ summary:focus-visible {
   @apply border-white/[0.08] bg-white/[0.04] text-neutral-400;
 }
 
+/* ---------- filter bar utilities ---------- */
+.filter-input {
+  @apply w-full rounded-sm border-2 border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-4 py-2.5 font-mono text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-cyan-500/40 focus:bg-white/[0.05] focus:outline-none transition-all duration-100;
+}
+
+.filter-select {
+  @apply rounded-sm border-2 border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-3 py-2.5 font-mono text-sm text-neutral-200 focus:border-cyan-500/40 focus:outline-none transition-all duration-100;
+}
+
+.filter-btn {
+  @apply rounded-sm border-2 border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-3 py-2.5 font-mono text-sm text-neutral-400 hover:border-white/[0.2] hover:text-cyan-300 transition-all duration-100;
+}
+
+/* ---------- minecraft nav ---------- */
+.mc-nav {
+  border: 2px solid;
+  border-color: rgba(255,255,255,0.06) rgba(0,0,0,0.2) rgba(0,0,0,0.2) rgba(255,255,255,0.06);
+  background:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+.mc-nav-item {
+  @apply relative rounded-sm px-3 py-1.5 text-neutral-400 transition-all duration-100;
+  border: 2px solid transparent;
+}
+
+.mc-nav-item:hover {
+  @apply text-cyan-300;
+  border-color: rgba(255,255,255,0.1) rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(255,255,255,0.1);
+  background-color: rgba(255,255,255,0.04);
+  box-shadow: inset 0 0 8px rgba(6,182,212,0.08);
+}
+
+.mc-nav-item.active {
+  @apply text-cyan-300;
+  border-color: rgba(6,182,212,0.25) rgba(0,0,0,0.2) rgba(0,0,0,0.2) rgba(6,182,212,0.25);
+  background-color: rgba(6,182,212,0.06);
+  box-shadow: inset 0 0 12px rgba(6,182,212,0.1), 0 0 4px rgba(6,182,212,0.05);
+}
+
+.mc-nav-item.active::after {
+  content: "";
+  @apply absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-sm bg-cyan-400;
+}
+
 /* ---------- pixel font accent for page titles ---------- */
 /* Only applies to standalone page headings, NOT post/article titles */
 section > h1,

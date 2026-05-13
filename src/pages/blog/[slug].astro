@@ -33,6 +33,8 @@ const related = await getRelatedPosts(entry, 4);
   collectionType="blog"
   bodyText={entry.body}
   relatedPosts={related}
+  series={entry.data.series}
+  currentPostId={entry.id}
 >
   <Content />
 </PostLayout>

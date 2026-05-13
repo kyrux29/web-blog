@@ -115,13 +115,13 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
     <canvas id="xp-bar" class="fixed left-0 top-0 z-50 h-[6px] w-full" style="image-rendering: pixelated;"></canvas>
 
     <!-- Sticky header -->
-    <header id="site-header" class="sticky top-0 z-40 w-full border-b border-transparent transition-all duration-300">
-      <div class="absolute inset-0 bg-neutral-950/70 backdrop-blur-2xl"></div>
+    <header id="site-header" class="sticky top-0 z-40 w-full transition-all duration-300">
+      <div class="absolute inset-0 bg-neutral-950/80 backdrop-blur-2xl mc-nav"></div>
       <div class="relative mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <a
           href={withBase("/")}
           class="shrink-0 text-sm font-semibold tracking-tight text-neutral-100 hover:text-cyan-300 transition-colors"
-          style="font-family: var(--font-pixel);"
+          style="font-family: var(--font-pixel); text-shadow: 0 0 8px rgba(6,182,212,0.3);"
         >
           kyrux<span class="text-cyan-400">.</span>
         </a>
@@ -133,9 +133,9 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
                   <a
                     href={link.href}
                     class:list={[
-                      "relative rounded-sm px-3 py-1.5 text-neutral-400 hover:text-cyan-300 hover:bg-white/[0.04] transition-all duration-100",
+                      "mc-nav-item",
                       currentPath === new URL(link.href, Astro.url).pathname
-                        ? "text-cyan-300 bg-white/[0.04] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-4 after:rounded-sm after:bg-cyan-400"
+                        ? "active"
                         : ""
                     ]}
                   >
@@ -148,7 +148,7 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
         </nav>
         <div class="ml-auto flex shrink-0 items-center gap-1.5">
           <ThemeToggle />
-          <button id="terminal-toggle" type="button" class="inline-flex items-center gap-1.5 rounded-sm border-2 border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 font-mono text-xs text-neutral-400 hover:border-white/[0.2] hover:text-cyan-300 hover:bg-white/[0.06] backdrop-blur-sm transition-all duration-100" title="Open terminal (Ctrl+`)">
+          <button id="terminal-toggle" type="button" class="mc-nav-item inline-flex items-center gap-1.5 px-2.5 py-1.5 font-mono text-xs" title="Open terminal (Ctrl+`)">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
             <span class="hidden sm:inline">terminal</span>
           </button>

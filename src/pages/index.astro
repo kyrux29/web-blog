@@ -74,18 +74,14 @@ const tagCounts = await getTagCounts();
                 </p>
                 <div class="mt-2 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-neutral-500">
                   <span>{entry.data.platform}</span>
-                  {entry.data.vulnerability_type && (
-                    <>
-                      <span class="text-neutral-700">·</span>
-                      <span>{entry.data.vulnerability_type}</span>
-                    </>
-                  )}
                   {entry.data.difficulty && (
                     <>
                       <span class="text-neutral-700">·</span>
                       <span class={`chip chip--${entry.data.difficulty.toLowerCase()}`}>{entry.data.difficulty}</span>
                     </>
                   )}
+                  <span class="text-neutral-700">·</span>
+                  <span>{entry.data.date.toLocaleDateString("en-CA")}</span>
                 </div>
               </div>
               <span class="mt-1 flex-shrink-0 text-neutral-600 group-hover:text-cyan-400 transition-colors duration-100" aria-hidden="true">→</span>
