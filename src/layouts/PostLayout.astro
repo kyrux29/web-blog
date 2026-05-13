@@ -22,6 +22,10 @@ interface Props {
   lastModified?: Date;
   /** Related posts calculated by tag overlap */
   relatedPosts?: any[];
+  /** Series name for grouping */
+  series?: string;
+  /** Current post ID */
+  currentPostId?: string;
 }
 
 const {
@@ -36,6 +40,8 @@ const {
   bodyText,
   lastModified,
   relatedPosts = [],
+  series,
+  currentPostId,
 } = Astro.props;
 
 const chipLabel = collectionType === "ctf" ? "CTF Write-up" : "Research";
