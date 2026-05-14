@@ -1,11 +1,11 @@
 ---
 title: "C.O.P"
-date: 2026-04-23
+date: 2026-05-14
 platform: "HackTheBox"
 category: "Web"
-difficulty: "Medium"
+difficulty: "Easy"
 tags: ["web", "hackthebox"]
-series: "HackTheBox Web Series"
+series: "HackTheBox"
 draft: false
 ---
 

@@ -1,11 +1,11 @@
 ---
 title: "BrOWSER BOSS FIGHT"
-date: 2026-05-13
+date: 2026-05-14
 platform: "UMassCTF 2026"
 category: "Web"
-difficulty: "Medium"
+difficulty: "Easy"
 tags: ["web", "umassctf-2026"]
-series: "UMMassCTF 2026"
+series: "UMassCTF 2026"
 draft: false
 ---
 
@@ -15,7 +15,7 @@ draft: false
 - **Event**: UMassCTF 2026
 - **Author**: Ian/ianstadtlander
 - **Difficulty**: Easy
-- **Tags**: #web #
+- **Tags**: #web
 ---
 ## 1. Description
 >This familiar brick castle is hiding something... can you break in and defeat the Koopa King?

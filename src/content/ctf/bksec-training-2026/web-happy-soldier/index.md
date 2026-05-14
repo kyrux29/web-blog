@@ -1,9 +1,9 @@
 ---
 title: "Happy Soldier"
-date: 2026-05-13
+date: 2026-05-14
 platform: "BKSEC_training"
 category: "Web"
-difficulty: "Medium"
+difficulty: "Hidden"
 tags: ["web", "bksec-training"]
 series: "BKSEC Training 2026"
 draft: false
@@ -15,6 +15,7 @@ draft: false
 - **Category**: Web Exploitation
 - **Event**: BKSEC training 2026
 - **Author**: shibajutsu
+- **Difficulty**: Hidden
 - **Tags**: #web #arjun #PHPInjection
 ---
 ## 1. Description

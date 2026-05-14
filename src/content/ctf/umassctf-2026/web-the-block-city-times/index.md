@@ -1,11 +1,11 @@
 ---
 title: "The Block City Times"
-date: 2026-05-13
+date: 2026-05-14
 platform: "UMassCTF 2026"
 category: "Web"
 difficulty: "Medium"
 tags: ["web", "umassctf-2026"]
-series: "UMMassCTF 2026"
+series: "UMassCTF 2026"
 draft: false
 ---
 

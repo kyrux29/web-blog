@@ -1,10 +1,11 @@
 ---
 title: "Dusty Alleys"
-date: 2026-04-23
+date: 2026-05-14
 platform: "HackTheBox"
 category: "Web"
 difficulty: "Medium"
 tags: ["web", "hackthebox"]
+series: "HackTheBox"
 draft: false
 ---
 

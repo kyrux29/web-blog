@@ -1,11 +1,11 @@
 ---
 title: "Resizer"
-password: "HTB{7f3a6cd2af4ac2fd8bc47710679b98bd}"
-date: 2026-04-23
+date: 2026-05-14
 platform: "HackTheBox"
 category: "Web"
 difficulty: "Hard"
 tags: ["web", "hackthebox"]
+series: "HackTheBox"
 draft: false
 ---
 

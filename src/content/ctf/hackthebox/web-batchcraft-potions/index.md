@@ -1,10 +1,11 @@
 ---
 title: "BatchCraft Potions"
-date: 2026-05-07
+date: 2026-05-14
 platform: "HackTheBox"
 category: "Web"
 difficulty: "Medium"
 tags: ["web", "hackthebox"]
+series: "HackTheBox"
 draft: false
 ---
 

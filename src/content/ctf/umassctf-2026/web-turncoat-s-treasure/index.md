@@ -1,11 +1,11 @@
 ---
 title: "Turncoat's Treasure"
-date: 2026-05-13
+date: 2026-05-14
 platform: "UMassCTF 2026"
 category: "Web"
-difficulty: "Medium"
+difficulty: "Hidden"
 tags: ["web", "umassctf-2026"]
-series: "UMMassCTF 2026"
+series: "UMassCTF 2026"
 draft: false
 ---
 
@@ -14,8 +14,8 @@ draft: false
 - **Category**: Web Exploitation
 - **Event**: UMassCTF 2026
 - **Author**: atch2203
-- **Difficulty**: None
-- **Tags**: #web #
+- **Difficulty**: Hidden
+- **Tags**: #web
 ---
 ## 1. Description
 >After 3 decades of service in the pirate's crew, you have decided that now is a good time to retire. However, you're currently broke, and need a solid fund to live confortably in retirement. Steal the treasure from the captain!

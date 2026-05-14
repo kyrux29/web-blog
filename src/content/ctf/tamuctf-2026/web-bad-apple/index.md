@@ -1,11 +1,11 @@
 ---
 title: "bad_apple"
-date: 2026-05-13
+date: 2026-05-14
 platform: "TAMUCTF"
 category: "Web"
-difficulty: "Medium"
+difficulty: "Hidden"
 tags: ["web", "tamuctf"]
-series: "tamuctf 2026"
+series: "TAMUCTF 2026"
 draft: false
 ---
 
@@ -14,6 +14,7 @@ draft: false
 - **Category**: Web Exploitation
 - **Event**: TAMUCTF 2026
 - **Author**: moveslow
+- **Difficulty**: Hidden
 - **Tags**: #web #Path_Traversal
 ---
 ## 1. Description

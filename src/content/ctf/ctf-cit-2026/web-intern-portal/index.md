@@ -1,11 +1,11 @@
 ---
 title: "Intern Portal"
-date: 2026-05-13
+date: 2026-05-14
 platform: "CTF@CIT 2026"
 category: "Web"
-difficulty: "Medium"
+difficulty: "Hidden"
 tags: ["web", "ctf-cit-2026"]
-series: "cit@ctf"
+series: "CTF@CIT 2026"
 draft: false
 ---
 
@@ -14,7 +14,7 @@ draft: false
 - **Category**: Web Exploitation
 - **Event**: CTF@CIT 2026
 - **Author**: 10splayaSec
-- **Difficulty**: None
+- **Difficulty**: Hidden
 - **Tags**: #web
 ---
 ## 1. Description
