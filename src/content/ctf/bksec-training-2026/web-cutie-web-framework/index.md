@@ -1,6 +1,6 @@
 ---
 title: "cutie web framework"
-date: 2026-05-14
+date: 2026-05-13
 platform: "BKSEC_training"
 category: "Web"
 difficulty: "Hidden"
