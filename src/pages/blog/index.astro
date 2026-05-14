@@ -4,78 +4,69 @@ import { withBase } from "../../utils";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 const blogEntries = await getPublishedBlogPosts();
-const tagHref = (tag: string) => withBase(`/tags/${encodeURIComponent(tag)}/`);
+
+// Group by series
+const groupedBySeries = blogEntries.reduce((acc, entry) => {
+  const seriesName = entry.data.series || "Uncategorized";
+  if (!acc[seriesName]) {
+    acc[seriesName] = {
+      title: seriesName,
+      order: entry.data.seriesOrder ?? 999,
+      posts: []
+    };
+  }
+  acc[seriesName].posts.push(entry);
+  return acc;
+}, {} as Record<string, { title: string; order: number; posts: any[] }>);
+
+const seriesGroups = Object.values(groupedBySeries).sort((a, b) => a.order - b.order);
+
+// Sort posts inside each series alphabetically by ID or title
+seriesGroups.forEach(group => {
+  group.posts.sort((a, b) => a.id.localeCompare(b.id));
+});
 ---
 
-<BaseLayout title="Blog | Kyrux">
+<BaseLayout title="Documentation Library | Kyrux">
   <section class="mb-8 pt-4">
-    <h1 class="text-4xl font-bold tracking-tight text-neutral-100">Research Archive</h1>
+    <h1 class="text-4xl font-bold tracking-tight text-neutral-100">Documentation Library</h1>
     <p class="mt-3 max-w-2xl text-neutral-400">
-      Research notes on web security, tooling, reverse engineering, and exploitation workflows.
+      Structured learning paths and comprehensive notes on web security, system administration, and exploitation techniques.
     </p>
-    <div class="mt-6">
-      <input
-        id="blog-search"
-        type="search"
-        placeholder="Search by title, tags, or summary..."
-        class="w-full rounded-sm border-2 border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-4 py-2.5 font-mono text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-cyan-500/40 focus:bg-white/[0.05] focus:outline-none transition-all duration-100"
-      />
-    </div>
   </section>
 
-  <ul id="blog-list" class="space-y-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
     {
-      blogEntries.map((entry) => (
-        <li
-          class="glass-panel group card-lift p-5"
-          data-search={`${entry.data.title} ${entry.data.description} ${entry.data.tags.join(" ")}`.toLowerCase()}
-        >
-          <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
-            <span class="chip">{entry.data.date.toLocaleDateString("en-CA")}</span>
-            <span class="chip">Research</span>
-            {(entry.data.password || entry.data.password_env) && <span class="chip chip--hard">Protected</span>}
+      seriesGroups.map((group) => (
+        <div class="glass-panel group card-lift p-6 flex flex-col relative overflow-hidden bg-white/[0.02] border-white/[0.05]">
+          <div class="mb-4 flex items-center justify-between border-b border-white/[0.08] pb-3">
+            <h2 class="font-sans text-xl font-bold text-cyan-100 tracking-tight group-hover:text-cyan-300 transition-colors">
+              {group.title}
+            </h2>
+            <span class="font-mono text-xs text-neutral-500 bg-white/[0.03] px-2 py-1 rounded-sm border border-white/[0.05]">
+              {group.posts.length} {group.posts.length === 1 ? 'chapter' : 'chapters'}
+            </span>
           </div>
-          <a
-            href={withBase(`/blog/${entry.id}/`)}
-            class="text-xl font-semibold leading-tight text-neutral-100 hover:text-cyan-300 transition-colors duration-100"
-          >
-            {entry.data.title}
-          </a>
-          <p class="mt-3 text-sm text-neutral-400 leading-relaxed">{entry.data.description}</p>
-          <div class="mt-4 flex items-center justify-between gap-3">
-            <div class="flex flex-wrap gap-2">
-              {entry.data.tags.map((tag) => (
-                <a class="chip hover:text-cyan-300 hover:border-cyan-500/20" href={tagHref(tag)}>
-                  {tag}
+          
+          <ul class="space-y-1.5 flex-1 mt-2">
+            {group.posts.map((post, index) => (
+              <li>
+                <a 
+                  href={withBase(`/blog/${post.id}/`)} 
+                  class="group/link flex items-baseline gap-3 rounded-md px-2 py-1.5 hover:bg-white/[0.03] transition-colors"
+                >
+                  <span class="font-mono text-xs text-neutral-600 group-hover/link:text-cyan-500 transition-colors">
+                    {(index + 1).toString().padStart(2, '0')}
+                  </span>
+                  <span class="text-sm font-medium text-neutral-300 group-hover/link:text-cyan-300 transition-colors">
+                    {post.data.title}
+                  </span>
                 </a>
-              ))}
-            </div>
-            <span class="text-lg text-neutral-600 transition-colors duration-100 group-hover:text-cyan-400" aria-hidden="true">→</span>
-          </div>
-        </li>
+              </li>
+            ))}
+          </ul>
+        </div>
       ))
     }
-  </ul>
-
-  <p id="blog-empty" class="reveal mt-6 hidden font-mono text-sm text-neutral-400">No matching posts found.</p>
-
-  <script is:inline>
-    const blogSearch = document.getElementById("blog-search");
-    const blogItems = Array.from(document.querySelectorAll("#blog-list > li"));
-    const blogEmpty = document.getElementById("blog-empty");
-
-    const runBlogFilter = () => {
-      const query = (blogSearch?.value ?? "").trim().toLowerCase();
-      let visible = 0;
-      blogItems.forEach((item) => {
-        const haystack = item.getAttribute("data-search") ?? "";
-        const match = !query || haystack.includes(query);
-        item.classList.toggle("hidden", !match);
-        if (match) visible += 1;
-      });
-      blogEmpty?.classList.toggle("hidden", visible > 0);
-    };
-
-    blogSearch?.addEventListener("input", runBlogFilter);
-  </script>
+  </div>
 </BaseLayout>

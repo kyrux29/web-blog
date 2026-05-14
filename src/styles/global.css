@@ -12,7 +12,7 @@
 /* ---------- base ---------- */
 html {
   scroll-behavior: smooth;
-  cursor: url('/cursors/mc-pointer.svg') 0 0, auto;
+  cursor: crosshair;
 }
 
 html,
@@ -166,12 +166,12 @@ html[data-theme="dim"] body {
 /* ---------- links ---------- */
 a {
   @apply text-cyan-400 transition-colors hover:text-cyan-300;
-  cursor: url('/cursors/mc-hand.svg') 4 0, pointer;
+  cursor: pointer;
 }
 
-/* Interactive elements use Minecraft hand cursor */
+/* Interactive elements use standard pointer */
 button, [role="button"], input[type="submit"], select, summary {
-  cursor: url('/cursors/mc-hand.svg') 4 0, pointer;
+  cursor: pointer;
 }
 
 a:focus-visible,
@@ -256,36 +256,52 @@ summary:focus-visible {
 
 /* ---------- minecraft nav ---------- */
 .mc-nav {
-  border: 2px solid;
-  border-color: rgba(255,255,255,0.06) rgba(0,0,0,0.2) rgba(0,0,0,0.2) rgba(255,255,255,0.06);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(255,255,255,0.04);
   background:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-  background-size: 8px 8px;
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 7px,
+      rgba(255,255,255,0.012) 7px,
+      rgba(255,255,255,0.012) 8px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 7px,
+      rgba(255,255,255,0.012) 7px,
+      rgba(255,255,255,0.012) 8px
+    );
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
 .mc-nav-item {
-  @apply relative rounded-sm px-3 py-1.5 text-neutral-400 transition-all duration-100;
+  @apply relative rounded-none px-3 py-1.5 text-neutral-400 font-medium transition-all duration-100;
   border: 2px solid transparent;
 }
 
 .mc-nav-item:hover {
-  @apply text-cyan-300;
-  border-color: rgba(255,255,255,0.1) rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(255,255,255,0.1);
-  background-color: rgba(255,255,255,0.04);
-  box-shadow: inset 0 0 8px rgba(6,182,212,0.08);
+  @apply text-neutral-100;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.3);
+  border-left-color: rgba(255, 255, 255, 0.3);
+  border-bottom-color: rgba(0, 0, 0, 0.6);
+  border-right-color: rgba(0, 0, 0, 0.6);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
 }
 
 .mc-nav-item.active {
   @apply text-cyan-300;
-  border-color: rgba(6,182,212,0.25) rgba(0,0,0,0.2) rgba(0,0,0,0.2) rgba(6,182,212,0.25);
-  background-color: rgba(6,182,212,0.06);
-  box-shadow: inset 0 0 12px rgba(6,182,212,0.1), 0 0 4px rgba(6,182,212,0.05);
-}
-
-.mc-nav-item.active::after {
-  content: "";
-  @apply absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-sm bg-cyan-400;
+  background-color: rgba(6, 182, 212, 0.15);
+  /* Pressed block effect */
+  border-top-color: rgba(0, 0, 0, 0.6);
+  border-left-color: rgba(0, 0, 0, 0.6);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
 }
 
 /* ---------- pixel font accent for page titles ---------- */

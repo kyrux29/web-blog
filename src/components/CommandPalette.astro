@@ -36,7 +36,7 @@
     const base = document.documentElement.baseURI;
     const u = new URL(base);
     const basePath = u.pathname.replace(/\/[^/]*\/?$/, "/");
-    await import(`${basePath}pagefind/pagefind.js`);
+    await import(/* @vite-ignore */ `${basePath}pagefind/pagefind.js`);
     await (window as any).pagefind?.init?.();
     return (window as any).pagefind;
   };
