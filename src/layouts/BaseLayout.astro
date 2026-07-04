@@ -1,6 +1,6 @@
 ---
 // BaseLayout – root layout shell for every page.
-// Composes: ViewTransitions, CSP, font preloads, nav, footer, and
+// Composes: ViewTransitions, CSP, nav, footer, and
 // interactive islands (ThemeToggle, Terminal, CopyButton, ImageLightbox).
 import "../styles/global.css";
 import { getPublishedBlogPosts, getPublishedCtfPosts, getTagCounts } from "../lib/content";
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const { title, description = "Kyrux cybersecurity research blog" } = Astro.props;
-const siteUrl = Astro.site ?? new URL("https://kyrux29.github.io");
+const siteUrl = Astro.site ?? new URL("https://kyrux.xyz");
 const canonicalUrl = new URL(Astro.url.pathname + Astro.url.search, siteUrl).toString();
 const ogImageUrl = new URL(
   `${withBase("/og.svg")}?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(description)}`,
@@ -67,12 +67,9 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
     <!-- CSP baseline: self-origin + data URIs for inline images. Astro hash will be injected automatically. -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-src 'self' https:;"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'self' https:;"
     />
 
-    <!-- Font preloads for better LCP -->
-    <link rel="preload" href="/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/geist-sans.woff2" as="font" type="font/woff2" crossorigin />
     <!-- Pixel font for Minecraft accent (logo, headings) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

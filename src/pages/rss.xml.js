@@ -2,7 +2,7 @@ import rss from "@astrojs/rss";
 import { getCollection } from "astro:content";
 
 export async function GET(context) {
-  const site = context.site ?? new URL("https://kyrux29.github.io");
+  const site = context.site ?? new URL("https://kyrux.xyz");
 
   const ctfEntries = (await getCollection("ctf", ({ data }) => !data.draft)).sort(
     (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
@@ -33,4 +33,3 @@ export async function GET(context) {
     items
   });
 }
-

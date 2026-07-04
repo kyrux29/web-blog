@@ -2,7 +2,7 @@
 import type { APIContext } from "astro";
 
 export async function GET({ site }: APIContext) {
-  const base = (site ?? new URL("https://kyrux29.github.io")).origin;
+  const base = (site ?? new URL("https://kyrux.xyz")).origin;
   const body = [
     "User-agent: *",
     "Allow: /",

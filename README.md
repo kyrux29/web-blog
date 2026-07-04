@@ -284,7 +284,7 @@ Deployment is fully automated via GitHub Actions (`.github/workflows/deploy.yml`
 
 1. **Lint** — `pnpm run lint` (astro check)
 2. **Typecheck** — `pnpm run check`
-3. **Build** — `pnpm run build` (with auto `BASE_PATH` detection)
+3. **Build** — `pnpm run build` for `https://kyrux.xyz/`
 4. **Link check** — lychee scans all internal links in `dist/`
 5. **Deploy** — `actions/deploy-pages@v4`
 
@@ -294,9 +294,10 @@ Deployment is fully automated via GitHub Actions (`.github/workflows/deploy.yml`
 2. In repo **Settings → Pages**, set **Source** to **GitHub Actions**
 3. Every push to `main` deploys automatically
 
-The workflow auto-detects the base path:
-- `username.github.io` repo → deploys at `/`
-- Normal repo (e.g. `kyrux_blog`) → deploys at `/<repo-name>`
+The workflow deploys to the custom domain root:
+- `SITE_URL=https://kyrux.xyz`
+- `BASE_PATH=/`
+- `public/CNAME` keeps the custom domain in the published artifact
 
 ---
 

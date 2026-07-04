@@ -6,13 +6,14 @@ import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
+const site = process.env.SITE_URL ?? 'https://kyrux.xyz';
+const base = process.env.BASE_PATH ?? '/';
+const normalizedBase = base.startsWith('/') ? base : `/${base}`;
+
 // https://astro.build/config
 export default defineConfig({
-  // 1. Cập nhật `site` thành tên miền gốc của bạn
-  site: 'https://kyrux.xyz',
-  
-  // 2. Fix cứng `base` là '/' để loại bỏ hoàn toàn dính dáng đến '/web-blog'
-  base: '/',
+  site,
+  base: normalizedBase.endsWith('/') ? normalizedBase : `${normalizedBase}/`,
   
   vite: {
     plugins: [tailwindcss()]

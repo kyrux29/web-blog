@@ -23,7 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      SITE_URL: https://${{ github.repository_owner }}.github.io
+      SITE_URL: https://kyrux.xyz
+      BASE_PATH: /
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout
@@ -39,16 +40,6 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-
-      - name: Determine BASE_PATH
-        shell: bash
-        run: |
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          if [[ "$REPO_NAME" == *.github.io ]]; then
-            echo "BASE_PATH=/" >> "$GITHUB_ENV"
-          else
-            echo "BASE_PATH=/$REPO_NAME" >> "$GITHUB_ENV"
-          fi
 
       - name: Install dependencies
         run: |

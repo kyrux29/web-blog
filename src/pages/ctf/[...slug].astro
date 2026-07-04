@@ -16,7 +16,7 @@ const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
 const isProtected = Boolean(entry.data.password || entry.data.password_env);
 
-const siteUrl = Astro.site ?? new URL("https://kyrux29.github.io");
+const siteUrl = Astro.site ?? new URL("https://kyrux.xyz");
 const canonicalUrl = new URL(withBase(`/ctf/${entry.id}/`), siteUrl).toString();
 
 const related = await getRelatedPosts(entry, 4);
