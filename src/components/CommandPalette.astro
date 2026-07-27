@@ -3,17 +3,23 @@
   Uses pagefind for full-text search. Renders an overlay with
   fuzzy-filtered results and keyboard navigation.
 -->
-<div id="cmdk-overlay" class="cmdk-overlay" role="dialog" aria-modal="true" aria-label="Command palette">
+<div id="cmdk-overlay" class="cmdk-overlay" role="dialog" aria-modal="true" aria-labelledby="cmdk-title">
   <div class="cmdk-panel">
+    <div class="cmdk-header">
+      <p id="cmdk-title">GLOBAL_SEARCH</p>
+      <button id="cmdk-close" type="button" aria-label="Close search">ESC / CLOSE</button>
+    </div>
     <input
       id="cmdk-input"
       class="cmdk-input"
       type="text"
-      placeholder="Search posts and write-ups..."
+      name="site-search"
+      aria-label="Search posts and write-ups"
+      placeholder="Search posts and write-ups…"
       autocomplete="off"
       spellcheck="false"
     />
-    <div id="cmdk-results" class="cmdk-results"></div>
+    <div id="cmdk-results" class="cmdk-results" aria-live="polite"></div>
     <div class="cmdk-footer">
       <span class="cmdk-hint"><kbd>↑↓</kbd> Navigate</span>
       <span class="cmdk-hint"><kbd>Enter</kbd> Open</span>
@@ -26,11 +32,18 @@
   const overlay = document.getElementById("cmdk-overlay");
   const input = document.getElementById("cmdk-input") as HTMLInputElement | null;
   const results = document.getElementById("cmdk-results");
+  const closeButton = document.getElementById("cmdk-close");
+  const searchButtons = [
+    document.getElementById("search-toggle"),
+    document.getElementById("cmdk-hint"),
+  ].filter(Boolean);
   const body = document.body;
 
   let pagefindPromise: Promise<any> | null = null;
   let activeIndex = -1;
   let resultItems: { url: string; title: string; excerpt: string }[] = [];
+  let previousFocus: HTMLElement | null = null;
+  let searchRevision = 0;
 
   const loadPagefind = async () => {
     const base = document.documentElement.baseURI;
@@ -52,7 +65,8 @@
       return;
     }
     items.forEach((item, i) => {
-      const div = document.createElement("div");
+      const div = document.createElement("a");
+      div.href = item.url;
       div.className = "cmdk-item";
       div.setAttribute("data-index", String(i));
       div.setAttribute("data-href", item.url);
@@ -63,7 +77,7 @@
         </span>
         <span class="cmdk-badge">→</span>
       `;
-      div.addEventListener("click", () => navigateTo(item.url));
+      div.addEventListener("click", closePalette);
       results.appendChild(div);
     });
   };
@@ -88,6 +102,8 @@
   };
 
   const openPalette = () => {
+    searchRevision += 1;
+    previousFocus = document.activeElement as HTMLElement | null;
     overlay?.setAttribute("data-open", "true");
     body.style.overflow = "hidden";
     activeIndex = -1;
@@ -97,14 +113,21 @@
   };
 
   const closePalette = () => {
+    searchRevision += 1;
     overlay?.removeAttribute("data-open");
     body.style.overflow = "";
     if (input) input.value = "";
     activeIndex = -1;
+    previousFocus?.focus();
+    previousFocus = null;
   };
+
+  searchButtons.forEach((button) => button?.addEventListener("click", openPalette));
+  closeButton?.addEventListener("click", closePalette);
 
   const runSearch = async () => {
     const q = (input?.value ?? "").trim();
+    const revision = ++searchRevision;
     if (!q) {
       resultItems = [];
       renderResults([]);
@@ -115,6 +138,7 @@
     const pf = await pagefindPromise;
     const res = await pf.search(q);
     const data = await Promise.all(res.results.slice(0, 8).map((r: any) => r.data()));
+    if (revision !== searchRevision || (input?.value ?? "").trim() !== q) return;
     resultItems = data.map((d: any) => ({
       title: d.meta?.title ?? d.url,
       url: d.url,
@@ -135,6 +159,22 @@
     }
 
     if (!isOpen) return;
+
+    if (e.key === "Tab") {
+      const focusable = Array.from(
+        overlay?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])') ?? [],
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+      return;
+    }
 
     if (e.key === "Escape") {
       e.preventDefault();

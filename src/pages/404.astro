@@ -12,7 +12,7 @@ import { withBase } from "../utils";
       <p class="text-7xl font-bold text-neutral-700/50 font-mono tracking-wider mb-6" aria-hidden="true">404</p>
 
       <p class="mb-2 text-lg font-semibold text-neutral-100" style="font-family: var(--font-mono);">
-        <span class="text-cyan-400">$</span> open /page-not-found
+        <span class="text-rose-400">$</span> open /page-not-found
       </p>
       <p class="mb-8 text-sm text-neutral-500" style="font-family: var(--font-mono);">
         bash: open: command not found &mdash; the page you're looking for doesn't exist.
@@ -20,19 +20,19 @@ import { withBase } from "../utils";
 
       <a
         href={withBase("/")}
-        class="inline-flex items-center gap-2 rounded-sm border-2 border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm text-neutral-200 hover:border-white/[0.2] hover:text-cyan-300 hover:bg-white/[0.06] backdrop-blur-sm transition-all duration-100"
+        class="inline-flex items-center gap-2 rounded-sm border-2 border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm text-neutral-200 hover:border-white/[0.2] hover:text-rose-300 hover:bg-white/[0.06] backdrop-blur-sm transition-colors duration-100"
       >
-        <span class="text-cyan-400 font-mono">$</span> cd ~/
+        <span class="text-rose-400 font-mono">$</span> cd ~/
       </a>
     </div>
 
     <div class="mt-10 max-w-md w-full text-left">
       <p class="mb-3 font-mono text-xs tracking-wider text-neutral-500">You might be looking for:</p>
       <ul class="space-y-2 text-sm text-neutral-400">
-        <li><a href={withBase("/ctf/")} class="hover:text-cyan-300 transition-colors duration-100">/ctf/</a> &mdash; CTF write-ups</li>
-        <li><a href={withBase("/blog/")} class="hover:text-cyan-300 transition-colors duration-100">/blog/</a> &mdash; Research notes</li>
-        <li><a href={withBase("/tags/")} class="hover:text-cyan-300 transition-colors duration-100">/tags/</a> &mdash; Browse by tag</li>
-        <li><a href={withBase("/search/")} class="hover:text-cyan-300 transition-colors duration-100">/search/</a> &mdash; Full-text search</li>
+        <li><a href={withBase("/ctf/")} class="hover:text-rose-300 transition-colors duration-100">/ctf/</a> &mdash; CTF write-ups</li>
+        <li><a href={withBase("/blog/")} class="hover:text-rose-300 transition-colors duration-100">/blog/</a> &mdash; Research notes</li>
+        <li><a href={withBase("/tags/")} class="hover:text-rose-300 transition-colors duration-100">/tags/</a> &mdash; Browse by tag</li>
+        <li><a href={withBase("/search/")} class="hover:text-rose-300 transition-colors duration-100">/search/</a> &mdash; Full-text search</li>
       </ul>
     </div>
   </div>

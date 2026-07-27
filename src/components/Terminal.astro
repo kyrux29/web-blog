@@ -2,24 +2,21 @@
 // Terminal.astro – interactive pseudo-filesystem modal.
 // Receives content data as JSON via a <script type="application/json"> tag.
 ---
-<div id="terminal-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-neutral-950/50 backdrop-blur-sm p-3 sm:items-end sm:justify-end sm:p-4">
+<div id="terminal-modal" role="dialog" aria-modal="true" aria-labelledby="terminal-title" class="fixed inset-0 z-50 hidden items-center justify-center bg-neutral-950/50 backdrop-blur-sm p-3 sm:items-end sm:justify-end sm:p-4">
   <div class="w-full max-w-2xl overflow-hidden rounded-sm border-2 border-white/[0.08] bg-neutral-950/90 backdrop-blur-2xl shadow-[8px_8px_0_0_rgba(0,0,0,0.5)] sm:max-w-2xl">
     <div class="flex items-center justify-between border-b-2 border-white/[0.06] px-4 py-2.5">
       <div class="flex items-center gap-3">
-        <p class="text-xs font-bold tracking-wider text-neutral-400">kyrux@labs:~</p>
+        <p id="terminal-title" class="text-xs font-bold tracking-wider text-neutral-400">kyrux@labs:~</p>
       </div>
-      <div class="flex items-center gap-2">
-        <button type="button" class="px-2 py-0.5 text-xs text-neutral-500 hover:text-cyan-300 hover:bg-white/[0.04] transition-all font-mono">[ _ ]</button>
-        <button id="terminal-close" type="button" class="px-2 py-0.5 text-xs text-neutral-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all font-mono">[ X ]</button>
-      </div>
+      <button id="terminal-close" type="button" aria-label="Close terminal" class="min-h-11 min-w-11 px-2 text-xs text-neutral-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors font-mono">[ X ]</button>
     </div>
     <div class="relative">
       <!-- Matrix canvas (hidden by default) -->
-      <canvas id="matrix-canvas" class="absolute inset-0 z-0 hidden bg-black/90 pointer-events-none" width="800" height="400"></canvas>
-      <div id="terminal-output" class="h-[60vh] max-h-[520px] overflow-y-auto bg-neutral-950/60 px-4 py-3 font-mono text-sm text-neutral-200 relative z-10"></div>
+      <canvas id="matrix-canvas" aria-hidden="true" class="absolute inset-0 z-0 hidden bg-black/90 pointer-events-none" width="800" height="400"></canvas>
+      <div id="terminal-output" role="log" aria-live="polite" aria-relevant="additions" class="h-[60vh] max-h-[520px] overflow-y-auto bg-neutral-950/60 px-4 py-3 font-mono text-sm text-neutral-200 relative z-10"></div>
     </div>
     <form id="terminal-form" class="flex items-center gap-2 border-t border-white/[0.06] px-4 py-3">
-      <span class="font-mono text-sm text-cyan-300">$</span>
+      <span class="font-mono text-sm text-rose-300">$</span>
       <div class="relative flex-1">
         <!-- Inline autosuggestion overlay -->
         <div id="terminal-suggestion" class="pointer-events-none absolute inset-0 z-0 flex items-center font-mono text-sm" aria-hidden="true">
@@ -29,10 +26,12 @@
         <input
           id="terminal-input"
           type="text"
+          name="terminal-command"
+          aria-label="Terminal command"
           autocomplete="off"
           spellcheck="false"
-          class="relative z-10 w-full bg-transparent font-mono text-sm text-transparent caret-neutral-100 outline-none placeholder:text-neutral-500"
-          placeholder="Type help"
+          class="relative z-10 w-full bg-transparent font-mono text-sm text-transparent caret-neutral-100 placeholder:text-neutral-500"
+          placeholder="Type help…"
         />
       </div>
     </form>
@@ -78,6 +77,7 @@
   const matrixCanvas = document.getElementById("matrix-canvas") as HTMLCanvasElement | null;
   let matrixInterval: number | null = null;
   let matrixCtx: CanvasRenderingContext2D | null = null;
+  let previousTerminalFocus: HTMLElement | null = null;
 
   const printLine = (text: string) => {
     if (!output) return;
@@ -100,8 +100,11 @@
   const formatPrompt = () => `kyrux@labs:${cwd}$`;
 
   const open = () => {
+    previousTerminalFocus = document.activeElement as HTMLElement | null;
     modal?.classList.remove("hidden");
     modal?.classList.add("flex");
+    document.body.style.overflow = "hidden";
+    document.getElementById("terminal-toggle")?.setAttribute("aria-expanded", "true");
     input?.focus();
     if (output && output.childElementCount === 0) {
       printLine("Kyrux Research Terminal v2.1");
@@ -123,8 +126,11 @@
     stopMatrix(); // stop matrix rain if active
     modal?.classList.add("hidden");
     modal?.classList.remove("flex");
+    document.body.style.overflow = "";
     const toggleBtn = document.getElementById("terminal-toggle");
     if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
+    previousTerminalFocus?.focus();
+    previousTerminalFocus = null;
   };
 
   // Expose for BaseLayout keyboard shortcut (Ctrl+`)
@@ -169,9 +175,9 @@
     const b = terminalStats.blog;
     const t = terminalStats.tags;
     printHtml(`
-      <span style="color:#06b6d4">blog/</span>   <span style="color:#a3a3a3">(${b} posts)</span>
-      <span style="color:#06b6d4">ctf/</span>    <span style="color:#a3a3a3">(${c} write-ups)</span>
-      <span style="color:#06b6d4">tags/</span>   <span style="color:#a3a3a3">(${t} topics)</span>
+      <span style="color:#ff3048">blog/</span>   <span style="color:#a3a3a3">(${b} posts)</span>
+      <span style="color:#ff3048">ctf/</span>    <span style="color:#a3a3a3">(${c} write-ups)</span>
+      <span style="color:#ff3048">tags/</span>   <span style="color:#a3a3a3">(${t} topics)</span>
       <span style="color:#a3a3a3">about.txt</span>
     `.split("\n").map(s => s.trim()).join("\n").trim());
   };
@@ -231,41 +237,49 @@
     printHtml(`
       <span style="color:#a3a3a3">┌── repos</span>
       <span style="color:#a3a3a3">│</span>
-      <span style="color:#a3a3a3">├── ctf/</span>  <span style="color:#06b6d4;font-weight:bold">${c}</span> write-ups
-      <span style="color:#a3a3a3">├── blog/</span> <span style="color:#06b6d4;font-weight:bold">${b}</span> research posts
-      <span style="color:#a3a3a3">├── tags/</span> <span style="color:#06b6d4;font-weight:bold">${t}</span> topics
+      <span style="color:#a3a3a3">├── ctf/</span>  <span style="color:#ff3048;font-weight:bold">${c}</span> write-ups
+      <span style="color:#a3a3a3">├── blog/</span> <span style="color:#ff3048;font-weight:bold">${b}</span> research posts
+      <span style="color:#a3a3a3">├── tags/</span> <span style="color:#ff3048;font-weight:bold">${t}</span> topics
       <span style="color:#a3a3a3">│</span>
-      <span style="color:#a3a3a3">└── total:</span> <span style="color:#06b6d4;font-weight:bold">${total}</span> published articles
+      <span style="color:#a3a3a3">└── total:</span> <span style="color:#ff3048;font-weight:bold">${total}</span> published articles
     `.split("\n").map(s => s.trim()).join("\n").trim());
   };
 
   // Matrix rain effect (proposal 10)
   const startMatrix = () => {
     if (!matrixCanvas) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      printLine("Matrix rain is disabled while reduced motion is enabled.");
+      return;
+    }
     matrixCanvas.classList.remove("hidden");
-    matrixCanvas.width = matrixCanvas.offsetWidth;
-    matrixCanvas.height = matrixCanvas.offsetHeight;
+    const canvasWidth = matrixCanvas.offsetWidth;
+    const canvasHeight = matrixCanvas.offsetHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    matrixCanvas.width = Math.round(canvasWidth * dpr);
+    matrixCanvas.height = Math.round(canvasHeight * dpr);
     matrixCtx = matrixCanvas.getContext("2d");
     if (!matrixCtx) return;
+    matrixCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン0123456789".split("");
     const fontSize = 14;
-    const columns = matrixCanvas.width / fontSize;
+    const columns = canvasWidth / fontSize;
     const drops: number[] = [];
 
-    for (let x = 0; x < columns; x++) drops[x] = Math.random() * matrixCanvas.height / fontSize;
+    for (let x = 0; x < columns; x++) drops[x] = Math.random() * canvasHeight / fontSize;
 
     const draw = () => {
       if (!matrixCtx) return;
       matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
-      matrixCtx.fillRect(0, 0, matrixCanvas!.width, matrixCanvas!.height);
-      matrixCtx.fillStyle = "#22d3ee";
+      matrixCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+      matrixCtx.fillStyle = "#ff3048";
       matrixCtx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {
         const text = chars[Math.floor(Math.random() * chars.length)];
         matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > matrixCanvas!.height && Math.random() > 0.975) {
+        if (drops[i] * fontSize > canvasHeight && Math.random() > 0.975) {
           drops[i] = 0;
         }
         drops[i]++;
@@ -402,16 +416,16 @@
 
     if (cmd === "neofetch") {
       printHtml(`
-        <span style="color:#22d3ee">       ▄▄████▄▄</span>    <span style="color:#a3a3a3">kyrux@labs</span>
-        <span style="color:#22d3ee">     ▄██████████▄</span>  <span style="color:#eab308">OS</span>: Kyrux Labs OS v2.1
-        <span style="color:#22d3ee">   ▄███▀▀    ▀▀███▄</span> <span style="color:#eab308">Host</span>: GitHub Pages
-        <span style="color:#22d3ee">  ▄██▀          ▀██▄</span> <span style="color:#eab308">Uptime</span>: since 2024
-        <span style="color:#22d3ee">  ██              ██</span>  <span style="color:#eab308">Shell</span>: kyrux-terminal
-        <span style="color:#22d3ee">  ██   ████████   ██</span>  <span style="color:#eab308">CPU</span>: Intel i9 (metaphorical)
-        <span style="color:#22d3ee">  ▀██▄          ▄██▀</span>  <span style="color:#eab308">Memory</span>: ${terminalStats ? terminalStats.blog + terminalStats.ctf : '?'} articles
-        <span style="color:#22d3ee">    ▀███▄▄    ▄███▀</span>   <span style="color:#eab308">Terminal</span>: v2.1
-        <span style="color:#22d3ee">      ▀██████████▀</span>    <span style="color:#eab308">Resolution</span>: 1337x420
-        <span style="color:#22d3ee">        ▀▀████▀▀</span>
+        <span style="color:#ff3048">       ▄▄████▄▄</span>    <span style="color:#a3a3a3">kyrux@labs</span>
+        <span style="color:#ff3048">     ▄██████████▄</span>  <span style="color:#eab308">OS</span>: Kyrux Labs OS v2.1
+        <span style="color:#ff3048">   ▄███▀▀    ▀▀███▄</span> <span style="color:#eab308">Host</span>: GitHub Pages
+        <span style="color:#ff3048">  ▄██▀          ▀██▄</span> <span style="color:#eab308">Uptime</span>: since 2024
+        <span style="color:#ff3048">  ██              ██</span>  <span style="color:#eab308">Shell</span>: kyrux-terminal
+        <span style="color:#ff3048">  ██   ████████   ██</span>  <span style="color:#eab308">CPU</span>: Intel i9 (metaphorical)
+        <span style="color:#ff3048">  ▀██▄          ▄██▀</span>  <span style="color:#eab308">Memory</span>: ${terminalStats ? terminalStats.blog + terminalStats.ctf : '?'} articles
+        <span style="color:#ff3048">    ▀███▄▄    ▄███▀</span>   <span style="color:#eab308">Terminal</span>: v2.1
+        <span style="color:#ff3048">      ▀██████████▀</span>    <span style="color:#eab308">Resolution</span>: 1337x420
+        <span style="color:#ff3048">        ▀▀████▀▀</span>
       `.trim());
       return;
     }
@@ -464,6 +478,21 @@
   modal?.addEventListener("click", (event) => {
     if (event.target === modal) close();
   });
+  modal?.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(
+      modal.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'),
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  });
 
   document.getElementById("terminal-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -503,11 +532,11 @@
       return;
     }
     if (event.key === "Tab") {
-      event.preventDefault();
       // If autosuggestion is showing, complete it
       const ghostEl = document.getElementById("terminal-ghost");
       const ghostText = ghostEl?.textContent ?? "";
       if (ghostText) {
+        event.preventDefault();
         if (input) input.value = (input.value ?? "") + ghostText + " ";
         updateSuggestion();
         return;
@@ -518,9 +547,11 @@
       const partial = parts[parts.length - 1] ?? "";
       const matches = completions(partial);
       if (matches.length === 1) {
+        event.preventDefault();
         parts[parts.length - 1] = matches[0];
         if (input) input.value = parts.join(" ") + " ";
       } else if (matches.length > 1) {
+        event.preventDefault();
         printLine(matches.join("  "));
       }
     }

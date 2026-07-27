@@ -19,18 +19,25 @@
   const lightboxImg = document.getElementById("lightbox-img") as HTMLImageElement;
   const lightboxTitle = document.getElementById("lightbox-title");
   const lightboxClose = document.getElementById("lightbox-close");
+  let previousLightboxFocus: HTMLElement | null = null;
 
   const openLightbox = (img: HTMLImageElement) => {
     const src = img.currentSrc || img.src;
     if (!src) return;
     lightboxImg.src = src;
     lightboxImg.alt = img.alt || "image";
+    if (img.naturalWidth && img.naturalHeight) {
+      lightboxImg.width = img.naturalWidth;
+      lightboxImg.height = img.naturalHeight;
+    }
     if (lightboxTitle)
       lightboxTitle.textContent =
         img.alt || src.split("/").pop() || "image";
+    previousLightboxFocus = document.activeElement as HTMLElement | null;
     lightbox.dataset.open = "true";
     lightbox.setAttribute("aria-hidden", "false");
     document.documentElement.style.overflow = "hidden";
+    lightboxClose?.focus();
   };
 
   const closeLightbox = () => {
@@ -38,13 +45,24 @@
     lightbox.setAttribute("aria-hidden", "true");
     lightboxImg.src = "";
     document.documentElement.style.overflow = "";
+    previousLightboxFocus?.focus();
+    previousLightboxFocus = null;
   };
 
   document.querySelectorAll<HTMLImageElement>(".prose img").forEach((img) => {
     img.loading = img.loading || "lazy";
     img.decoding = img.decoding || "async";
     img.setAttribute("data-zoomable", "true");
+    img.setAttribute("role", "button");
+    img.setAttribute("tabindex", "0");
+    img.setAttribute("aria-label", `Open full-size image${img.alt ? `: ${img.alt}` : ""}`);
     img.addEventListener("click", () => openLightbox(img));
+    img.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openLightbox(img);
+      }
+    });
   });
 
   lightboxClose?.addEventListener("click", closeLightbox);
@@ -55,6 +73,10 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && lightbox.dataset.open === "true") {
       closeLightbox();
+    }
+    if (event.key === "Tab" && lightbox.dataset.open === "true") {
+      event.preventDefault();
+      lightboxClose?.focus();
     }
   });
 </script>

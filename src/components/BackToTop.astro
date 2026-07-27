@@ -11,8 +11,13 @@
   const onScroll = () => {
     const show = window.scrollY > 300;
     btn?.classList.toggle("visible", show);
+    btn?.setAttribute("tabindex", show ? "0" : "-1");
+    btn?.setAttribute("aria-hidden", String(!show));
   };
   window.addEventListener("scroll", onScroll, { passive: true });
-  btn?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  btn?.addEventListener("click", () => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+  });
   onScroll();
 </script>

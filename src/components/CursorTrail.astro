@@ -1,7 +1,10 @@
 <script>
   (function () {
     // Only run on non-touch devices
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    if (
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) return;
 
     const canvas = document.createElement("canvas");
     canvas.id = "cursor-trail";
@@ -12,8 +15,21 @@
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let w = (canvas.width = window.innerWidth);
-    let h = (canvas.height = window.innerHeight);
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function resizeCanvas() {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
 
     const particles: {
       x: number;
@@ -65,7 +81,7 @@
 
         const alpha = 1 - p.life / p.maxLife;
         ctx.font = "13px monospace";
-        ctx.fillStyle = `rgba(34, 211, 238, ${(alpha * 0.8).toFixed(2)})`; /* cyan-400 */
+        ctx.fillStyle = `rgba(255, 48, 72, ${(alpha * 0.8).toFixed(2)})`; /* rose-400 */
         ctx.fillText(p.char, p.x, p.y);
 
         if (p.life >= p.maxLife || p.y > h + 20 || p.x < -20 || p.x > w + 20) {
@@ -106,10 +122,7 @@
       mouseY = e.clientY;
     });
 
-    window.addEventListener("resize", () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    });
+    window.addEventListener("resize", resizeCanvas);
 
     // Expose global API
     (window as any).cursorTrailAPI = { start, stop };

@@ -12,6 +12,7 @@ import CopyButton from "../components/CopyButton.astro";
 import ImageLightbox from "../components/ImageLightbox.astro";
 import CommandPalette from "../components/CommandPalette.astro";
 import BackToTop from "../components/BackToTop.astro";
+import { siteRoutes } from "../config/site-routes";
 
 interface Props {
   title: string;
@@ -28,13 +29,17 @@ const ogImageUrl = new URL(
 
 const currentPath = Astro.url.pathname;
 
-const navLinks = [
-  { href: withBase("/"), label: "Home" },
-  { href: withBase("/ctf/"), label: "CTF" },
-  { href: withBase("/blog/"), label: "Blog" },
-  { href: withBase("/tags/"), label: "Tags" },
-  { href: withBase("/about/"), label: "About" },
-];
+const navLinks = siteRoutes.map((route) => ({ ...route, href: withBase(route.path) }));
+
+const isNavActive = (href: string) => {
+  const pathname = new URL(href, Astro.url).pathname;
+  return pathname === withBase("/")
+    ? currentPath === pathname
+    : currentPath.startsWith(pathname);
+};
+
+const activeNav = navLinks.find((link) => isNavActive(link.href)) ?? navLinks[0];
+const isHome = currentPath === withBase("/");
 
 const blogEntries = await getPublishedBlogPosts();
 const ctfEntries = await getPublishedCtfPosts();
@@ -63,6 +68,7 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fff7f2" />
 
     <!-- CSP baseline: self-origin + data URIs for inline images. Astro hash will be injected automatically. -->
     <meta
@@ -70,10 +76,10 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
       content="default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'self' https:;"
     />
 
-    <!-- Pixel font for Minecraft accent (logo, headings) -->
+    <!-- Editorial display + readable body + technical utility type -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet" />
 
     <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
     <link rel="icon" href={withBase("/favicon.ico")} />
@@ -84,7 +90,7 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
 
     <!-- Open Graph -->
     <meta property="og:type" content="article" />
-    <meta property="og:site_name" content="Kyrux Labs" />
+    <meta property="og:site_name" content="Kyrux Blog" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
@@ -99,72 +105,114 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
     <title>{title}</title>
 
   </head>
-  <body class="min-h-screen relative">
-    <!-- Ambient mesh background (glassmorphism foundation) -->
+  <body class="site-body min-h-screen relative" data-page-kind={isHome ? "home" : "inner"}>
+    <!-- Field-note paper, registration marks, and the diagonal signal ribbon -->
     <div class="ambient-mesh" aria-hidden="true"></div>
 
+    <!-- Batwing Door: wings close over the document, then a Dracula gate opens onto the next route. -->
+    <div id="route-transition" class="route-transition" data-state="entering" aria-hidden="true">
+      <div class="route-transition-night"></div>
+      <svg class="route-transition-wing route-transition-wing--left" viewBox="0 0 520 420" preserveAspectRatio="none" role="presentation">
+        <path d="M515 166C420 74 278 27 18 48c88 62 122 142 117 262q30-70 60 25q38-80 76 15q48-90 96-16q86-67 148-24V166Z" />
+      </svg>
+      <svg class="route-transition-wing route-transition-wing--right" viewBox="0 0 520 420" preserveAspectRatio="none" role="presentation">
+        <path d="M515 166C420 74 278 27 18 48c88 62 122 142 117 262q30-70 60 25q38-80 76 15q48-90 96-16q86-67 148-24V166Z" />
+      </svg>
+      <div class="route-transition-doorway">
+        <div class="route-transition-door-frame">
+          <div class="route-transition-door-glow"></div>
+          <div class="route-transition-door route-transition-door--left"><i></i></div>
+          <div class="route-transition-door route-transition-door--right"><i></i></div>
+          <span class="route-transition-door-mark">K</span>
+        </div>
+      </div>
+      <p class="route-transition-label">
+        <strong id="route-transition-target">{activeNav.label}</strong>
+      </p>
+    </div>
+
     <!-- Skip-to-content -->
-    <a href="#content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-neutral-900 focus:px-3 focus:py-2 focus:text-cyan-300">
+    <a href="#content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-neutral-900 focus:px-3 focus:py-2 focus:text-rose-300">
       Skip to content
     </a>
 
-    <!-- Reading progress bar (XP bar style) -->
-    <canvas id="xp-bar" class="fixed left-0 top-0 z-50 h-[6px] w-full" style="image-rendering: pixelated;"></canvas>
+    <!-- Segmented reading progress bar -->
+    <canvas id="xp-bar" aria-hidden="true" class="fixed left-0 top-0 z-50 h-[6px] w-full" style="image-rendering: pixelated;"></canvas>
 
     <!-- Sticky header -->
-    <header id="site-header" class="sticky top-0 z-40 w-full transition-all duration-300">
-      <div class="absolute inset-0 bg-neutral-950/80 backdrop-blur-2xl mc-nav"></div>
-      <div class="relative mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
-        <a
-          href={withBase("/")}
-          class="shrink-0 text-sm font-semibold tracking-tight text-neutral-100 hover:text-cyan-300 transition-colors"
-          style="font-family: var(--font-pixel); text-shadow: 0 0 8px rgba(6,182,212,0.3);"
-        >
-          kyrux<span class="text-cyan-400">.</span>
-        </a>
-        <nav aria-label="Main Navigation" class="min-w-0 flex-1">
-          <ul class="flex min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap text-sm [scrollbar-width:none]">
-            {
-              navLinks.map((link) => (
-                <li>
-                  <a
-                    href={link.href}
-                    class:list={[
-                      "mc-nav-item",
-                      currentPath === new URL(link.href, Astro.url).pathname
-                        ? "active"
-                        : ""
-                    ]}
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-        </nav>
-        <div class="ml-auto flex shrink-0 items-center gap-1.5">
-          <ThemeToggle />
-          <button id="terminal-toggle" type="button" class="mc-nav-item inline-flex items-center gap-1.5 px-2.5 py-1.5 font-mono text-xs" title="Open terminal (Ctrl+`)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-            <span class="hidden sm:inline">terminal</span>
+    <header id="site-header" class="site-header sticky top-0 z-40 w-full" data-page={isHome ? "home" : "inner"}>
+      <div class="nav-deck-wrap mx-auto px-3 sm:px-6 lg:px-8">
+        <div class="nav-deck">
+          <a href={withBase("/")} class="site-logo" aria-label="KYRUX Blog home" translate="no">
+            <span class="site-logo-mark" aria-hidden="true">KYRUX</span>
+          </a>
+
+          <div class="nav-tools">
+            <button id="search-toggle" type="button" class="nav-tool" aria-label="Open search" title="Open search (Ctrl+K)">
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+            </button>
+            <ThemeToggle />
+            <button
+              id="terminal-toggle"
+              type="button"
+              class="nav-tool"
+              title="Open terminal (Ctrl+`)"
+              aria-label="Open terminal"
+              aria-expanded="false"
+            >
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            </button>
+          </div>
+
+          <button
+            id="nav-menu-toggle"
+            class="nav-menu-toggle"
+            type="button"
+            aria-controls="site-navigation"
+            aria-expanded="false"
+            aria-label="Open site index"
+          >
+            <span class="nav-menu-copy">
+              <strong class="nav-menu-open-label">Menu</strong>
+              <strong class="nav-menu-close-label">Close</strong>
+            </span>
+            <span class="nav-menu-glyph" aria-hidden="true"><i></i><i></i></span>
           </button>
         </div>
+
+        <nav id="site-navigation" class="site-navigation" aria-label="Site index" data-open="false" aria-hidden="true" inert>
+          <div class="nav-index-shell">
+            <ul class="nav-route-list">
+              {
+                navLinks.map((link) => {
+                  const active = isNavActive(link.href);
+                  return (
+                    <li>
+                      <a href={link.href} class:list={["nav-route-link", active && "active"]} aria-current={active ? "page" : undefined} data-route-title={link.label}>
+                        {link.label}
+                      </a>
+                    </li>
+                  );
+                })
+              }
+            </ul>
+          </div>
+        </nav>
       </div>
     </header>
 
-    <div class="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+    <div class="site-shell relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-5 sm:px-6 lg:px-8">
 
       <main id="content" class="flex-1">
         <slot />
       </main>
 
-      <footer class="mt-16 border-t border-white/[0.06] pt-6 pb-4">
+      <footer class="site-footer mt-16 pt-6 pb-4">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-500">
-          <p>&copy; {new Date().getFullYear()} Kyrux &mdash; Vu Trong Quoc Khanh.</p>
+          <p><span class="footer-prompt">END_OF_FILE</span> &copy; {new Date().getFullYear()} Kyrux &mdash; Vu Trong Quoc Khanh.</p>
           <div class="flex items-center gap-4">
-            <a href="https://github.com/kyrux29" target="_blank" rel="noreferrer" class="text-neutral-500 hover:text-cyan-400 transition-colors duration-100">GitHub</a>
-            <a href={withBase("/rss.xml")} class="text-neutral-500 hover:text-cyan-400 transition-colors duration-100">RSS</a>
+            <a href="https://github.com/kyrux29" target="_blank" rel="noreferrer" class="text-neutral-500 hover:text-rose-400 transition-colors duration-100">GitHub</a>
+            <a href={withBase("/rss.xml")} data-no-transition class="text-neutral-500 hover:text-rose-400 transition-colors duration-100">RSS</a>
           </div>
         </div>
       </footer>
@@ -178,16 +226,60 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
     <CommandPalette />
     <BackToTop />
 
-    <!-- Cmd+K hint -->
-    <div id="cmdk-hint" class="fixed bottom-6 left-6 z-40 hidden items-center gap-2 rounded-sm border-2 border-white/[0.06] bg-neutral-900/70 backdrop-blur-xl px-3 py-2 text-xs text-neutral-500 lg:flex" style="font-family: var(--font-mono);">
-      <kbd class="rounded-sm border-2 border-white/[0.1] bg-white/[0.05] px-1.5 py-0.5 text-neutral-300">Cmd+K</kbd>
-      <span>Search</span>
-    </div>
-
     <!-- Terminal data payload (read by Terminal island) -->
     <script is:inline id="terminal-data" type="application/json" set:html={JSON.stringify(terminalItems)}></script>
 
     <script is:inline id="terminal-stats" type="application/json" set:html={JSON.stringify(terminalStats)}></script>
+
+    <!-- Cross-page breach gate. Keeps normal document navigation so page scripts reinitialize safely. -->
+    <script is:inline>
+      (function () {
+        var gate = document.getElementById("route-transition");
+        var target = document.getElementById("route-transition-target");
+        if (!gate) return;
+
+        var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+        var settleGate = function () {
+          if (gate.dataset.state === "entering") gate.dataset.state = "idle";
+        };
+
+        if (motionQuery.matches) {
+          gate.dataset.state = "idle";
+        } else {
+          window.setTimeout(settleGate, 680);
+        }
+
+        window.addEventListener("pageshow", function (event) {
+          delete document.documentElement.dataset.routeLeaving;
+          if (!event.persisted || motionQuery.matches) return;
+          gate.dataset.state = "entering";
+          window.setTimeout(settleGate, 680);
+        });
+
+        document.addEventListener("click", function (event) {
+          if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          var clicked = event.target instanceof Element ? event.target.closest("a") : null;
+          if (!clicked || clicked.hasAttribute("download") || clicked.hasAttribute("data-no-transition")) return;
+          if (clicked.target && clicked.target !== "_self") return;
+
+          var url;
+          try { url = new URL(clicked.href, window.location.href); } catch (_) { return; }
+          if (url.origin !== window.location.origin || !/^https?:$/.test(url.protocol)) return;
+          if (url.href === window.location.href) return;
+          if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return;
+
+          if (motionQuery.matches) return;
+          event.preventDefault();
+          if (gate.dataset.state === "leaving") return;
+
+          var routeName = clicked.getAttribute("data-route-title") || url.pathname.split("/").filter(Boolean)[0] || "HOME";
+          if (target) target.textContent = routeName.toUpperCase();
+          gate.dataset.state = "leaving";
+          document.documentElement.dataset.routeLeaving = "true";
+          window.setTimeout(function () { window.location.assign(url.href); }, 650);
+        });
+      })();
+    </script>
 
     <!-- XP bar progress script -->
     <script is:inline>
@@ -198,30 +290,41 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
         const SEG_W = 6; // pixel width of each XP segment
         const GAP = 1;   // gap between segments
         const BAR_H = 6;
-        const COLOR_FILL = "#22d3ee";   // cyan-400
-        const COLOR_EMPTY = "rgba(38,38,38,0.5)";
+        const COLOR_FILL = "#ff3048";
+        const COLOR_EMPTY = "rgba(23,16,18,0.14)";
 
         const resize = () => {
-          canvas.width = window.innerWidth;
-          canvas.height = BAR_H;
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.round(window.innerWidth * dpr);
+          canvas.height = Math.round(BAR_H * dpr);
+          canvas.style.width = window.innerWidth + "px";
+          canvas.style.height = BAR_H + "px";
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         };
         resize();
-        window.addEventListener("resize", resize);
+        window.addEventListener("resize", function() { resize(); draw(); });
 
         const draw = () => {
           const scrollTop = window.scrollY;
           const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
           const progress = scrollHeight > 0 ? Math.min(1, scrollTop / scrollHeight) : 0;
-          const totalSegs = Math.floor(canvas.width / (SEG_W + GAP));
+          const totalSegs = Math.floor(window.innerWidth / (SEG_W + GAP));
           const filledSegs = Math.round(totalSegs * progress);
 
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.clearRect(0, 0, window.innerWidth, BAR_H);
           for (let i = 0; i < totalSegs; i++) {
             ctx.fillStyle = i < filledSegs ? COLOR_FILL : COLOR_EMPTY;
             ctx.fillRect(i * (SEG_W + GAP), 0, SEG_W, BAR_H);
           }
         };
-        window.addEventListener("scroll", draw, { passive: true });
+        let frame = 0;
+        window.addEventListener("scroll", function() {
+          if (frame) return;
+          frame = requestAnimationFrame(function() {
+            draw();
+            frame = 0;
+          });
+        }, { passive: true });
         draw();
       })();
     </script>
@@ -246,7 +349,7 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
                 }, 150);
               }, 200);
               console.log("%c🛡️ Kyrux Labs %c— If you know the enemy and know yourself, you need not fear the result of a hundred battles.",
-                "color: #06b6d4; font-size: 16px; font-weight: bold;",
+                "color: #ff3048; font-size: 16px; font-weight: bold;",
                 "color: #a3a3a3;");
               pos = 0;
             }
@@ -286,14 +389,102 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
       })();
     </script>
 
-    <!-- Navbar scroll shadow -->
+    <!-- Full-screen breach index + compact scrolled state -->
     <script is:inline>
       (function() {
         var header = document.getElementById("site-header");
-        if (!header) return;
+        var toggle = document.getElementById("nav-menu-toggle");
+        var navigation = document.getElementById("site-navigation");
+        var siteShell = document.querySelector(".site-shell");
+        var navTools = header && header.querySelector(".nav-tools");
+        var siteLogo = header && header.querySelector(".site-logo");
+        if (!header || !toggle || !navigation) return;
+
+        var routeLinks = Array.from(navigation.querySelectorAll("a"));
+        var previousFocus = null;
+        var previousOverflow = "";
+
+        var setOpen = function(open, restoreFocus) {
+          if (restoreFocus === undefined) restoreFocus = true;
+          navigation.dataset.open = String(open);
+          navigation.setAttribute("aria-hidden", String(!open));
+          navigation.inert = !open;
+          toggle.setAttribute("aria-expanded", String(open));
+          toggle.setAttribute("aria-label", open ? "Close site index" : "Open site index");
+          header.dataset.menuOpen = String(open);
+          document.documentElement.classList.toggle("nav-index-open", open);
+          if (siteShell) siteShell.inert = open;
+          if (navTools) navTools.inert = open;
+          if (siteLogo) siteLogo.inert = open;
+
+          if (open) {
+            previousFocus = document.activeElement;
+            previousOverflow = document.documentElement.style.overflow;
+            document.documentElement.style.overflow = "hidden";
+            window.requestAnimationFrame(function () {
+              var active = navigation.querySelector("a[aria-current='page']") || routeLinks[0];
+              if (active) active.focus();
+            });
+          } else {
+            document.documentElement.style.overflow = previousOverflow;
+            if (restoreFocus && previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+            previousFocus = null;
+          }
+        };
+
+        toggle.addEventListener("click", function() {
+          var willOpen = toggle.getAttribute("aria-expanded") !== "true";
+          setOpen(willOpen, !willOpen);
+        });
+
+        routeLinks.forEach(function(link) {
+          link.addEventListener("click", function() { setOpen(false, false); });
+        });
+
+        document.addEventListener("keydown", function(event) {
+          var open = toggle.getAttribute("aria-expanded") === "true";
+          if (!open) return;
+
+          if (event.key === "Escape") {
+            event.preventDefault();
+            setOpen(false);
+            toggle.focus();
+            return;
+          }
+
+          if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Home" || event.key === "End") {
+            event.preventDefault();
+            var current = routeLinks.indexOf(document.activeElement);
+            if (current < 0 && event.key === "ArrowUp") current = 0;
+            var next = current;
+            if (event.key === "Home") next = 0;
+            else if (event.key === "End") next = routeLinks.length - 1;
+            else if (event.key === "ArrowDown") next = (current + 1 + routeLinks.length) % routeLinks.length;
+            else next = (current - 1 + routeLinks.length) % routeLinks.length;
+            routeLinks[next] && routeLinks[next].focus();
+            return;
+          }
+
+          if (event.key === "Tab") {
+            var focusables = [toggle].concat(routeLinks);
+            var first = focusables[0];
+            var last = focusables[focusables.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+              event.preventDefault();
+              last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault();
+              first.focus();
+            }
+          }
+        });
+
+        navigation.addEventListener("pointerdown", function(event) {
+          if (event.target === navigation) setOpen(false);
+        });
+
         window.addEventListener("scroll", function() {
-          var scrolled = window.scrollY > 8;
-          header.style.borderBottomColor = scrolled ? "rgba(255,255,255,0.04)" : "transparent";
+          header.dataset.scrolled = String(window.scrollY > 12);
         }, { passive: true });
       })();
     </script>
@@ -302,7 +493,10 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
     <script is:inline>
       (function() {
         // Cursor trail (delay until API is ready)
-        if (localStorage.getItem("cursor-trail-enabled") === "true") {
+        if (
+          localStorage.getItem("cursor-trail-enabled") === "true" &&
+          !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ) {
           var check = setInterval(function() {
             if (window.cursorTrailAPI && window.cursorTrailAPI.start) {
               window.cursorTrailAPI.start();
@@ -330,45 +524,6 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
           { threshold: 0.1, rootMargin: "0px 0px -30px 0px" }
         );
         document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
-        // Observe dynamically added .reveal elements
-        new MutationObserver(() => {
-          document.querySelectorAll(".reveal:not(.reveal-active)").forEach((el) => observer.observe(el));
-        }).observe(document.body, { childList: true, subtree: true });
-      })();
-    </script>
-    <!-- Click particle (block-break) effect -->
-    <script is:inline>
-      (function () {
-        var PARTICLE_COUNT = 4;
-        var LIFETIME = 350;
-        document.addEventListener("click", function (e) {
-          for (var i = 0; i < PARTICLE_COUNT; i++) {
-            var el = document.createElement("div");
-            var size = 3 + Math.floor(Math.random() * 4); // 3-6px
-            el.style.cssText =
-              "position:fixed;z-index:9999;pointer-events:none;" +
-              "width:" + size + "px;height:" + size + "px;" +
-              "background:#22d3ee;" + // cyan-400
-              "left:" + e.clientX + "px;top:" + e.clientY + "px;" +
-              "opacity:1;transition:none;";
-            document.body.appendChild(el);
-
-            var angle = (Math.PI * 2 * i) / PARTICLE_COUNT + (Math.random() - 0.5);
-            var dist = 18 + Math.random() * 22;
-            var tx = Math.cos(angle) * dist;
-            var ty = Math.sin(angle) * dist + 10; // slight gravity pull
-
-            // Force reflow then animate
-            el.getBoundingClientRect();
-            el.style.transition = "transform " + LIFETIME + "ms ease-out, opacity " + LIFETIME + "ms ease-out";
-            el.style.transform = "translate(" + tx + "px," + ty + "px) rotate(" + (Math.random() * 90) + "deg)";
-            el.style.opacity = "0";
-
-            setTimeout(function (node) {
-              node.remove();
-            }, LIFETIME + 50, el);
-          }
-        });
       })();
     </script>
   </body>

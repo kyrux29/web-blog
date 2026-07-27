@@ -1,6 +1,6 @@
 ---
 import { getPublishedCtfPosts } from "../../lib/content";
-import { withBase } from "../../utils";
+import { formatDateCA, withBase } from "../../utils";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 const ctfEntries = await getPublishedCtfPosts();
@@ -67,10 +67,12 @@ const featuredGroups = platformGroups.filter(
       <input
         id="ctf-search"
         type="search"
-        placeholder="Search by title, platform, type, or tags..."
+        name="query"
+        aria-label="Search CTF write-ups"
+        placeholder="Search by title, platform, type, or tags…"
         class="filter-input md:col-span-3"
       />
-      <select id="ctf-platform-filter" class="filter-select">
+      <select id="ctf-platform-filter" class="filter-select" aria-label="Filter by platform">
         <option value="">All Platforms</option>
         {
           platforms.map((platform) => (
@@ -78,7 +80,7 @@ const featuredGroups = platformGroups.filter(
           ))
         }
       </select>
-      <select id="ctf-difficulty-filter" class="filter-select">
+      <select id="ctf-difficulty-filter" class="filter-select" aria-label="Filter by difficulty">
         <option value="">All Difficulties</option>
         {
           difficulties.map((difficulty) => (
@@ -87,7 +89,7 @@ const featuredGroups = platformGroups.filter(
         }
       </select>
       <div class="flex gap-3">
-        <select id="ctf-sort" class="filter-select flex-1">
+        <select id="ctf-sort" class="filter-select flex-1" aria-label="Sort CTF write-ups">
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
           <option value="difficulty-asc">Easy → Hard</option>
@@ -113,10 +115,10 @@ const featuredGroups = platformGroups.filter(
                   href={withBase(`/ctf/${group.slug}/`)}
                   class="glass-panel group card-lift flex items-center justify-between p-4 min-w-[200px] flex-1 sm:flex-none"
                 >
-                  <span class="font-mono text-sm font-semibold text-neutral-200 group-hover:text-cyan-300 transition-colors mr-4">
+                  <span class="font-mono text-sm font-semibold text-neutral-200 group-hover:text-rose-300 transition-colors mr-4">
                     {group.displayName}
                   </span>
-                  <span class="text-neutral-600 transition-colors duration-100 group-hover:text-cyan-400">
+                  <span class="text-neutral-600 transition-colors duration-100 group-hover:text-rose-400">
                     →
                   </span>
                 </a>
@@ -140,7 +142,7 @@ const featuredGroups = platformGroups.filter(
         >
           <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
             <span class="chip">
-              {entry.data.date.toLocaleDateString("en-CA")}
+              {formatDateCA(entry.data.date)}
             </span>
             <span class="chip">{entry.data.platform}</span>
             {entry.data.difficulty && (
@@ -156,7 +158,7 @@ const featuredGroups = platformGroups.filter(
           </div>
           <a
             href={withBase(`/ctf/${entry.id}/`)}
-            class="text-xl font-semibold leading-tight text-neutral-100 hover:text-cyan-300 transition-colors duration-100"
+            class="text-xl font-semibold leading-tight text-neutral-100 hover:text-rose-300 transition-colors duration-100"
           >
             {entry.data.title}
           </a>
@@ -169,7 +171,7 @@ const featuredGroups = platformGroups.filter(
             <div class="flex flex-wrap gap-2">
               {entry.data.tags.map((tag) => (
                 <a
-                  class="chip hover:text-cyan-300 hover:border-cyan-500/20"
+                  class="chip hover:text-rose-300 hover:border-rose-500/20"
                   href={tagHref(tag)}
                 >
                   {tag}
@@ -177,7 +179,7 @@ const featuredGroups = platformGroups.filter(
               ))}
             </div>
             <span
-              class="text-lg text-neutral-600 transition-colors duration-100 group-hover:text-cyan-400"
+              class="text-lg text-neutral-600 transition-colors duration-100 group-hover:text-rose-400"
               aria-hidden="true"
             >
               →

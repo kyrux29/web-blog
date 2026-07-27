@@ -25,9 +25,15 @@ export function truncate(str: string, maxLen: number): string {
   return str.slice(0, maxLen).trimEnd() + "…";
 }
 
+const dateFormatterCA = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 /** Format a Date as "en-CA" (YYYY-MM-DD). */
 export function formatDateCA(d: Date): string {
-  return d.toLocaleDateString("en-CA");
+  return dateFormatterCA.format(d);
 }
 
 /**
