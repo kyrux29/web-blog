@@ -36,7 +36,7 @@ const tagHref = (tag: string) => withBase(`/tags/${encodeURIComponent(tag)}/`);
 ---
 
 <BaseLayout title={`${displayName} Write-ups | Kyrux`}>
-  <section class="mb-8 pt-4">
+  <section class="inner-page-hero mb-8 pt-4">
     <div class="mb-2">
       <a href={withBase("/ctf/")} class="inline-flex items-center gap-1 font-mono text-sm text-neutral-500 hover:text-rose-400 transition-colors">
         <span>←</span>
@@ -49,12 +49,12 @@ const tagHref = (tag: string) => withBase(`/tags/${encodeURIComponent(tag)}/`);
     </p>
   </section>
 
-  <ul class="space-y-4">
+  <ul class="archive-list space-y-4">
     {
       entries.sort((a, b) => {
         return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
       }).map((entry) => (
-        <li class="glass-panel group card-lift p-5">
+        <li class="glass-panel archive-entry group card-lift p-5">
           <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
             <span class="chip">{formatDateCA(entry.data.date)}</span>
             <span class="chip">{entry.data.platform}</span>

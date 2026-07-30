@@ -55,7 +55,7 @@ const featuredGroups = platformGroups.filter(
 ---
 
 <BaseLayout title="CTF Write-ups | Kyrux">
-  <section class="mb-8 pt-4">
+  <section class="inner-page-hero inner-page-hero--controls mb-8 pt-4">
     <h1 class="text-4xl font-bold tracking-tight text-neutral-100">
       CTF Archives
     </h1>
@@ -113,7 +113,7 @@ const featuredGroups = platformGroups.filter(
               return (
                 <a
                   href={withBase(`/ctf/${group.slug}/`)}
-                  class="glass-panel group card-lift flex items-center justify-between p-4 min-w-[200px] flex-1 sm:flex-none"
+                  class="glass-panel archive-quicklink group card-lift flex items-center justify-between p-4 min-w-[200px] flex-1 sm:flex-none"
                 >
                   <span class="font-mono text-sm font-semibold text-neutral-200 group-hover:text-rose-300 transition-colors mr-4">
                     {group.displayName}
@@ -130,11 +130,11 @@ const featuredGroups = platformGroups.filter(
     }
   </section>
 
-  <ul id="ctf-list" class="space-y-4">
+  <ul id="ctf-list" class="archive-list space-y-4">
     {
       ctfEntries.map((entry) => (
         <li
-          class="glass-panel group card-lift p-5"
+          class="glass-panel archive-entry group card-lift p-5"
           data-search={`${entry.data.title} ${entry.data.platform} ${entry.data.vulnerability_type ?? ""} ${entry.data.difficulty ?? ""} ${entry.data.tags.join(" ")}`.toLowerCase()}
           data-platform={entry.data.platform.toLowerCase()}
           data-difficulty={(entry.data.difficulty ?? "").toLowerCase()}

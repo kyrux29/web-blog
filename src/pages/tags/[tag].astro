@@ -31,7 +31,7 @@ ctf.sort(sortByDateDesc);
 ---
 
 <BaseLayout title={`Tag: ${tag} | Kyrux`}>
-  <section class="mb-8 pt-4">
+  <section class="inner-page-hero mb-8 pt-4">
     <span class="chip mb-3">Tag</span>
     <h1 class="text-4xl font-bold tracking-tight text-neutral-100">{tag}</h1>
     <p class="mt-3 max-w-2xl text-neutral-400">
@@ -45,9 +45,9 @@ ctf.sort(sortByDateDesc);
   {ctf.length > 0 && (
     <section class="mb-10">
       <h2 class="mb-4 text-xl font-semibold text-neutral-100">CTF</h2>
-      <ul class="space-y-3">
+      <ul class="archive-list space-y-3">
         {ctf.map((entry) => (
-          <li class="glass-panel card-lift p-5">
+          <li class="glass-panel archive-entry card-lift p-5">
             <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
               <span class="chip">{formatDateCA(entry.data.date)}</span>
               <span class="chip">{entry.data.platform}</span>
@@ -66,9 +66,9 @@ ctf.sort(sortByDateDesc);
   {blog.length > 0 && (
     <section>
       <h2 class="mb-4 text-xl font-semibold text-neutral-100">Blog</h2>
-      <ul class="space-y-3">
+      <ul class="archive-list space-y-3">
         {blog.map((entry) => (
-          <li class="glass-panel card-lift p-5">
+          <li class="glass-panel archive-entry card-lift p-5">
             <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
               <span class="chip">{formatDateCA(entry.data.date)}</span>
               <span class="chip">Research</span>

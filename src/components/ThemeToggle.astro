@@ -1,12 +1,17 @@
 <!--
-  ThemeToggle – switches between "dark" (default) and "dim" mode.
+  ThemeToggle – switches between the moonlit light theme (default) and dim mode.
   Persists preference to localStorage. Uses inline SVGs for a
   professional terminal aesthetic (moon / sun icons).
 -->
 <script>
   const root = document.documentElement;
-  const saved = localStorage.getItem("kyrux-theme") ?? "dark";
-  root.dataset.theme = saved;
+  if (root.dataset.theme !== "dim" && root.dataset.theme !== "light") {
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem("kyrux-theme");
+    } catch {}
+    root.dataset.theme = saved === "dim" ? "dim" : "light";
+  }
 
   const moonIcon = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
   const sunIcon = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
@@ -14,12 +19,12 @@
   function updateIcon(btn: HTMLElement | null) {
     if (!btn) return;
     btn.innerHTML = root.dataset.theme === "dim" ? sunIcon : moonIcon;
-    btn.setAttribute("title", root.dataset.theme === "dim" ? "Use paper theme" : "Use dim theme");
-    btn.setAttribute("aria-label", root.dataset.theme === "dim" ? "Switch to paper theme" : "Switch to dim theme");
+    btn.setAttribute("title", root.dataset.theme === "dim" ? "Use moonlit light theme" : "Use dim theme");
+    btn.setAttribute("aria-label", root.dataset.theme === "dim" ? "Switch to moonlit light theme" : "Switch to dim theme");
     root.style.colorScheme = root.dataset.theme === "dim" ? "dark" : "light";
     document.querySelector('meta[name="theme-color"]')?.setAttribute(
       "content",
-      root.dataset.theme === "dim" ? "#100b0d" : "#fff7f2",
+      root.dataset.theme === "dim" ? "#0a0a0a" : "#f3edf2",
     );
   }
 
@@ -27,7 +32,7 @@
   updateIcon(toggle);
 
   toggle?.addEventListener("click", () => {
-    root.dataset.theme = root.dataset.theme === "dim" ? "dark" : "dim";
+    root.dataset.theme = root.dataset.theme === "dim" ? "light" : "dim";
     localStorage.setItem("kyrux-theme", root.dataset.theme);
     updateIcon(toggle);
   });

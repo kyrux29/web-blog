@@ -1,0 +1,311 @@
+<script is:inline>
+  (function () {
+    var STORAGE_KEY = "kyrux-sound-enabled";
+    var AudioContextType = window.AudioContext;
+    var toggles = Array.from(document.querySelectorAll("[data-sound-toggle]"));
+    var context = null;
+    var master = null;
+    var bus = null;
+    var noiseBuffer = null;
+    var activeVoices = 0;
+    var lastPlayed = Object.create(null);
+
+    var readPreference = function () {
+      try {
+        return window.localStorage.getItem(STORAGE_KEY) !== "off";
+      } catch (_) {
+        return true;
+      }
+    };
+
+    var enabled = readPreference();
+
+    var syncControls = function () {
+      toggles = Array.from(document.querySelectorAll("[data-sound-toggle]"));
+      toggles.forEach(function (toggle) {
+        toggle.dataset.soundState = enabled ? "on" : "off";
+        toggle.setAttribute("aria-pressed", String(enabled));
+        toggle.setAttribute(
+          "aria-label",
+          AudioContextType
+            ? enabled
+              ? "Mute interface sounds"
+              : "Enable interface sounds"
+            : "Interface sounds unavailable",
+        );
+        toggle.setAttribute(
+          "title",
+          AudioContextType
+            ? enabled
+              ? "Mute interface sounds"
+              : "Enable interface sounds"
+            : "Interface sounds unavailable",
+        );
+        toggle.disabled = !AudioContextType;
+        var copy = toggle.querySelector(".sound-toggle-copy");
+        if (copy) copy.textContent = AudioContextType
+          ? enabled
+            ? "Sound on"
+            : "Sound off"
+          : "Sound unavailable";
+      });
+    };
+
+    var createNoiseBuffer = function (audioContext) {
+      var length = Math.floor(audioContext.sampleRate * 0.8);
+      var buffer = audioContext.createBuffer(1, length, audioContext.sampleRate);
+      var channel = buffer.getChannelData(0);
+      for (var index = 0; index < length; index += 1) {
+        var fade = 1 - index / length;
+        channel[index] = (Math.random() * 2 - 1) * (0.55 + fade * 0.45);
+      }
+      return buffer;
+    };
+
+    var ensureContext = function () {
+      if (!AudioContextType || !enabled) return null;
+      if (!context) {
+        context = new AudioContextType();
+        master = context.createGain();
+        bus = context.createDynamicsCompressor();
+        master.gain.value = 0.16;
+        bus.threshold.value = -28;
+        bus.knee.value = 16;
+        bus.ratio.value = 5;
+        bus.attack.value = 0.003;
+        bus.release.value = 0.16;
+        bus.connect(master);
+        master.connect(context.destination);
+        noiseBuffer = createNoiseBuffer(context);
+      }
+      if (context.state === "suspended") {
+        context.resume().catch(function () {});
+      }
+      if (master) {
+        master.gain.cancelScheduledValues(context.currentTime);
+        master.gain.setTargetAtTime(0.16, context.currentTime, 0.012);
+      }
+      return context;
+    };
+
+    var trackVoice = function (source) {
+      activeVoices += 1;
+      source.addEventListener(
+        "ended",
+        function () {
+          activeVoices = Math.max(0, activeVoices - 1);
+        },
+        { once: true },
+      );
+    };
+
+    var playClick = function (audioContext, start) {
+      var oscillator = audioContext.createOscillator();
+      var gain = audioContext.createGain();
+      oscillator.type = "triangle";
+      oscillator.frequency.setValueAtTime(720, start);
+      oscillator.frequency.exponentialRampToValueAtTime(430, start + 0.045);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.11, start + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.048);
+      oscillator.connect(gain);
+      gain.connect(bus);
+      trackVoice(oscillator);
+      oscillator.start(start);
+      oscillator.stop(start + 0.055);
+    };
+
+    var playMenu = function (audioContext, start, opening) {
+      var noise = audioContext.createBufferSource();
+      var filter = audioContext.createBiquadFilter();
+      var noiseGain = audioContext.createGain();
+      var hinge = audioContext.createOscillator();
+      var hingeGain = audioContext.createGain();
+      var duration = opening ? 0.22 : 0.17;
+
+      noise.buffer = noiseBuffer;
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(opening ? 380 : 760, start);
+      filter.frequency.exponentialRampToValueAtTime(opening ? 920 : 240, start + duration);
+      noiseGain.gain.setValueAtTime(0.0001, start);
+      noiseGain.gain.exponentialRampToValueAtTime(0.045, start + 0.025);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(bus);
+
+      hinge.type = "triangle";
+      hinge.frequency.setValueAtTime(opening ? 118 : 160, start);
+      hinge.frequency.exponentialRampToValueAtTime(opening ? 215 : 68, start + duration);
+      hingeGain.gain.setValueAtTime(0.0001, start);
+      hingeGain.gain.exponentialRampToValueAtTime(0.07, start + 0.018);
+      hingeGain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      hinge.connect(hingeGain);
+      hingeGain.connect(bus);
+
+      trackVoice(noise);
+      trackVoice(hinge);
+      noise.start(start);
+      noise.stop(start + duration + 0.02);
+      hinge.start(start);
+      hinge.stop(start + duration + 0.02);
+    };
+
+    var playRouteClose = function (audioContext, start) {
+      var flutter = audioContext.createBufferSource();
+      var flutterFilter = audioContext.createBiquadFilter();
+      var flutterGain = audioContext.createGain();
+      flutter.buffer = noiseBuffer;
+      flutterFilter.type = "bandpass";
+      flutterFilter.frequency.setValueAtTime(1250, start);
+      flutterFilter.frequency.exponentialRampToValueAtTime(2100, start + 0.21);
+      flutterFilter.Q.value = 0.8;
+      flutterGain.gain.setValueAtTime(0.0001, start);
+      [0, 0.065, 0.135].forEach(function (offset) {
+        flutterGain.gain.linearRampToValueAtTime(0.042, start + offset + 0.018);
+        flutterGain.gain.exponentialRampToValueAtTime(0.0001, start + offset + 0.052);
+      });
+      flutter.connect(flutterFilter);
+      flutterFilter.connect(flutterGain);
+      flutterGain.connect(bus);
+
+      var creak = audioContext.createBufferSource();
+      var creakFilter = audioContext.createBiquadFilter();
+      var creakGain = audioContext.createGain();
+      creak.buffer = noiseBuffer;
+      creakFilter.type = "bandpass";
+      creakFilter.Q.value = 3.5;
+      creakFilter.frequency.setValueAtTime(190, start + 0.22);
+      creakFilter.frequency.exponentialRampToValueAtTime(690, start + 0.5);
+      creakGain.gain.setValueAtTime(0.0001, start);
+      creakGain.gain.setValueAtTime(0.0001, start + 0.2);
+      creakGain.gain.exponentialRampToValueAtTime(0.065, start + 0.29);
+      creakGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.52);
+      creak.connect(creakFilter);
+      creakFilter.connect(creakGain);
+      creakGain.connect(bus);
+
+      var hinge = audioContext.createOscillator();
+      var hingeGain = audioContext.createGain();
+      hinge.type = "sawtooth";
+      hinge.frequency.setValueAtTime(74, start + 0.22);
+      hinge.frequency.exponentialRampToValueAtTime(43, start + 0.52);
+      hingeGain.gain.setValueAtTime(0.0001, start);
+      hingeGain.gain.setValueAtTime(0.0001, start + 0.21);
+      hingeGain.gain.exponentialRampToValueAtTime(0.026, start + 0.29);
+      hingeGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.53);
+      hinge.connect(hingeGain);
+      hingeGain.connect(bus);
+
+      var latch = audioContext.createOscillator();
+      var latchGain = audioContext.createGain();
+      latch.type = "sine";
+      latch.frequency.setValueAtTime(104, start + 0.5);
+      latch.frequency.exponentialRampToValueAtTime(38, start + 0.61);
+      latchGain.gain.setValueAtTime(0.0001, start);
+      latchGain.gain.setValueAtTime(0.0001, start + 0.495);
+      latchGain.gain.exponentialRampToValueAtTime(0.13, start + 0.508);
+      latchGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.615);
+      latch.connect(latchGain);
+      latchGain.connect(bus);
+
+      [flutter, creak, hinge, latch].forEach(trackVoice);
+      flutter.start(start);
+      flutter.stop(start + 0.24);
+      creak.start(start);
+      creak.stop(start + 0.56);
+      hinge.start(start);
+      hinge.stop(start + 0.56);
+      latch.start(start);
+      latch.stop(start + 0.625);
+    };
+
+    var cooldowns = {
+      "ui-click": 80,
+      "menu-open": 300,
+      "menu-close": 300,
+      "route-close": 700,
+    };
+
+    var play = function (cue) {
+      if (!enabled || document.hidden || activeVoices >= 6) return;
+      var nowMs = window.performance.now();
+      var cooldown = cooldowns[cue] || 100;
+      if (lastPlayed[cue] && nowMs - lastPlayed[cue] < cooldown) return;
+      var audioContext = ensureContext();
+      if (!audioContext) return;
+      lastPlayed[cue] = nowMs;
+      var start = audioContext.currentTime + 0.006;
+      if (cue === "ui-click") playClick(audioContext, start);
+      else if (cue === "menu-open") playMenu(audioContext, start, true);
+      else if (cue === "menu-close") playMenu(audioContext, start, false);
+      else if (cue === "route-close") playRouteClose(audioContext, start);
+    };
+
+    var persist = function () {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, enabled ? "on" : "off");
+      } catch (_) {}
+    };
+
+    var fadeAndSuspend = function () {
+      if (!context || !master) return;
+      master.gain.cancelScheduledValues(context.currentTime);
+      master.gain.setTargetAtTime(0.0001, context.currentTime, 0.01);
+      window.setTimeout(function () {
+        if (!enabled && context && context.state === "running") {
+          context.suspend().catch(function () {});
+        }
+      }, 80);
+    };
+
+    toggles.forEach(function (toggle) {
+      toggle.addEventListener("click", function (event) {
+        if (!event.isTrusted || !AudioContextType) return;
+        if (enabled) {
+          play("ui-click");
+          enabled = false;
+          persist();
+          syncControls();
+          fadeAndSuspend();
+        } else {
+          enabled = true;
+          persist();
+          syncControls();
+          ensureContext();
+          play("ui-click");
+        }
+      });
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!event.isTrusted || event.defaultPrevented) return;
+      var button = event.target instanceof Element ? event.target.closest("button") : null;
+      if (
+        !button ||
+        button.disabled ||
+        button.matches("[data-sound-toggle], #nav-menu-toggle")
+      ) return;
+      play("ui-click");
+    });
+
+    window.addEventListener("storage", function (event) {
+      if (event.key !== STORAGE_KEY) return;
+      enabled = event.newValue !== "off";
+      syncControls();
+      if (!enabled) fadeAndSuspend();
+    });
+
+    syncControls();
+    window.kyruxSound = {
+      play: play,
+      getState: function () {
+        return {
+          enabled: enabled,
+          context: context ? context.state : "idle",
+          activeVoices: activeVoices,
+        };
+      },
+    };
+  })();
+</script>
