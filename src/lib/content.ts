@@ -8,6 +8,17 @@ import { getCollection, type CollectionEntry } from "astro:content";
 type BlogEntry = CollectionEntry<"blog">;
 type CtfEntry = CollectionEntry<"ctf">;
 
+/** CTF write-ups default to private; explicit passwords can protect either collection. */
+export function isProtectedPost(entry: BlogEntry | CtfEntry): boolean {
+  const hasExplicitPassword = Boolean(
+    entry.data.password || entry.data.password_env
+  );
+  const isPrivateCtf =
+    entry.collection === "ctf" && entry.data.public === false;
+
+  return hasExplicitPassword || isPrivateCtf;
+}
+
 /** Return non-draft blog posts, sorted newest first. Supports draft preview in dev. */
 export async function getPublishedBlogPosts(includeDrafts = import.meta.env.DEV): Promise<BlogEntry[]> {
   return (

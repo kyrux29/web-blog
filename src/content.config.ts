@@ -11,6 +11,7 @@ const ctf = defineCollection({
     category: z.string().optional(),
     difficulty: z.string().optional(),
     tags: z.array(z.string()).default([]),
+    public: z.boolean().default(false),
     password: z.string().optional(),
     password_env: z.string().optional(),
     series: z.string().optional(),

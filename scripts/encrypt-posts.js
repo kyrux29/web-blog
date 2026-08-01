@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { parseEnv } from "node:util";
 import matter from "gray-matter";
 
 const CONTENT_ROOTS = [
@@ -10,6 +11,26 @@ const CONTENT_ROOTS = [
 ];
 
 const DIST_ROOT = path.resolve("dist");
+
+function loadLocalEnvironment() {
+  const loaded = {};
+  const candidates = [
+    ".env",
+    ".env.local",
+    ".env.production",
+    ".env.production.local"
+  ];
+
+  for (const candidate of candidates) {
+    const envPath = path.resolve(candidate);
+    if (!fs.existsSync(envPath)) continue;
+    Object.assign(loaded, parseEnv(fs.readFileSync(envPath, "utf8")));
+  }
+
+  for (const [key, value] of Object.entries(loaded)) {
+    if (process.env[key] === undefined) process.env[key] = value;
+  }
+}
 
 function walkMarkdownFiles(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -41,7 +62,7 @@ function toOutputHtmlPath(markdownPath, contentDir, routeBase) {
   return path.join(DIST_ROOT, routeBase, slugPath, "index.html");
 }
 
-function resolvePassword(frontmatter, filePath) {
+function resolvePassword(frontmatter, filePath, defaultPasswordEnv = null) {
   const rawPassword = frontmatter?.password;
   const passwordEnv = frontmatter?.password_env;
 
@@ -71,6 +92,16 @@ function resolvePassword(frontmatter, filePath) {
     return trimmed;
   }
 
+  if (defaultPasswordEnv) {
+    const envVal = process.env[defaultPasswordEnv];
+    if (!envVal) {
+      throw new Error(
+        `Missing env var ${defaultPasswordEnv} for private write-up: ${filePath}`
+      );
+    }
+    return String(envVal);
+  }
+
   return null;
 }
 
@@ -92,15 +123,21 @@ function encryptHtmlFile(htmlPath, password) {
       "--template",
       templatePath,
       "--template-title",
-      "KYRUX_LABS :: Access Required",
+      "KYRUX // Cổng mã hóa",
       "--template-instructions",
-      "This page is protected. Enter the passphrase to decrypt the write-up locally in your browser.",
+      "Nội dung đã được mã hóa. Nhập passphrase để mở bài ngay trên trình duyệt.",
       "--template-placeholder",
-      "Passphrase",
+      "Nhập passphrase",
       "--template-button",
-      "UNLOCK",
+      "MỞ CỬA",
       "--template-error",
-      "Wrong passphrase.",
+      "Passphrase không đúng. Hãy kiểm tra và thử lại.",
+      "--template-toggle-show",
+      "Hiện passphrase",
+      "--template-toggle-hide",
+      "Ẩn passphrase",
+      "--remember",
+      "false",
       "--directory",
       tempOutputDir
     ],
@@ -124,6 +161,8 @@ function encryptHtmlFile(htmlPath, password) {
 }
 
 function main() {
+  loadLocalEnvironment();
+
   let encryptedCount = 0;
   let protectedCount = 0;
   let skippedCount = 0;
@@ -134,7 +173,11 @@ function main() {
     for (const filePath of markdownFiles) {
       const raw = fs.readFileSync(filePath, "utf8");
       const { data } = matter(raw);
-      const password = resolvePassword(data, filePath);
+      const defaultPasswordEnv =
+        root.routeBase === "ctf" && data.public !== true
+          ? "KYRUX_POST_PASSWORD"
+          : null;
+      const password = resolvePassword(data, filePath, defaultPasswordEnv);
 
       if (!password) continue;
       protectedCount += 1;

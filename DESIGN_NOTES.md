@@ -126,7 +126,22 @@ Sau khi transition về `idle`, quầng sáng sau cửa thở chậm theo chu k�
 
 Khi `prefers-reduced-motion: reduce`, transition được bỏ hoàn toàn và link điều hướng ngay lập tức. Âm thanh có công tắc độc lập vì giảm chuyển động không đồng nghĩa với tắt tiếng.
 
-## 8. Responsive và accessibility
+## 8. Batwing Vault — màn khóa bài
+
+`scripts/staticrypt-password-template.html` là lớp cổng dành cho bài có
+`password_env`. Nó dùng cùng Moonlit Parchment, Rose Signal và silhouette dơi
+như giao diện chính; vùng tối được dồn vào một nửa “cánh cửa”, còn form nhập
+passphrase nằm trên Paper để đọc rõ.
+
+- Bài khóa chỉ chứa tên biến môi trường trong frontmatter; passphrase thật nằm
+  trong `.env` khi build local hoặc GitHub Actions secret khi deploy.
+- Sai passphrase hiển thị lỗi ngay cạnh trường nhập, không dùng alert.
+- Người đọc có thể hiện/ẩn passphrase và ghi nhớ khóa 30 ngày trên thiết bị.
+- Form có focus ring, trạng thái chờ, `aria-live` và bỏ rung khi
+  `prefers-reduced-motion`.
+- Mã hóa chạy ở `postbuild`; dev server vẫn để nội dung rõ cho quá trình viết.
+
+## 9. Responsive và accessibility
 
 Breakpoint chính: `900px`, `760px`, `560px`, `380px`.
 
@@ -139,7 +154,7 @@ Breakpoint chính: `900px`, `760px`, `560px`, `380px`.
 - Moonlit Parchment và dim theme đều giữ đủ tương phản cho title và route.
 - Dơi trang trí có `aria-hidden="true"`, không nhận pointer event và không xuất hiện trên mobile.
 
-## 9. Checklist khi tự chỉnh
+## 10. Checklist khi tự chỉnh
 
 1. Chỉnh token màu trước khi chỉnh từng selector.
 2. Giữ viewport đầu chỉ còn tên site, subtitle, route và Batwing Door.

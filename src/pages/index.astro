@@ -1,5 +1,5 @@
 ---
-import { getPublishedBlogPosts, getPublishedCtfPosts } from "../lib/content";
+import { getPublishedBlogPosts, getPublishedCtfPosts, isProtectedPost } from "../lib/content";
 import { estimateReadingTime, formatDateCA, withBase } from "../utils";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteRoutes } from "../config/site-routes";
@@ -76,6 +76,7 @@ const homeRoutes = siteRoutes
                 <div class="dossier-meta">
                   <span>{entry.data.platform}</span>
                   {entry.data.difficulty && <span class={`chip chip--${entry.data.difficulty.toLowerCase()}`}>{entry.data.difficulty}</span>}
+                  {isProtectedPost(entry) && <span class="chip chip--hard">Private</span>}
                   <time datetime={entry.data.date.toISOString()}>{formatDateCA(entry.data.date)}</time>
                 </div>
                 <h3>{entry.data.title}</h3>

@@ -1,5 +1,5 @@
 ---
-import { getPublishedBlogPosts, getPublishedCtfPosts } from "../../lib/content";
+import { getPublishedBlogPosts, getPublishedCtfPosts, isProtectedPost } from "../../lib/content";
 import { withBase, difficultyChipClass, formatDateCA } from "../../utils";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
@@ -52,6 +52,7 @@ ctf.sort(sortByDateDesc);
               <span class="chip">{formatDateCA(entry.data.date)}</span>
               <span class="chip">{entry.data.platform}</span>
               {entry.data.difficulty && <span class={`chip ${difficultyChipClass(entry.data.difficulty)}`}>{entry.data.difficulty}</span>}
+              {isProtectedPost(entry) && <span class="chip chip--hard">Private</span>}
             </div>
             <a href={withBase(`/ctf/${entry.id}/`)} class="text-xl font-semibold leading-tight text-neutral-100 hover:text-rose-300 transition-colors">
               {entry.data.title}

@@ -58,8 +58,20 @@ jobs:
       - name: Typecheck
         run: pnpm run check
 
+      - name: Verify protected-post passphrase
+        if: github.event_name != 'pull_request'
+        env:
+          KYRUX_POST_PASSWORD: ${{ secrets.KYRUX_POST_PASSWORD }}
+        run: |
+          if [ -z "$KYRUX_POST_PASSWORD" ]; then
+            echo "::error::Missing repository secret KYRUX_POST_PASSWORD"
+            exit 1
+          fi
+
       - name: Build site
         run: pnpm run build
+        env:
+          KYRUX_POST_PASSWORD: ${{ github.event_name == 'pull_request' && 'preview-build-only-passphrase' || secrets.KYRUX_POST_PASSWORD }}
 
       - name: Verify dist output
         run: |

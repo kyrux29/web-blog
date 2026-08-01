@@ -166,6 +166,7 @@ schema: z.object({
   category: z.string().optional(),
   difficulty: z.string().optional(),         // "easy" | "medium" | "hard" | "insane"
   tags: z.array(z.string()).default([]),
+  public: z.boolean().default(false),         // false = encrypted with KYRUX_POST_PASSWORD
   password: z.string().optional(),           // staticrypt password
   password_env: z.string().optional(),       // env var for password
   draft: z.boolean().default(false)
@@ -221,8 +222,8 @@ pnpm run preview
 pnpm run postbuild
 # Runs:
 #  1. enhance:images   — optimize images in dist/
-#  2. pagefind         — generate full-text search index
-#  3. encrypt          — apply staticrypt to password-protected posts
+#  2. encrypt          — encrypt private/protected posts
+#  3. pagefind         — index the encrypted output, never private plaintext
 ```
 
 ---
@@ -261,18 +262,42 @@ vault/ctf-notes/
 
 ## 🔐 Password-Protected Posts
 
-Posts with `password` or `password_env` in frontmatter are encrypted using [staticrypt](https://github.com/robinmoisson/staticrypt) during post-build.
+CTF write-ups are private by default and encrypted with
+`KYRUX_POST_PASSWORD` using [staticrypt](https://github.com/robinmoisson/staticrypt)
+during post-build. To publish one write-up without a passphrase, opt in explicitly:
 
 ```yaml
 ---
-title: "Secret Write-up"
-password: "supersecret"
-# OR reference an env var:
-# password_env: "POST_PASSWORD"
+title: "Public Write-up"
+public: true
 ---
 ```
 
-Protected posts show a decryption prompt before rendering content.
+Blog posts remain public by default. A Blog post can still be protected
+individually with `password_env: "KYRUX_POST_PASSWORD"` (preferred) or
+`password: "..."`.
+
+Keep the shared CTF passphrase outside source control:
+
+```sh
+cp .env.example .env
+# edit KYRUX_POST_PASSWORD in .env
+npm run build
+npm run preview
+```
+
+The password screen is generated in `dist/` during `postbuild`; `npm run dev`
+continues to render source content directly for authoring. Encryption runs before
+Pagefind, so private write-up plaintext is not copied into the search index.
+
+For GitHub Pages, add the same value under
+**Settings → Secrets and variables → Actions → New repository secret** with the
+name `KYRUX_POST_PASSWORD`. Production deploys fail closed when this secret is
+missing, preventing an accidentally unencrypted release.
+
+Staticrypt encrypts the generated HTML and decrypts it locally in the browser.
+Use a long, unique passphrase; this is client-side protection, not server-side
+authentication.
 
 ---
 

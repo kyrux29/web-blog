@@ -15,7 +15,7 @@
     "pagefind": "pagefind --site dist",
     "check:links": "node scripts/check-internal-links.mjs",
     "enhance:images": "node scripts/enhance-dist-images.mjs",
-    "postbuild": "pnpm run enhance:images && pnpm run pagefind && pnpm run encrypt",
+    "postbuild": "pnpm run enhance:images && pnpm run encrypt && pnpm run pagefind",
     "preview": "astro preview",
     "astro": "astro"
   },

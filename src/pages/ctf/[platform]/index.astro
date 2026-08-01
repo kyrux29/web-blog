@@ -1,5 +1,5 @@
 ---
-import { getPublishedCtfPosts } from "../../../lib/content";
+import { getPublishedCtfPosts, isProtectedPost } from "../../../lib/content";
 import { formatDateCA, withBase } from "../../../utils";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 
@@ -59,7 +59,7 @@ const tagHref = (tag: string) => withBase(`/tags/${encodeURIComponent(tag)}/`);
             <span class="chip">{formatDateCA(entry.data.date)}</span>
             <span class="chip">{entry.data.platform}</span>
             {entry.data.difficulty && <span class={`chip chip--${(entry.data.difficulty ?? "").toLowerCase()}`}>{entry.data.difficulty}</span>}
-            {(entry.data.password || entry.data.password_env) && <span class="chip chip--hard">Protected</span>}
+            {isProtectedPost(entry) && <span class="chip chip--hard">Private</span>}
           </div>
           <a href={withBase(`/ctf/${entry.id}/`)} class="text-xl font-semibold leading-tight text-neutral-100 hover:text-rose-300 transition-colors duration-100">
             {entry.data.title}

@@ -1,5 +1,5 @@
 ---
-import { getPublishedBlogPosts } from "../../lib/content";
+import { getPublishedBlogPosts, isProtectedPost } from "../../lib/content";
 import { withBase } from "../../utils";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
@@ -61,6 +61,11 @@ seriesGroups.forEach(group => {
                   <span class="archive-chapter-title">
                     {post.data.title}
                   </span>
+                  {isProtectedPost(post) && (
+                    <span class="archive-chapter-lock" aria-label="Password protected">
+                      LOCKED
+                    </span>
+                  )}
                 </a>
               </li>
             ))}
