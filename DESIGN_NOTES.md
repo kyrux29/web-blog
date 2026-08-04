@@ -1,16 +1,16 @@
-# Kyrux UI — Moonlit Parchment / Batwing Door
+# Kyrux UI — Crimson Nocturne / Batwing Door
 
 Tài liệu này ghi lại logic thiết kế để bạn có thể tự chỉnh UI mà không phải đoán từng selector.
 
 ## 1. Ý tưởng cốt lõi
 
-Trang tham chiếu tạo ấn tượng bằng bố cục poster toàn màn hình, tương phản mạnh, display type lớn và menu là một phần của hero. Kyrux giữ nhịp thị giác đó nhưng dùng một chữ ký riêng: **Batwing Door trên nền giấy trăng**.
+Trang tham chiếu tạo ấn tượng bằng bố cục poster toàn màn hình, tương phản mạnh, display type lớn và menu là một phần của hero. Kyrux giữ nhịp thị giác đó nhưng dùng một chữ ký riêng: **Batwing Door trong đêm đỏ Dracula**.
 
 - `KYRUX BLOG` và bốn route là toàn bộ thông tin cần thiết ở viewport đầu.
 - Hai cánh dơi đồng thời là silhouette bao quanh cửa Dracula.
 - Cửa hé sáng ở trạng thái nghỉ, mở khi hover/focus và trở thành transition giữa các trang.
-- Một mảng hồng nguyệt hai sắc độ và một mặt trăng tĩnh tạo eclipse sau artwork. Không có sao, particle, collage chữ, tọa độ, mã route, keyboard hint hay watermark.
-- Độ “đậm” được dồn vào một motif. Những vùng còn lại ưu tiên khoảng trắng và khả năng đọc.
+- Một quầng đỏ huyết dụ và một mặt trăng tĩnh tạo eclipse sau artwork. Không có sao, particle, collage chữ, tọa độ, mã route, keyboard hint hay watermark.
+- Độ “đậm” được dồn vào một motif. Những vùng còn lại ưu tiên khoảng thở và khả năng đọc.
 
 Nếu thêm một hiệu ứng mới, hãy hỏi trước: nó có làm Batwing Door rõ hơn không? Nếu không, thường nên bỏ.
 
@@ -20,22 +20,23 @@ Mở `src/styles/global.css`, tìm khối `:root`:
 
 ```css
 :root {
-  --signal: #e85275;       /* Rose Signal: active, CTA, khe cửa */
-  --signal-dark: #a50f3c;  /* chữ đỏ đạt tương phản trên nền sáng */
-  --signal-soft: #f2789a;  /* ánh sáng trong cửa */
-  --night: #2a1220;        /* dùng có giới hạn trong silhouette */
-  --night-raised: #3a1a2b; /* chiều sâu của cửa */
-  --wine: #3b1026;         /* cánh, cửa và chữ display */
-  --plum: #722648;         /* Velvet: chiều sâu và viền cánh */
-  --moon-ice: #dce7f4;     /* Moon Silver: mặt trăng/focus */
-  --paper: #f3edf2;        /* nền tím-trắng dịu */
-  --paper-raised: #fff9fc; /* card và HUD chip */
-  --ink: #24111c;          /* chữ chính */
-  --ink-soft: #634858;     /* chữ phụ */
+  --signal: #c7193f;       /* Blood Signal: active, CTA, khe cửa */
+  --signal-dark: #8f1028;  /* link đỏ đạt tương phản trên nền sáng */
+  --signal-soft: #df4a5f;  /* ánh đỏ thứ cấp */
+  --signal-ink: #fffdfa;   /* chữ trên nền Blood Signal */
+  --night: #271016;        /* silhouette */
+  --night-raised: #35121b; /* chiều sâu của cửa */
+  --wine: #340914;         /* cánh, cửa và chữ display */
+  --plum: #681326;         /* Velvet: chiều sâu và viền cánh */
+  --moon-ice: #dbe1e8;     /* Moon Silver: mặt trăng/focus */
+  --paper: #f1eeeb;        /* Ash Paper: xám-ngà trung tính */
+  --paper-raised: #fffdfa; /* card và HUD chip */
+  --ink: #211416;          /* chữ chính */
+  --ink-soft: #5f5152;     /* chữ phụ */
 }
 ```
 
-`Moonlit Parchment` là theme mặc định: Paper chiếm phần lớn, Rose Signal là mảng cắt phải, còn Wine/Night chỉ được “chi tiêu” cho cánh và cửa Dracula. Vì vậy giao diện vẫn ma mị nhưng không tối nặng. Nút mặt trăng chuyển sang `dim`; khối `html[data-theme="dim"]` khai báo lại đầy đủ token để hai palette không rò màu sang nhau.
+`Crimson Nocturne` là theme mặc định: nền mực tím-đen, bề mặt than rượu và Blood Signal đỏ son sâu. Nút mặt trời chuyển sang `Ashen Daylight`; theme sáng dùng giấy xám-ngà trung tính thay vì nền hồng. Khối `html[data-theme="dim"]` khai báo đầy đủ token dark để hai palette không rò màu sang nhau. Preference dùng key `kyrux-theme-v2`, vì vậy người dùng cũ cũng nhận dark default một lần rồi lựa chọn mới được lưu lại.
 
 ## 3. Hệ chữ
 
@@ -79,7 +80,7 @@ Navbar nằm trong `src/layouts/BaseLayout.astro`; style bắt đầu ở `.nav-
 - Trên mobile, navbar quay về toàn chiều rộng để ba nút điều khiển luôn có touch target tối thiểu `44px` và không gây tràn ngang.
 - Menu toàn màn hình chỉ có năm tên route: Home, CTF, Blog, Tags, About.
 - Mảng Blood bên phải dùng silhouette cánh dơi hình học thay cho nav bar truyền thống.
-- Route hiện tại dùng band Rose Signal; các route khác giữ chữ Wine và diamond.
+- Route hiện tại dùng band Blood Signal; các route khác giữ chữ Wine và diamond.
 - `Escape`, phím mũi tên và focus trap vẫn hoạt động dù hint bàn phím đã được bỏ khỏi UI.
 - Trên mobile, terminal được ẩn để logo, search, theme và menu vẫn có touch target rõ ràng.
 
@@ -129,14 +130,15 @@ Khi `prefers-reduced-motion: reduce`, transition được bỏ hoàn toàn và l
 ## 8. Batwing Vault — màn khóa bài
 
 `scripts/staticrypt-password-template.html` là lớp cổng dành cho bài có
-`password_env`. Nó dùng cùng Moonlit Parchment, Rose Signal và silhouette dơi
-như giao diện chính; vùng tối được dồn vào một nửa “cánh cửa”, còn form nhập
-passphrase nằm trên Paper để đọc rõ.
+`password_env`. Nó dùng cùng Crimson Nocturne, Blood Signal và silhouette dơi
+như giao diện chính; artwork và form đều nằm trong không gian tối, còn field có
+surface riêng để đọc rõ.
 
 - Bài khóa chỉ chứa tên biến môi trường trong frontmatter; passphrase thật nằm
   trong `.env` khi build local hoặc GitHub Actions secret khi deploy.
 - Sai passphrase hiển thị lỗi ngay cạnh trường nhập, không dùng alert.
-- Người đọc có thể hiện/ẩn passphrase và ghi nhớ khóa 30 ngày trên thiết bị.
+- Người đọc có thể hiện/ẩn passphrase; khóa không được tự ghi nhớ nên mỗi phiên
+  truy cập mới luôn hiện cổng.
 - Form có focus ring, trạng thái chờ, `aria-live` và bỏ rung khi
   `prefers-reduced-motion`.
 - Mã hóa chạy ở `postbuild`; dev server vẫn để nội dung rõ cho quá trình viết.
@@ -151,7 +153,7 @@ Breakpoint chính: `900px`, `760px`, `560px`, `380px`.
 - Link dùng visible text làm accessible name; artwork có `aria-hidden="true"`.
 - Menu overlay dùng `aria-expanded`, `aria-hidden`, `inert`, focus restore và Escape.
 - Mọi animation chính đều có nhánh reduced motion.
-- Moonlit Parchment và dim theme đều giữ đủ tương phản cho title và route.
+- Crimson Nocturne và Ashen Daylight đều giữ đủ tương phản cho title và route.
 - Dơi trang trí có `aria-hidden="true"`, không nhận pointer event và không xuất hiện trên mobile.
 
 ## 10. Checklist khi tự chỉnh
@@ -160,7 +162,7 @@ Breakpoint chính: `900px`, `760px`, `560px`, `380px`.
 2. Giữ viewport đầu chỉ còn tên site, subtitle, route và Batwing Door.
 3. Chụp 1440px, 390px và 320px.
 4. Kiểm tra hover/focus mở cửa, menu overlay và Escape.
-5. Kiểm tra Moonlit Parchment, dim theme và reduced motion.
+5. Kiểm tra Crimson Nocturne, Ashen Daylight và reduced motion.
 6. Chạy `npm run check`, `npm run build` và `git diff --check`.
 
 Chất riêng không đến từ số lượng hiệu ứng. Nó đến từ một motif đủ rõ và được lặp lại có kỷ luật. Ở giao diện này, motif đó là **cánh dơi khép lại thành cánh cửa của Kyrux**.

@@ -175,9 +175,9 @@
     const b = terminalStats.blog;
     const t = terminalStats.tags;
     printHtml(`
-      <span style="color:#ff3048">blog/</span>   <span style="color:#a3a3a3">(${b} posts)</span>
-      <span style="color:#ff3048">ctf/</span>    <span style="color:#a3a3a3">(${c} write-ups)</span>
-      <span style="color:#ff3048">tags/</span>   <span style="color:#a3a3a3">(${t} topics)</span>
+      <span style="color:#c7193f">blog/</span>   <span style="color:#a3a3a3">(${b} posts)</span>
+      <span style="color:#c7193f">ctf/</span>    <span style="color:#a3a3a3">(${c} write-ups)</span>
+      <span style="color:#c7193f">tags/</span>   <span style="color:#a3a3a3">(${t} topics)</span>
       <span style="color:#a3a3a3">about.txt</span>
     `.split("\n").map(s => s.trim()).join("\n").trim());
   };
@@ -237,11 +237,11 @@
     printHtml(`
       <span style="color:#a3a3a3">┌── repos</span>
       <span style="color:#a3a3a3">│</span>
-      <span style="color:#a3a3a3">├── ctf/</span>  <span style="color:#ff3048;font-weight:bold">${c}</span> write-ups
-      <span style="color:#a3a3a3">├── blog/</span> <span style="color:#ff3048;font-weight:bold">${b}</span> research posts
-      <span style="color:#a3a3a3">├── tags/</span> <span style="color:#ff3048;font-weight:bold">${t}</span> topics
+      <span style="color:#a3a3a3">├── ctf/</span>  <span style="color:#c7193f;font-weight:bold">${c}</span> write-ups
+      <span style="color:#a3a3a3">├── blog/</span> <span style="color:#c7193f;font-weight:bold">${b}</span> research posts
+      <span style="color:#a3a3a3">├── tags/</span> <span style="color:#c7193f;font-weight:bold">${t}</span> topics
       <span style="color:#a3a3a3">│</span>
-      <span style="color:#a3a3a3">└── total:</span> <span style="color:#ff3048;font-weight:bold">${total}</span> published articles
+      <span style="color:#a3a3a3">└── total:</span> <span style="color:#c7193f;font-weight:bold">${total}</span> published articles
     `.split("\n").map(s => s.trim()).join("\n").trim());
   };
 
@@ -273,7 +273,7 @@
       if (!matrixCtx) return;
       matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
       matrixCtx.fillRect(0, 0, canvasWidth, canvasHeight);
-      matrixCtx.fillStyle = "#ff3048";
+      matrixCtx.fillStyle = "#c7193f";
       matrixCtx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {
@@ -416,16 +416,16 @@
 
     if (cmd === "neofetch") {
       printHtml(`
-        <span style="color:#ff3048">       ▄▄████▄▄</span>    <span style="color:#a3a3a3">kyrux@labs</span>
-        <span style="color:#ff3048">     ▄██████████▄</span>  <span style="color:#eab308">OS</span>: Kyrux Labs OS v2.1
-        <span style="color:#ff3048">   ▄███▀▀    ▀▀███▄</span> <span style="color:#eab308">Host</span>: GitHub Pages
-        <span style="color:#ff3048">  ▄██▀          ▀██▄</span> <span style="color:#eab308">Uptime</span>: since 2024
-        <span style="color:#ff3048">  ██              ██</span>  <span style="color:#eab308">Shell</span>: kyrux-terminal
-        <span style="color:#ff3048">  ██   ████████   ██</span>  <span style="color:#eab308">CPU</span>: Intel i9 (metaphorical)
-        <span style="color:#ff3048">  ▀██▄          ▄██▀</span>  <span style="color:#eab308">Memory</span>: ${terminalStats ? terminalStats.blog + terminalStats.ctf : '?'} articles
-        <span style="color:#ff3048">    ▀███▄▄    ▄███▀</span>   <span style="color:#eab308">Terminal</span>: v2.1
-        <span style="color:#ff3048">      ▀██████████▀</span>    <span style="color:#eab308">Resolution</span>: 1337x420
-        <span style="color:#ff3048">        ▀▀████▀▀</span>
+        <span style="color:#c7193f">       ▄▄████▄▄</span>    <span style="color:#a3a3a3">kyrux@labs</span>
+        <span style="color:#c7193f">     ▄██████████▄</span>  <span style="color:#eab308">OS</span>: Kyrux Labs OS v2.1
+        <span style="color:#c7193f">   ▄███▀▀    ▀▀███▄</span> <span style="color:#eab308">Host</span>: GitHub Pages
+        <span style="color:#c7193f">  ▄██▀          ▀██▄</span> <span style="color:#eab308">Uptime</span>: since 2024
+        <span style="color:#c7193f">  ██              ██</span>  <span style="color:#eab308">Shell</span>: kyrux-terminal
+        <span style="color:#c7193f">  ██   ████████   ██</span>  <span style="color:#eab308">CPU</span>: Intel i9 (metaphorical)
+        <span style="color:#c7193f">  ▀██▄          ▄██▀</span>  <span style="color:#eab308">Memory</span>: ${terminalStats ? terminalStats.blog + terminalStats.ctf : '?'} articles
+        <span style="color:#c7193f">    ▀███▄▄    ▄███▀</span>   <span style="color:#eab308">Terminal</span>: v2.1
+        <span style="color:#c7193f">      ▀██████████▀</span>    <span style="color:#eab308">Resolution</span>: 1337x420
+        <span style="color:#c7193f">        ▀▀████▀▀</span>
       `.trim());
       return;
     }

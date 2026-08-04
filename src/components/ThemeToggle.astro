@@ -1,5 +1,6 @@
 <!--
-  ThemeToggle – switches between the moonlit light theme (default) and dim mode.
+  ThemeToggle – switches between the default Crimson Nocturne dark theme and
+  the ash-paper light theme.
   Persists preference to localStorage. Uses inline SVGs for a
   professional terminal aesthetic (moon / sun icons).
 -->
@@ -8,9 +9,9 @@
   if (root.dataset.theme !== "dim" && root.dataset.theme !== "light") {
     let saved: string | null = null;
     try {
-      saved = localStorage.getItem("kyrux-theme");
+      saved = localStorage.getItem("kyrux-theme-v2");
     } catch {}
-    root.dataset.theme = saved === "dim" ? "dim" : "light";
+    root.dataset.theme = saved === "light" ? "light" : "dim";
   }
 
   const moonIcon = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
@@ -19,12 +20,12 @@
   function updateIcon(btn: HTMLElement | null) {
     if (!btn) return;
     btn.innerHTML = root.dataset.theme === "dim" ? sunIcon : moonIcon;
-    btn.setAttribute("title", root.dataset.theme === "dim" ? "Use moonlit light theme" : "Use dim theme");
-    btn.setAttribute("aria-label", root.dataset.theme === "dim" ? "Switch to moonlit light theme" : "Switch to dim theme");
+    btn.setAttribute("title", root.dataset.theme === "dim" ? "Use ash-paper light theme" : "Use Crimson Nocturne dark theme");
+    btn.setAttribute("aria-label", root.dataset.theme === "dim" ? "Switch to ash-paper light theme" : "Switch to Crimson Nocturne dark theme");
     root.style.colorScheme = root.dataset.theme === "dim" ? "dark" : "light";
     document.querySelector('meta[name="theme-color"]')?.setAttribute(
       "content",
-      root.dataset.theme === "dim" ? "#0a0a0a" : "#f3edf2",
+      root.dataset.theme === "dim" ? "#0d090b" : "#f1eeeb",
     );
   }
 
@@ -33,7 +34,7 @@
 
   toggle?.addEventListener("click", () => {
     root.dataset.theme = root.dataset.theme === "dim" ? "light" : "dim";
-    localStorage.setItem("kyrux-theme", root.dataset.theme);
+    localStorage.setItem("kyrux-theme-v2", root.dataset.theme);
     updateIcon(toggle);
   });
 </script>
@@ -42,7 +43,7 @@
   id="theme-toggle"
   type="button"
   class="nav-tool theme-toggle"
-  title="Use dim theme"
+  title="Use ash-paper light theme"
   aria-label="Toggle color theme"
 >
   <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>

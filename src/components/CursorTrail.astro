@@ -81,7 +81,7 @@
 
         const alpha = 1 - p.life / p.maxLife;
         ctx.font = "13px monospace";
-        ctx.fillStyle = `rgba(255, 48, 72, ${(alpha * 0.8).toFixed(2)})`; /* rose-400 */
+        ctx.fillStyle = `rgba(199, 25, 63, ${(alpha * 0.8).toFixed(2)})`; /* rose-400 */
         ctx.fillText(p.char, p.x, p.y);
 
         if (p.life >= p.maxLife || p.y > h + 20 || p.x < -20 || p.x > w + 20) {

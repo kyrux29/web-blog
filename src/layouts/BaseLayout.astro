@@ -70,7 +70,7 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f3edf2" />
+    <meta name="theme-color" content="#0d090b" />
 
     <!-- CSP baseline: self-origin + data URIs for inline images. Astro hash will be injected automatically. -->
     <meta
@@ -81,14 +81,15 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
       (function () {
         var saved = null;
         try {
-          saved = window.localStorage.getItem("kyrux-theme");
+          saved = window.localStorage.getItem("kyrux-theme-v2");
         } catch (_) {}
-        var theme = saved === "dim" ? "dim" : "light";
+        var theme = saved === "light" ? "light" : "dim";
         document.documentElement.dataset.theme = theme;
         document.documentElement.style.colorScheme = theme === "dim" ? "dark" : "light";
-        if (theme === "dim") {
-          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0a0a");
-        }
+        document.querySelector('meta[name="theme-color"]')?.setAttribute(
+          "content",
+          theme === "dim" ? "#0d090b" : "#f1eeeb",
+        );
       })();
     </script>
 
@@ -350,7 +351,7 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
         const SEG_W = 6; // pixel width of each XP segment
         const GAP = 1;   // gap between segments
         const BAR_H = 6;
-        const COLOR_FILL = "#ff3048";
+        const COLOR_FILL = "#c7193f";
         const COLOR_EMPTY = "rgba(23,16,18,0.14)";
 
         const resize = () => {
@@ -409,7 +410,7 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
                 }, 150);
               }, 200);
               console.log("%c🛡️ Kyrux Labs %c— If you know the enemy and know yourself, you need not fear the result of a hundred battles.",
-                "color: #ff3048; font-size: 16px; font-weight: bold;",
+                "color: #c7193f; font-size: 16px; font-weight: bold;",
                 "color: #a3a3a3;");
               pos = 0;
             }
@@ -696,7 +697,9 @@ const terminalStats = { ctf: ctfEntries.length, blog: blogEntries.length, tags: 
         var motionPanels = Array.from(
           new Set(
             document.querySelectorAll(
-              ".archive-series, .inner-main .glass-panel, .inner-main .glass-content",
+              // Never hide the full reading surface: a long article can be taller
+              // than the viewport's intersection threshold and remain transparent.
+              ".archive-series, .inner-main .glass-panel",
             ),
           ),
         );
