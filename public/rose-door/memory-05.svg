@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320">
+  <defs><linearGradient id="room" x2="1" y2="1"><stop stop-color="#e9b7c9"/><stop offset=".54" stop-color="#8d82bd"/><stop offset="1" stop-color="#43466f"/></linearGradient><linearGradient id="window" x2="0" y2="1"><stop stop-color="#31365d"/><stop offset="1" stop-color="#706a9d"/></linearGradient></defs>
+  <rect width="320" height="320" fill="url(#room)"/>
+  <rect x="53" y="42" width="214" height="190" rx="11" fill="#fff1e4" opacity=".88"/>
+  <rect x="67" y="56" width="186" height="162" rx="4" fill="url(#window)"/>
+  <path d="M160 56v162M67 137h186" stroke="#f7dfe0" stroke-width="7"/>
+  <circle cx="204" cy="93" r="30" fill="#fff0c8"/>
+  <g fill="#fff7dc"><circle cx="92" cy="82" r="3"/><circle cx="128" cy="109" r="2"/><circle cx="231" cy="160" r="2.5"/><path d="M105 167l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></g>
+  <path d="M0 245c77-17 139-4 184 16 48 22 92 20 136 5v54H0z" fill="#433857"/>
+  <g transform="translate(67 252)"><path d="M0 68c13-38 18-49 30-68M36 68C29 42 28 24 34 6" fill="none" stroke="#6d896c" stroke-width="5"/><g fill="#f3a5bf"><circle cx="30" r="16"/><circle cx="18" cy="12" r="16"/><circle cx="42" cy="12" r="16"/></g></g>
+</svg>

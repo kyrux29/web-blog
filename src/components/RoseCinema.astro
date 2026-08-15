@@ -1,0 +1,762 @@
+---
+interface MemoryFrame {
+  src: string;
+  width: number;
+  height: number;
+  caption: string;
+}
+
+interface PortraitFrame {
+  src: string;
+  width: number;
+  height: number;
+}
+
+interface Props {
+  frames: MemoryFrame[];
+  paintedMemories: string[];
+  portraits: PortraitFrame[];
+}
+
+const { frames, paintedMemories, portraits } = Astro.props;
+---
+
+<section
+  id="rose-memory-cinema"
+  class="rose-memory-cinema"
+  aria-label="Bộ phim ký ức Rose Door"
+  aria-hidden="true"
+  tabindex="-1"
+  inert
+>
+  <canvas id="rose-cinema-canvas" class="rose-cinema-canvas" aria-hidden="true" tabindex="-1"></canvas>
+
+  <div class="rose-cinema-depth" aria-hidden="true">
+    <i></i><i></i><i></i>
+  </div>
+  <div class="rose-cinema-fallback" aria-hidden="true">
+    <span class="rose-fallback-orbit rose-fallback-orbit--one"></span>
+    <span class="rose-fallback-orbit rose-fallback-orbit--two"></span>
+    <span class="rose-fallback-bloom"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+  </div>
+
+  <article id="rose-cinema-letter" class="rose-cinema-letter" aria-hidden="true">
+    <div class="rose-cinema-letter__inner">
+      <p>To · Trà</p>
+      <h2>Không cần phải ổn ngay.</h2>
+      <div class="rose-cinema-letter__rule" aria-hidden="true"><i></i></div>
+      <p>Cứ nghỉ một chút. Cánh cửa này vẫn ở đây, và ánh đèn vẫn bật.</p>
+      <span>— vq</span>
+    </div>
+  </article>
+
+  <div class="rose-cinema-vignette" aria-hidden="true"></div>
+  <div class="rose-cinema-lumens" aria-hidden="true">
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  </div>
+  <div class="rose-cinema-grain" aria-hidden="true"></div>
+  <div class="rose-cinema-bars" aria-hidden="true"><i></i><i></i></div>
+
+  <div class="rose-cinema-controls" role="group" aria-label="Điều khiển bộ phim">
+    <button id="rose-cinema-pause" type="button" aria-label="Tạm dừng bộ phim" aria-pressed="false">
+      <svg class="rose-icon rose-icon--pause" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 5v14M16 5v14"></path>
+      </svg>
+      <svg class="rose-icon rose-icon--play" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m8 5 11 7-11 7Z"></path>
+      </svg>
+      <span id="rose-cinema-pause-copy" class="rose-cinema-ctrl-label">Tạm dừng</span>
+    </button>
+    <button id="rose-cinema-skip" type="button" aria-label="Bỏ qua bộ phim" aria-keyshortcuts="Escape">
+      <svg class="rose-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m5 6 7 6-7 6V6Zm8 0 7 6-7 6V6Z"></path>
+      </svg>
+      <span class="rose-cinema-ctrl-label">Bỏ qua</span>
+    </button>
+  </div>
+
+  <div class="rose-cinema-progress" aria-hidden="true">
+    <span id="rose-cinema-progress-fill"></span>
+    <i class="rose-cinema-progress-glow"></i>
+  </div>
+  <p id="rose-cinema-status" class="rose-cinema-sr" role="status" aria-live="polite"></p>
+
+  <div class="rose-cinema-textures" aria-hidden="true">
+    {frames.map((frame, index) => (
+      <img
+        data-rose-texture={`photo-${index}`}
+        src={frame.src}
+        width={frame.width}
+        height={frame.height}
+        alt=""
+        decoding="async"
+      />
+    ))}
+    {paintedMemories.map((src, index) => (
+      <img data-rose-texture={`painted-${index}`} src={src} width="320" height="320" alt="" decoding="async" />
+    ))}
+    {portraits.map((portrait, index) => (
+      <img
+        data-rose-texture={`portrait-${index}`}
+        src={portrait.src}
+        width={portrait.width}
+        height={portrait.height}
+        alt=""
+        decoding="async"
+      />
+    ))}
+  </div>
+</section>
+
+<script>
+  const cinemaRoot = document.querySelector<HTMLElement>("#rose-memory-cinema");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  type RoseCinemaEngine = {
+    start: (startAt?: number) => void;
+    pause: () => void;
+    resume: () => void;
+    reset: () => void;
+    destroy: () => void;
+  };
+
+  let enginePromise: Promise<RoseCinemaEngine | null> | undefined;
+  let fallbackTimer = 0;
+  let fallbackPaused = false;
+  let runRequest = 0;
+  let requestedPause = false;
+
+  function emit(name: string, detail: Record<string, unknown> = {}) {
+    cinemaRoot?.dispatchEvent(new CustomEvent(name, { detail }));
+  }
+
+  async function ensureEngine() {
+    if (!cinemaRoot || reducedMotion.matches) return null;
+    if (!enginePromise) {
+      cinemaRoot.classList.add("is-loading");
+      enginePromise = Promise.all([
+        import("../scripts/rose-cinema-film"),
+      ])
+        .then(([{ createRoseCinemaFilm }]) => createRoseCinemaFilm(cinemaRoot, {
+          onProgress: (progress: number) => {
+            const fill = cinemaRoot.querySelector<HTMLElement>("#rose-cinema-progress-fill");
+            if (fill) fill.style.transform = `scaleX(${Math.min(1, Math.max(0, progress))})`;
+          },
+          onCue: (cue: string) => emit("rose-cinema:cue", { cue }),
+          onComplete: () => emit("rose-cinema:complete"),
+        }))
+        .then((engine) => {
+          cinemaRoot.classList.remove("is-loading");
+          return engine;
+        })
+        .catch((error) => {
+          console.warn("Rose cinema switched to its lightweight fallback.", error);
+          cinemaRoot.classList.remove("is-loading");
+          cinemaRoot.classList.add("is-fallback");
+          const status = cinemaRoot.querySelector<HTMLElement>("#rose-cinema-status");
+          if (status) status.textContent = "Đã chuyển sang chế độ hiệu ứng nhẹ.";
+          return null;
+        });
+    }
+    return enginePromise;
+  }
+
+  cinemaRoot?.addEventListener("rose-cinema:command", async (event) => {
+    const { command, startAt } = (event as CustomEvent<{ command?: string; startAt?: number }>).detail ?? {};
+
+    // Prepare is intentionally side-effect free from the viewer's perspective:
+    // it compiles the renderer, uploads textures, and leaves the first frame
+    // ready so the subsequent `start` command does not hitch on the door cut.
+    if (command === "prepare") {
+      if (!reducedMotion.matches) await ensureEngine();
+      return;
+    }
+
+    if (command === "start") {
+      const request = ++runRequest;
+      window.clearTimeout(fallbackTimer);
+      cinemaRoot.classList.remove("is-letter-final");
+      delete cinemaRoot?.dataset.roseFinale;
+      fallbackPaused = false;
+      requestedPause = false;
+      if (reducedMotion.matches) {
+        emit("rose-cinema:complete", { reduced: true });
+        return;
+      }
+      const engine = await ensureEngine();
+      if (request !== runRequest) return;
+      if (engine) {
+        engine.start(typeof startAt === "number" ? startAt : 0);
+        if (requestedPause) engine.pause();
+      } else {
+        fallbackTimer = window.setTimeout(() => emit("rose-cinema:complete", { fallback: true }), 2100);
+      }
+      return;
+    }
+
+    if (command === "pause") requestedPause = true;
+    if (command === "resume") requestedPause = false;
+    if (command === "reset" || command === "destroy") {
+      runRequest += 1;
+      requestedPause = false;
+      cinemaRoot.classList.remove("is-letter-final");
+      delete cinemaRoot?.dataset.roseFinale;
+    }
+    const engine = await enginePromise;
+    if (!engine) {
+      if (command === "pause") {
+        fallbackPaused = true;
+        window.clearTimeout(fallbackTimer);
+      }
+      if (command === "resume" && fallbackPaused) {
+        fallbackPaused = false;
+        fallbackTimer = window.setTimeout(() => emit("rose-cinema:complete", { fallback: true }), 900);
+      }
+      if (command === "reset" || command === "destroy") {
+        window.clearTimeout(fallbackTimer);
+        fallbackPaused = false;
+      }
+      return;
+    }
+    if (command === "pause") engine.pause();
+    if (command === "resume") engine.resume();
+    if (command === "reset") engine.reset();
+    if (command === "destroy") {
+      engine.destroy();
+      enginePromise = undefined;
+      cinemaRoot.classList.remove("is-cinema-ready", "is-loading");
+    }
+  });
+
+  cinemaRoot?.addEventListener("rose-cinema:cue", (event) => {
+    const { cue } = (event as CustomEvent<{ cue?: string }>).detail ?? {};
+    if (cue === "finale") cinemaRoot.dataset.roseFinale = "true";
+    if (cue === "paper") cinemaRoot.classList.add("is-letter-final");
+  });
+
+  // The page controller may already be waiting to start the film.  Announce
+  // readiness only after the command listener is installed, so that a slow
+  // module load cannot lose the first start command.
+  emit("rose-cinema:ready");
+
+  reducedMotion.addEventListener("change", (event) => {
+    if (event.matches) enginePromise?.then((engine) => engine?.reset());
+    if (event.matches) {
+      runRequest += 1;
+      requestedPause = false;
+    }
+  });
+
+  window.addEventListener("pagehide", (event) => {
+    if (event.persisted) return;
+    runRequest += 1;
+    window.clearTimeout(fallbackTimer);
+    cinemaRoot?.classList.remove("is-letter-final");
+    enginePromise?.then((engine) => engine?.destroy());
+  }, { once: true });
+</script>
+
+<style is:global>
+  :root {
+    --rose-ink-plum: #12070f;
+    --rose-oxblood: #68111c;
+    --rose-crimson: #b52432;
+    --rose-bone: #f2e5cf;
+    --rose-gold: #b08b4f;
+  }
+
+  body.rose-cinema-lock {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .rose-memory-cinema {
+    position: fixed;
+    z-index: 26;
+    inset: 0;
+    overflow: hidden;
+    color: var(--rose-bone);
+    background:
+      radial-gradient(ellipse at 50% 62%, rgba(150, 23, 47, .17), transparent 31%),
+      radial-gradient(ellipse at 76% 24%, rgba(80, 36, 84, .16), transparent 26%),
+      linear-gradient(145deg, #070308, #12070f 58%, #030204);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    isolation: isolate;
+    transition: opacity 720ms cubic-bezier(.22, .61, .36, 1), visibility 0s linear 720ms;
+  }
+
+  .rose-memory-cinema.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+  }
+
+  .rose-memory-cinema.is-closing {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .rose-cinema-canvas {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 650ms ease;
+  }
+
+  .rose-memory-cinema.is-cinema-ready .rose-cinema-canvas { opacity: 1; }
+  /* The canvas owns the active shot. Hiding the decorative depth planes and
+     calming the grain leaves the illustration luminous rather than noisy. */
+  .rose-memory-cinema.is-cinema-ready .rose-cinema-depth { display: none; }
+  .rose-memory-cinema.is-cinema-ready .rose-cinema-grain {
+    opacity: .026;
+    mix-blend-mode: normal;
+    animation: none;
+    transform: none;
+  }
+  .rose-memory-cinema.is-paused .rose-cinema-depth i,
+  .rose-memory-cinema.is-paused .rose-cinema-grain,
+  .rose-memory-cinema.is-paused .rose-cinema-fallback,
+  .rose-memory-cinema.is-paused .rose-fallback-orbit,
+  .rose-memory-cinema.is-paused .rose-fallback-bloom { animation-play-state: paused; }
+
+  .rose-cinema-depth {
+    position: absolute;
+    z-index: 0;
+    inset: -10%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .rose-cinema-depth i {
+    position: absolute;
+    inset: 18%;
+    border: 1px solid rgba(176, 139, 79, .11);
+    border-radius: 50%;
+    transform: rotateX(68deg) rotateZ(18deg);
+    animation: rose-depth-turn 22s linear infinite;
+  }
+
+  .rose-cinema-depth i:nth-child(2) { inset: 4%; animation-duration: 34s; animation-direction: reverse; }
+  .rose-cinema-depth i:nth-child(3) { inset: -18%; animation-duration: 48s; }
+  .rose-cinema-fallback {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    transform: scale(.72);
+    transition: opacity 500ms ease, transform 2s cubic-bezier(.16, 1, .3, 1);
+  }
+
+  .rose-memory-cinema.is-loading .rose-cinema-fallback,
+  .rose-memory-cinema.is-fallback .rose-cinema-fallback {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .rose-fallback-orbit {
+    position: absolute;
+    width: min(68vw, 38rem);
+    aspect-ratio: 1;
+    border: 1px solid rgba(176, 139, 79, .24);
+    border-radius: 50%;
+    animation: rose-fallback-orbit 8s linear infinite;
+  }
+
+  .rose-fallback-orbit--two {
+    width: min(88vw, 52rem);
+    border-color: rgba(181, 36, 50, .18);
+    animation-direction: reverse;
+    animation-duration: 13s;
+  }
+
+  .rose-fallback-bloom {
+    position: relative;
+    width: clamp(7rem, 18vw, 12rem);
+    aspect-ratio: 1;
+    filter: drop-shadow(0 0 2.6rem rgba(181, 36, 50, .38));
+    animation: rose-fallback-breathe 2.1s ease-in-out infinite alternate;
+  }
+
+  .rose-fallback-bloom i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 42%;
+    height: 62%;
+    border: 1px solid rgba(242, 229, 207, .26);
+    border-radius: 76% 12% 72% 18%;
+    background: linear-gradient(145deg, #8f172c, #3b0a16);
+    transform-origin: 15% 84%;
+    transform: translate(-14%, -84%) rotate(calc(var(--petal) * 60deg));
+  }
+
+  .rose-fallback-bloom i:nth-child(1) { --petal: 0; }
+  .rose-fallback-bloom i:nth-child(2) { --petal: 1; }
+  .rose-fallback-bloom i:nth-child(3) { --petal: 2; }
+  .rose-fallback-bloom i:nth-child(4) { --petal: 3; }
+  .rose-fallback-bloom i:nth-child(5) { --petal: 4; }
+  .rose-fallback-bloom i:nth-child(6) { --petal: 5; }
+
+  .rose-cinema-letter {
+    position: absolute;
+    z-index: 15;
+    top: 50%;
+    left: 50%;
+    /* The note is a final whisper over the rose, not a full-screen panel. */
+    width: min(72vw, 26rem);
+    min-height: clamp(18.5rem, 52vh, 29rem);
+    display: grid;
+    place-items: center;
+    color: #2a1119;
+    background:
+      linear-gradient(112deg, transparent 0 46%, rgba(104, 17, 28, .04) 47% 48%, transparent 49%),
+      radial-gradient(circle at 16% 13%, rgba(255, 246, 218, .82), transparent 19%),
+      radial-gradient(circle at 18% 16%, rgba(176, 139, 79, .14), transparent 31%),
+      rgba(234, 220, 196, .94);
+    border: 1px solid rgba(225, 187, 116, .58);
+    clip-path: polygon(0 1.25rem, 1.25rem 0, calc(100% - .75rem) 0, 100% .75rem, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, .65rem 100%, 0 calc(100% - .65rem));
+    box-shadow: 0 2.4rem 7rem rgba(0, 0, 0, .62), 0 0 0 1px rgba(71, 15, 31, .23), inset 0 0 5rem rgba(115, 69, 50, .08);
+    backdrop-filter: blur(5px) saturate(105%);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -44%) scale(.84) rotate(-.75deg);
+    transform-origin: 50% 100%;
+    pointer-events: none;
+    will-change: transform, opacity, filter;
+    transition: opacity 720ms cubic-bezier(.16, 1, .3, 1), visibility 0s linear 720ms;
+  }
+
+  .rose-cinema-letter::before,
+  .rose-cinema-letter::after {
+    content: "";
+    position: absolute;
+    width: 1.1rem;
+    aspect-ratio: 1;
+    border: 1px solid rgba(104, 17, 28, .4);
+    transform: rotate(45deg);
+  }
+
+  .rose-cinema-letter::before { top: 1.3rem; left: 1.3rem; border-width: 1px 0 0 1px; }
+  .rose-cinema-letter::after { right: 1.3rem; bottom: 1.3rem; border-width: 0 1px 1px 0; }
+
+  /* The renderer's earlier paper scene stays text-free. The actual note is
+     held back for the flower's last beat, then arrives like a final title
+     card rather than an interface panel. */
+  .rose-memory-cinema.is-letter-final .rose-cinema-letter {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg) !important;
+    filter: drop-shadow(0 0 2.3rem rgba(229, 173, 96, .15));
+    animation: rose-letter-breathe 4.8s 1s ease-in-out infinite;
+    transition-delay: 0s;
+  }
+
+  .rose-memory-cinema.is-letter-final .rose-cinema-letter::before,
+  .rose-memory-cinema.is-letter-final .rose-cinema-letter::after { animation: rose-letter-corner 1.1s .2s cubic-bezier(.16, 1, .3, 1) both; }
+  .rose-memory-cinema.is-letter-final .rose-cinema-letter__inner { animation: rose-letter-copy-arrive 940ms 110ms cubic-bezier(.16, 1, .3, 1) both; }
+
+  .rose-cinema-letter__inner {
+    width: min(78%, 22rem);
+    padding: clamp(2.8rem, 8vh, 5.2rem) 0;
+  }
+
+  .rose-cinema-letter__inner > p:first-child {
+    margin: 0 0 1.2rem;
+    color: #68111c;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+  }
+
+  .rose-cinema-letter h2 {
+    margin: 0;
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: clamp(2.1rem, 5vw, 3.5rem);
+    font-weight: 400;
+    letter-spacing: -.035em;
+    line-height: .96;
+  }
+
+  .rose-cinema-letter__inner > p:not(:first-child) {
+    margin: 1.35rem 0 0;
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: clamp(1rem, 1.7vw, 1.18rem);
+    line-height: 1.65;
+  }
+
+  .rose-cinema-letter__inner > span {
+    display: block;
+    margin-top: 1.5rem;
+    color: #68111c;
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: 1.35rem;
+    font-style: italic;
+    text-align: right;
+  }
+
+  .rose-cinema-letter__rule {
+    width: 100%;
+    height: 1px;
+    margin: 1.55rem 0;
+    background: rgba(104, 17, 28, .24);
+  }
+
+  .rose-cinema-letter__rule i {
+    display: block;
+    width: 2.8rem;
+    height: 3px;
+    background: #b52432;
+    transform: translateY(-1px);
+  }
+
+  .rose-cinema-vignette {
+    position: absolute;
+    z-index: 10;
+    inset: 0;
+    pointer-events: none;
+    --rose-iris-close: 0;
+    background:
+      radial-gradient(ellipse at 50% 46%, transparent 40%, rgba(5, 2, 4, .18) 68%, rgba(4, 2, 3, .82) 100%),
+      radial-gradient(ellipse at 50% 55%, rgba(145, 24, 48, .06), transparent 55%);
+  }
+
+  /* The final iris is a single compositor layer.  The engine only updates
+     this opacity at a low cadence, avoiding a costly CSS gradient rewrite on
+     every rendered frame. */
+  .rose-cinema-vignette::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: var(--rose-iris-close);
+    background: radial-gradient(ellipse at 50% 50%, transparent 3%, rgba(4, 2, 3, .74) 34%, #040203 76%);
+  }
+
+  .rose-cinema-lumens {
+    position: absolute;
+    z-index: 13;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 900ms ease;
+  }
+
+  .rose-memory-cinema.is-letter-final .rose-cinema-lumens { opacity: 1; }
+
+  .rose-cinema-lumens i {
+    position: absolute;
+    width: clamp(2px, .34vw, 5px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #fff1d5;
+    box-shadow: 0 0 .35rem .08rem rgba(255, 221, 157, .85), 0 0 1.4rem rgba(216, 54, 92, .5);
+    opacity: 0;
+  }
+
+  .rose-memory-cinema.is-letter-final .rose-cinema-lumens i { animation: rose-lumen-rise var(--lumen-time, 4.4s) var(--lumen-delay, 0s) ease-in-out infinite; }
+  .rose-cinema-lumens i:nth-child(1) { top: 72%; left: 17%; --lumen-time: 4.6s; --lumen-delay: -.9s; }
+  .rose-cinema-lumens i:nth-child(2) { top: 79%; left: 28%; --lumen-time: 5.2s; --lumen-delay: -2.4s; }
+  .rose-cinema-lumens i:nth-child(3) { top: 67%; left: 74%; --lumen-time: 4.2s; --lumen-delay: -1.6s; }
+  .rose-cinema-lumens i:nth-child(4) { top: 77%; left: 87%; --lumen-time: 5.5s; --lumen-delay: -3.1s; }
+  .rose-cinema-lumens i:nth-child(5) { top: 33%; left: 12%; --lumen-time: 4.9s; --lumen-delay: -1.2s; }
+  .rose-cinema-lumens i:nth-child(6) { top: 27%; left: 89%; --lumen-time: 4.3s; --lumen-delay: -2.9s; }
+  .rose-cinema-lumens i:nth-child(7) { top: 84%; left: 48%; --lumen-time: 5.8s; --lumen-delay: -3.8s; }
+  .rose-cinema-lumens i:nth-child(8) { top: 59%; left: 8%; --lumen-time: 4.1s; --lumen-delay: -2s; }
+  .rose-cinema-lumens i:nth-child(9) { top: 56%; left: 93%; --lumen-time: 5.1s; --lumen-delay: -4.1s; }
+
+  .rose-cinema-grain {
+    position: absolute;
+    z-index: 11;
+    inset: -40%;
+    pointer-events: none;
+    opacity: .085;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.74' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E");
+    animation: rose-film-grain .22s steps(2) infinite;
+  }
+
+  .rose-cinema-bars {
+    position: absolute;
+    z-index: 12;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .rose-cinema-bars i {
+    position: absolute;
+    right: 0;
+    left: 0;
+    height: clamp(.7rem, 2.4svh, 1.5rem);
+    background: linear-gradient(90deg, #030204, #10070d 50%, #030204);
+  }
+
+  .rose-cinema-bars i:first-child { top: 0; }
+  .rose-cinema-bars i:last-child { bottom: 0; }
+
+  .rose-cinema-controls {
+    position: absolute;
+    z-index: 20;
+    right: max(1.1rem, env(safe-area-inset-right));
+    bottom: max(1.8rem, env(safe-area-inset-bottom));
+    display: flex;
+    gap: .45rem;
+    padding: .35rem;
+    border: 1px solid rgba(242, 229, 207, .12);
+    border-radius: 999px;
+    background: linear-gradient(145deg, rgba(11, 5, 10, .32), rgba(18, 7, 15, .28));
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .32), inset 0 1px 0 rgba(242, 229, 207, .04);
+    backdrop-filter: blur(16px) saturate(140%);
+    transition: opacity 300ms ease, transform 300ms ease;
+  }
+
+  .rose-cinema-controls button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    height: 2.7rem;
+    padding: 0 .9rem;
+    border: 1px solid rgba(242, 229, 207, .13);
+    border-radius: 999px;
+    color: var(--rose-bone);
+    background: rgba(9, 4, 7, .42);
+    backdrop-filter: blur(14px) saturate(130%);
+    cursor: pointer;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .6rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    transition: border-color 200ms ease, background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  }
+
+  .rose-cinema-controls button:hover {
+    border-color: rgba(229, 173, 96, .62);
+    background: rgba(104, 17, 28, .52);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(212, 42, 70, .2);
+  }
+  .rose-cinema-controls button:focus-visible { outline: 3px solid #e5ad60; outline-offset: 3px; }
+
+  .rose-cinema-ctrl-label {
+    color: rgba(242, 229, 207, .72);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .58rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  #rose-cinema-pause[aria-pressed="true"] .rose-cinema-ctrl-label { content: "Tiếp tục"; }
+
+  .rose-icon {
+    width: 1rem;
+    height: 1rem;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .rose-icon--play { display: none; fill: currentColor; stroke: none; }
+  #rose-cinema-pause[aria-pressed="true"] .rose-icon--pause { display: none; }
+  #rose-cinema-pause[aria-pressed="true"] .rose-icon--play { display: block; }
+
+  .rose-cinema-progress {
+    position: absolute;
+    z-index: 20;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    overflow: visible;
+    background: rgba(242, 229, 207, .06);
+  }
+
+  .rose-cinema-progress span {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #68111c, #d42a46 58%, #e5ad60 88%, #f2be74);
+    box-shadow: 0 0 1.4rem rgba(212, 42, 70, .62), .3rem 0 1rem rgba(229, 173, 96, .5);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 80ms linear;
+  }
+
+  .rose-cinema-progress-glow {
+    position: absolute;
+    z-index: 1;
+    top: -6px;
+    right: 0;
+    width: 18px;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(229, 173, 96, .52), transparent 60%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+
+  .rose-memory-cinema.is-cinema-ready .rose-cinema-progress-glow { opacity: 1; }
+
+  .rose-cinema-textures {
+    position: fixed;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    opacity: .001;
+    pointer-events: none;
+  }
+
+  .rose-cinema-textures img { width: 1px; height: 1px; }
+  .rose-cinema-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+  .rose-world[data-shot="cinema"] > .rose-brand-link { opacity: 0; visibility: hidden; pointer-events: none; }
+  .rose-world[data-shot="cinema"] > .rose-sound { width: 2.9rem; min-width: 2.9rem; height: 2.9rem; justify-content: center; padding: 0; border-radius: 50%; }
+  .rose-world[data-shot="cinema"] > .rose-sound .rose-sound-copy { display: none; }
+
+  @keyframes rose-depth-turn { to { transform: rotateX(68deg) rotateZ(378deg); } }
+  @keyframes rose-fallback-orbit { to { transform: rotate(360deg) rotateY(24deg); } }
+  @keyframes rose-fallback-breathe { to { transform: scale(1.12) rotate(4deg); } }
+  @keyframes rose-film-grain { 0% { transform: translate3d(-2%, 1%, 0); } 50% { transform: translate3d(2%, -1.5%, 0); } 100% { transform: translate3d(0, 2%, 0); } }
+  @keyframes rose-letter-copy-arrive { from { opacity: 0; transform: translateY(.8rem); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes rose-letter-breathe { 50% { filter: drop-shadow(0 0 2.9rem rgba(229, 173, 96, .23)); } }
+  @keyframes rose-letter-corner { from { opacity: 0; transform: rotate(45deg) scale(.22); } to { opacity: 1; transform: rotate(45deg) scale(1); } }
+  @keyframes rose-lumen-rise { 0%, 100% { opacity: 0; transform: translate3d(0, .5rem, 0) scale(.25); } 22% { opacity: .8; } 65% { opacity: .34; } 86% { opacity: 0; transform: translate3d(var(--lumen-drift, .8rem), -7rem, 0) scale(1.2); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rose-memory-cinema.is-letter-final .rose-cinema-letter,
+    .rose-memory-cinema.is-letter-final .rose-cinema-lumens i { animation: none; }
+  }
+
+  @media (max-width: 720px) {
+    .rose-cinema-letter { width: min(86vw, 24rem); min-height: min(58svh, 28rem); }
+    .rose-cinema-letter__inner { width: 76%; padding: 2.6rem 0; }
+    .rose-cinema-letter h2 { font-size: clamp(2rem, 10vw, 2.75rem); }
+    .rose-cinema-grain { opacity: .055; }
+    .rose-memory-cinema.is-cinema-ready .rose-cinema-grain { display: none; }
+    .rose-cinema-depth i:nth-child(3) { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rose-cinema-depth, .rose-cinema-grain, .rose-cinema-fallback { display: none; }
+  }
+</style>
