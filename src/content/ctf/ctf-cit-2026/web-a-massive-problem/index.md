@@ -1,5 +1,6 @@
 ---
 title: "A Massive Problem"
+public: true
 date: 2026-05-14
 platform: "CTF@CIT 2026"
 category: "Web"
