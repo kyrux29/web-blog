@@ -1,0 +1,39 @@
+- generic [active] [ref=f1e1]:
+  - status [ref=f1e2]
+  - generic [ref=f1e3]:
+    - button "Tắt nhạc và hiệu ứng âm thanh" [pressed] [ref=f1e7] [cursor=pointer]
+    - main [ref=f1e12]:
+      - region [ref=f1e13]:
+        - heading "Rose Door" [level=1] [ref=f1e14]
+        - button "Gõ lên cánh cửa lần thứ nhất" [ref=f1e38] [cursor=pointer]
+        - paragraph: Gõ cửa ba lần
+        - status [ref=f1e48]
+      - region [ref=f1e49]:
+        - article [ref=f1e50]:
+          - generic [ref=f1e51]: R
+          - generic [ref=f1e52]:
+            - paragraph [ref=f1e53]: To · Trà
+            - heading "Không cần phải ổn ngay." [level=2] [ref=f1e54]
+            - generic [ref=f1e55]:
+              - paragraph [ref=f1e56]: Có những người không cần bước vào thật ồn ào, nhưng lại làm cả một khoảng thời gian trở nên khác đi. Cậu là một người như vậy.
+              - paragraph [ref=f1e57]: "Ở đây không có lời hứa thật lớn. Chỉ có một căn phòng nhỏ, vài mảnh ký ức, và một điều rất đơn giản: mong cậu luôn được đối xử dịu dàng — kể cả bởi chính cậu."
+              - paragraph [ref=f1e58]:
+                - text: Nếu một ngày mọi thứ hơi nặng, cứ nghỉ một chút. Cánh cửa này vẫn ở đây, ánh đèn vẫn bật, và trong căn phòng này cậu luôn là
+                - emphasis [ref=f1e59]: Trà bản xinh đẹp số 1.
+            - paragraph [ref=f1e60]: — vq
+            - group "Điều khiển Rose Door" [ref=f1e61]:
+              - button "Xem lại bộ phim" [ref=f1e62] [cursor=pointer]:
+                - generic [ref=f1e65]: Xem lại
+              - button "Khép cửa lại" [ref=f1e66] [cursor=pointer]:
+                - generic [ref=f1e69]: Khép cửa
+              - link "Về Kyrux Blog" [ref=f1e70] [cursor=pointer]:
+                - /url: /
+                - generic [ref=f1e73]: Về trang chủ
+  - link "Bỏ qua phần mở đầu và mở lá thư" [ref=f1e74] [cursor=pointer]:
+    - /url: "#rose-story"
+    - text: Bỏ qua
+  - generic [ref=f1e79]:
+    - button [ref=f1e80]
+    - button [ref=f1e86]
+    - button [ref=f1e90]
+    - button [ref=f1e95]

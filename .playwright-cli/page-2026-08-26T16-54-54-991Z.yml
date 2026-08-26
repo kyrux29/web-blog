@@ -1,0 +1,19 @@
+- generic [ref=e1]:
+  - status [ref=e2]: Rose Door đã khép lại bằng một lời cảm ơn.
+  - generic [ref=e3]:
+    - region "Bộ phim ký ức Rose Door" [ref=e99]:
+      - paragraph [ref=e100]: Một đàn dơi rời khỏi cánh cửa, hóa thành cánh hoa và ánh sao. Hai chòm sao giữ lại những mảnh ký ức trên bầu trời trước khi chúng hội tụ thành hoa hồng và lời cảm ơn cuối cùng.
+      - paragraph:
+        - generic: Thank you
+      - group "Điều khiển bộ phim" [ref=e111]:
+        - button "Bộ phim đã kết thúc" [disabled] [ref=e112] [cursor=pointer]:
+          - generic [ref=e115]: Đã xong
+        - button "Bỏ qua bộ phim" [ref=e116] [cursor=pointer]:
+          - generic [ref=e119]: Bỏ qua
+      - status [ref=e122]: Thank you.
+    - button "Tắt nhạc và hiệu ứng âm thanh" [active] [pressed] [ref=e129] [cursor=pointer]
+  - generic [ref=e78]:
+    - button [ref=e79]
+    - button [ref=e85]
+    - button [ref=e89]
+    - button [ref=e94]

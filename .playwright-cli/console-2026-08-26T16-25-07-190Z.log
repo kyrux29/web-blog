@@ -1,0 +1,12 @@
+[  118858ms] ReferenceError: playKnock is not defined
+    at knockDoor (http://localhost:4321/rose-door/:1310:11)
+    at http://localhost:4321/rose-door/:1335:32
+    at http://localhost:4321/rose-door/:1278:13
+[  119862ms] ReferenceError: playKnock is not defined
+    at knockDoor (http://localhost:4321/rose-door/:1310:11)
+    at http://localhost:4321/rose-door/:1336:32
+    at http://localhost:4321/rose-door/:1278:13
+[  120861ms] ReferenceError: playKnock is not defined
+    at knockDoor (http://localhost:4321/rose-door/:1310:11)
+    at http://localhost:4321/rose-door/:1337:32
+    at http://localhost:4321/rose-door/:1278:13

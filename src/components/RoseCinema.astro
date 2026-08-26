@@ -4,6 +4,8 @@ interface MemoryFrame {
   width: number;
   height: number;
   caption: string;
+  focalX?: number;
+  focalY?: number;
 }
 
 interface PortraitFrame {
@@ -25,10 +27,14 @@ const { frames, paintedMemories, portraits } = Astro.props;
   id="rose-memory-cinema"
   class="rose-memory-cinema"
   aria-label="Bộ phim ký ức Rose Door"
+  aria-describedby="rose-cinema-description"
   aria-hidden="true"
   tabindex="-1"
   inert
 >
+  <p id="rose-cinema-description" class="rose-cinema-sr">
+    Một đàn dơi rời khỏi cánh cửa, hóa thành cánh hoa và ánh sao. Hai chòm sao giữ lại những mảnh ký ức trên bầu trời trước khi chúng hội tụ thành hoa hồng và lời cảm ơn cuối cùng.
+  </p>
   <canvas id="rose-cinema-canvas" class="rose-cinema-canvas" aria-hidden="true" tabindex="-1"></canvas>
 
   <div class="rose-cinema-depth" aria-hidden="true">
@@ -40,15 +46,22 @@ const { frames, paintedMemories, portraits } = Astro.props;
     <span class="rose-fallback-bloom"><i></i><i></i><i></i><i></i><i></i><i></i></span>
   </div>
 
-  <article id="rose-cinema-letter" class="rose-cinema-letter" aria-hidden="true">
-    <div class="rose-cinema-letter__inner">
-      <p>To · Trà</p>
-      <h2>Không cần phải ổn ngay.</h2>
-      <div class="rose-cinema-letter__rule" aria-hidden="true"><i></i></div>
-      <p>Cứ nghỉ một chút. Cánh cửa này vẫn ở đây, và ánh đèn vẫn bật.</p>
-      <span>— vq</span>
-    </div>
-  </article>
+  <p id="rose-cinema-thanks" class="rose-cinema-thanks" aria-hidden="true">
+    <span class="rose-cinema-thanks__ornament" aria-hidden="true">✦</span>
+    <strong aria-hidden="true">
+      <span class="rose-cinema-thanks__glyph" style="--glyph: 0">T</span>
+      <span class="rose-cinema-thanks__glyph" style="--glyph: 1">h</span>
+      <span class="rose-cinema-thanks__glyph" style="--glyph: 2">a</span>
+      <span class="rose-cinema-thanks__glyph" style="--glyph: 3">n</span>
+      <span class="rose-cinema-thanks__glyph" style="--glyph: 4">k</span>
+      <i class="rose-cinema-thanks__space" aria-hidden="true"></i>
+      <span class="rose-cinema-thanks__glyph" style="--glyph: 5">y</span>
+      <span class="rose-cinema-thanks__glyph" style="--glyph: 6">o</span>
+      <span class="rose-cinema-thanks__glyph" style="--glyph: 7">u</span>
+    </strong>
+    <span class="rose-cinema-thanks__ornament" aria-hidden="true">✦</span>
+    <span class="rose-cinema-sr">Thank you</span>
+  </p>
 
   <div class="rose-cinema-vignette" aria-hidden="true"></div>
   <div class="rose-cinema-lumens" aria-hidden="true">
@@ -85,6 +98,9 @@ const { frames, paintedMemories, portraits } = Astro.props;
     {frames.map((frame, index) => (
       <img
         data-rose-texture={`photo-${index}`}
+        data-rose-role="hero"
+        data-focal-x={frame.focalX ?? .5}
+        data-focal-y={frame.focalY ?? .5}
         src={frame.src}
         width={frame.width}
         height={frame.height}
@@ -93,11 +109,12 @@ const { frames, paintedMemories, portraits } = Astro.props;
       />
     ))}
     {paintedMemories.map((src, index) => (
-      <img data-rose-texture={`painted-${index}`} src={src} width="320" height="320" alt="" decoding="async" />
+      <img data-rose-texture={`painted-${index}`} data-rose-role="glimpse" src={src} width="560" height="560" alt="" decoding="async" />
     ))}
     {portraits.map((portrait, index) => (
       <img
         data-rose-texture={`portrait-${index}`}
+        data-rose-role="portrait"
         src={portrait.src}
         width={portrait.width}
         height={portrait.height}
@@ -124,6 +141,11 @@ const { frames, paintedMemories, portraits } = Astro.props;
   let fallbackPaused = false;
   let runRequest = 0;
   let requestedPause = false;
+
+  function resetFinaleStages() {
+    cinemaRoot?.classList.remove("is-paper-in", "is-paper-out", "is-thanks-in");
+    delete cinemaRoot?.dataset.roseFinale;
+  }
 
   function emit(name: string, detail: Record<string, unknown> = {}) {
     cinemaRoot?.dispatchEvent(new CustomEvent(name, { detail }));
@@ -174,8 +196,7 @@ const { frames, paintedMemories, portraits } = Astro.props;
     if (command === "start") {
       const request = ++runRequest;
       window.clearTimeout(fallbackTimer);
-      cinemaRoot.classList.remove("is-letter-final");
-      delete cinemaRoot?.dataset.roseFinale;
+      resetFinaleStages();
       fallbackPaused = false;
       requestedPause = false;
       if (reducedMotion.matches) {
@@ -198,8 +219,7 @@ const { frames, paintedMemories, portraits } = Astro.props;
     if (command === "reset" || command === "destroy") {
       runRequest += 1;
       requestedPause = false;
-      cinemaRoot.classList.remove("is-letter-final");
-      delete cinemaRoot?.dataset.roseFinale;
+      resetFinaleStages();
     }
     const engine = await enginePromise;
     if (!engine) {
@@ -230,7 +250,20 @@ const { frames, paintedMemories, portraits } = Astro.props;
   cinemaRoot?.addEventListener("rose-cinema:cue", (event) => {
     const { cue } = (event as CustomEvent<{ cue?: string }>).detail ?? {};
     if (cue === "finale") cinemaRoot.dataset.roseFinale = "true";
-    if (cue === "paper") cinemaRoot.classList.add("is-letter-final");
+    if (cue === "paper-in") {
+      cinemaRoot.classList.remove("is-paper-out", "is-thanks-in");
+      cinemaRoot.classList.add("is-paper-in");
+    }
+    if (cue === "paper-out") {
+      cinemaRoot.classList.remove("is-paper-in");
+      cinemaRoot.classList.add("is-paper-out");
+    }
+    if (cue === "thanks") {
+      cinemaRoot.classList.remove("is-paper-in", "is-paper-out");
+      cinemaRoot.classList.add("is-thanks-in");
+      const status = cinemaRoot.querySelector<HTMLElement>("#rose-cinema-status");
+      if (status) status.textContent = "Thank you.";
+    }
   });
 
   // The page controller may already be waiting to start the film.  Announce
@@ -250,9 +283,9 @@ const { frames, paintedMemories, portraits } = Astro.props;
     if (event.persisted) return;
     runRequest += 1;
     window.clearTimeout(fallbackTimer);
-    cinemaRoot?.classList.remove("is-letter-final");
+    resetFinaleStages();
     enginePromise?.then((engine) => engine?.destroy());
-  }, { once: true });
+  });
 </script>
 
 <style is:global>
@@ -291,6 +324,28 @@ const { frames, paintedMemories, portraits } = Astro.props;
     visibility: visible;
     pointer-events: auto;
     transition-delay: 0s;
+  }
+
+  .rose-memory-cinema.is-active.is-handoff {
+    background: transparent;
+    opacity: 1;
+    transition: none;
+  }
+
+  .rose-memory-cinema.is-handoff .rose-cinema-canvas {
+    opacity: 1;
+    transition: none;
+  }
+
+  .rose-memory-cinema.is-handoff .rose-cinema-controls,
+  .rose-memory-cinema.is-handoff .rose-cinema-progress,
+  .rose-memory-cinema.is-handoff .rose-cinema-bars,
+  .rose-memory-cinema.is-handoff .rose-cinema-grain,
+  .rose-memory-cinema.is-handoff .rose-cinema-vignette { opacity: 0; }
+
+  .rose-memory-cinema.is-handoff .rose-cinema-controls {
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .rose-memory-cinema.is-closing {
@@ -412,8 +467,8 @@ const { frames, paintedMemories, portraits } = Astro.props;
     top: 50%;
     left: 50%;
     /* The note is a final whisper over the rose, not a full-screen panel. */
-    width: min(72vw, 26rem);
-    min-height: clamp(18.5rem, 52vh, 29rem);
+    width: min(78vw, 28rem);
+    min-height: clamp(18rem, 48vh, 27rem);
     display: grid;
     place-items: center;
     color: #2a1119;
@@ -425,14 +480,12 @@ const { frames, paintedMemories, portraits } = Astro.props;
     border: 1px solid rgba(225, 187, 116, .58);
     clip-path: polygon(0 1.25rem, 1.25rem 0, calc(100% - .75rem) 0, 100% .75rem, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, .65rem 100%, 0 calc(100% - .65rem));
     box-shadow: 0 2.4rem 7rem rgba(0, 0, 0, .62), 0 0 0 1px rgba(71, 15, 31, .23), inset 0 0 5rem rgba(115, 69, 50, .08);
-    backdrop-filter: blur(5px) saturate(105%);
     opacity: 0;
     visibility: hidden;
-    transform: translate(-50%, -44%) scale(.84) rotate(-.75deg);
-    transform-origin: 50% 100%;
+    transform: translate(-50%, -125vh) scale(.72) rotate(-12deg);
+    transform-origin: 50% 72%;
     pointer-events: none;
-    will-change: transform, opacity, filter;
-    transition: opacity 720ms cubic-bezier(.16, 1, .3, 1), visibility 0s linear 720ms;
+    transition: opacity 720ms cubic-bezier(.16, 1, .3, 1), transform 720ms cubic-bezier(.16, 1, .3, 1), visibility 0s linear 720ms;
   }
 
   .rose-cinema-letter::before,
@@ -448,21 +501,22 @@ const { frames, paintedMemories, portraits } = Astro.props;
   .rose-cinema-letter::before { top: 1.3rem; left: 1.3rem; border-width: 1px 0 0 1px; }
   .rose-cinema-letter::after { right: 1.3rem; bottom: 1.3rem; border-width: 0 1px 1px 0; }
 
-  /* The renderer's earlier paper scene stays text-free. The actual note is
-     held back for the flower's last beat, then arrives like a final title
-     card rather than an interface panel. */
-  .rose-memory-cinema.is-letter-final .rose-cinema-letter {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: translate(-50%, -50%) scale(1) rotate(0deg) !important;
-    filter: drop-shadow(0 0 2.3rem rgba(229, 173, 96, .15));
-    animation: rose-letter-breathe 4.8s 1s ease-in-out infinite;
+  /* A physical flyer enters from above, rests completely still for the
+     reading beat, then leaves the frame.  Transform + opacity keep this on
+     the compositor and avoid the previous breathing filter shimmer. */
+  .rose-memory-cinema.is-paper-in .rose-cinema-letter {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
     transition-delay: 0s;
   }
 
-  .rose-memory-cinema.is-letter-final .rose-cinema-letter::before,
-  .rose-memory-cinema.is-letter-final .rose-cinema-letter::after { animation: rose-letter-corner 1.1s .2s cubic-bezier(.16, 1, .3, 1) both; }
-  .rose-memory-cinema.is-letter-final .rose-cinema-letter__inner { animation: rose-letter-copy-arrive 940ms 110ms cubic-bezier(.16, 1, .3, 1) both; }
+  .rose-memory-cinema.is-paper-out .rose-cinema-letter {
+    opacity: 0;
+    visibility: visible;
+    transform: translate(calc(-50% + 120vw), calc(-50% - 24vh)) scale(.62) rotate(22deg);
+    transition: opacity 820ms cubic-bezier(.34, 1.15, .64, 1), transform 820ms cubic-bezier(.34, 1.15, .64, 1), visibility 0s linear 820ms;
+  }
 
   .rose-cinema-letter__inner {
     width: min(78%, 22rem);
@@ -520,9 +574,63 @@ const { frames, paintedMemories, portraits } = Astro.props;
     transform: translateY(-1px);
   }
 
+  .rose-cinema-thanks {
+    position: absolute;
+    z-index: 17;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: clamp(.85rem, 2.4vw, 1.45rem);
+    margin: 0;
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: clamp(3.45rem, 10.6vw, 8.15rem);
+    font-weight: 400;
+    letter-spacing: -.048em;
+    line-height: .9;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(-50%, -50%, 0);
+    pointer-events: none;
+  }
+
+  .rose-cinema-thanks strong {
+    display: inline-flex;
+    align-items: baseline;
+    color: #fff1d8;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .rose-cinema-thanks__glyph {
+    display: inline-block;
+    color: inherit;
+  }
+
+  .rose-cinema-thanks__space { width: .21em; }
+
+  .rose-cinema-thanks__ornament {
+    color: #f2a36a;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .26em;
+    letter-spacing: 0;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  /* The normal-motion finale is painted entirely by the canvas. This node is
+     deliberately visible to assistive technology but visually transparent;
+     a solid text fallback is restored only for reduced motion. */
+  .rose-memory-cinema.is-thanks-in .rose-cinema-thanks {
+    visibility: visible;
+    opacity: 0;
+  }
+
   .rose-cinema-vignette {
     position: absolute;
-    z-index: 10;
+    /* The closing iris is the final edit, so it must pass over the paper as
+       well as the canvas. Controls stay available above it at z-index 20. */
+    z-index: 16;
     inset: 0;
     pointer-events: none;
     --rose-iris-close: 0;
@@ -549,10 +657,14 @@ const { frames, paintedMemories, portraits } = Astro.props;
     overflow: hidden;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 900ms ease;
   }
 
-  .rose-memory-cinema.is-letter-final .rose-cinema-lumens { opacity: 1; }
+  .rose-memory-cinema.is-thanks-in .rose-cinema-lumens {
+    /* Canvas motes form the lettering and its surrounding sparkle. Keeping a
+       second DOM particle layer here made the finale noisy and broke pause
+       continuity, so it remains disabled in the animated film. */
+    opacity: 0;
+  }
 
   .rose-cinema-lumens i {
     position: absolute;
@@ -564,7 +676,8 @@ const { frames, paintedMemories, portraits } = Astro.props;
     opacity: 0;
   }
 
-  .rose-memory-cinema.is-letter-final .rose-cinema-lumens i { animation: rose-lumen-rise var(--lumen-time, 4.4s) var(--lumen-delay, 0s) ease-in-out infinite; }
+  .rose-memory-cinema.is-thanks-in .rose-cinema-lumens i { animation: none; }
+  .rose-memory-cinema.is-thanks-in .rose-cinema-lumens i:nth-child(n + 6) { display: none; }
   .rose-cinema-lumens i:nth-child(1) { top: 72%; left: 17%; --lumen-time: 4.6s; --lumen-delay: -.9s; }
   .rose-cinema-lumens i:nth-child(2) { top: 79%; left: 28%; --lumen-time: 5.2s; --lumen-delay: -2.4s; }
   .rose-cinema-lumens i:nth-child(3) { top: 67%; left: 74%; --lumen-time: 4.2s; --lumen-delay: -1.6s; }
@@ -574,6 +687,22 @@ const { frames, paintedMemories, portraits } = Astro.props;
   .rose-cinema-lumens i:nth-child(7) { top: 84%; left: 48%; --lumen-time: 5.8s; --lumen-delay: -3.8s; }
   .rose-cinema-lumens i:nth-child(8) { top: 59%; left: 8%; --lumen-time: 4.1s; --lumen-delay: -2s; }
   .rose-cinema-lumens i:nth-child(9) { top: 56%; left: 93%; --lumen-time: 5.1s; --lumen-delay: -4.1s; }
+
+  /* Pause is a real freeze, including the DOM finale layered over the canvas. */
+  .rose-memory-cinema.is-paused .rose-cinema-letter,
+  .rose-memory-cinema.is-paused .rose-cinema-letter::before,
+  .rose-memory-cinema.is-paused .rose-cinema-letter::after,
+  .rose-memory-cinema.is-paused .rose-cinema-letter__inner,
+  .rose-memory-cinema.is-paused .rose-cinema-thanks,
+  .rose-memory-cinema.is-paused .rose-cinema-thanks::before,
+  .rose-memory-cinema.is-paused .rose-cinema-thanks::after,
+  .rose-memory-cinema.is-paused .rose-cinema-thanks strong::before,
+  .rose-memory-cinema.is-paused .rose-cinema-thanks strong::after,
+  .rose-memory-cinema.is-paused .rose-cinema-thanks__glyph,
+  .rose-memory-cinema.is-paused .rose-cinema-lumens,
+  .rose-memory-cinema.is-paused .rose-cinema-lumens i {
+    animation-play-state: paused !important;
+  }
 
   .rose-cinema-grain {
     position: absolute;
@@ -610,13 +739,12 @@ const { frames, paintedMemories, portraits } = Astro.props;
     right: max(1.1rem, env(safe-area-inset-right));
     bottom: max(1.8rem, env(safe-area-inset-bottom));
     display: flex;
-    gap: .45rem;
-    padding: .35rem;
-    border: 1px solid rgba(242, 229, 207, .12);
+    gap: .3rem;
+    padding: .25rem;
+    border: 1px solid rgba(242, 229, 207, .1);
     border-radius: 999px;
-    background: linear-gradient(145deg, rgba(11, 5, 10, .32), rgba(18, 7, 15, .28));
-    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .32), inset 0 1px 0 rgba(242, 229, 207, .04);
-    backdrop-filter: blur(16px) saturate(140%);
+    background: linear-gradient(145deg, rgba(11, 5, 10, .78), rgba(18, 7, 15, .72));
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .24), inset 0 1px 0 rgba(242, 229, 207, .04);
     transition: opacity 300ms ease, transform 300ms ease;
   }
 
@@ -624,15 +752,17 @@ const { frames, paintedMemories, portraits } = Astro.props;
     position: relative;
     display: flex;
     align-items: center;
-    gap: .45rem;
-    height: 2.7rem;
-    padding: 0 .9rem;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
     border: 1px solid rgba(242, 229, 207, .13);
     border-radius: 999px;
     color: var(--rose-bone);
-    background: rgba(9, 4, 7, .42);
-    backdrop-filter: blur(14px) saturate(130%);
+    background: rgba(9, 4, 7, .64);
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     font-family: "IBM Plex Mono", monospace;
     font-size: .6rem;
     font-weight: 500;
@@ -650,13 +780,15 @@ const { frames, paintedMemories, portraits } = Astro.props;
   .rose-cinema-controls button:focus-visible { outline: 3px solid #e5ad60; outline-offset: 3px; }
 
   .rose-cinema-ctrl-label {
-    color: rgba(242, 229, 207, .72);
-    font-family: "IBM Plex Mono", monospace;
-    font-size: .58rem;
-    font-weight: 500;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    pointer-events: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   #rose-cinema-pause[aria-pressed="true"] .rose-cinema-ctrl-label { content: "Tiếp tục"; }
@@ -697,7 +829,6 @@ const { frames, paintedMemories, portraits } = Astro.props;
     box-shadow: 0 0 1.4rem rgba(212, 42, 70, .62), .3rem 0 1rem rgba(229, 173, 96, .5);
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform 80ms linear;
   }
 
   .rose-cinema-progress-glow {
@@ -737,20 +868,60 @@ const { frames, paintedMemories, portraits } = Astro.props;
   @keyframes rose-fallback-orbit { to { transform: rotate(360deg) rotateY(24deg); } }
   @keyframes rose-fallback-breathe { to { transform: scale(1.12) rotate(4deg); } }
   @keyframes rose-film-grain { 0% { transform: translate3d(-2%, 1%, 0); } 50% { transform: translate3d(2%, -1.5%, 0); } 100% { transform: translate3d(0, 2%, 0); } }
-  @keyframes rose-letter-copy-arrive { from { opacity: 0; transform: translateY(.8rem); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes rose-letter-breathe { 50% { filter: drop-shadow(0 0 2.9rem rgba(229, 173, 96, .23)); } }
-  @keyframes rose-letter-corner { from { opacity: 0; transform: rotate(45deg) scale(.22); } to { opacity: 1; transform: rotate(45deg) scale(1); } }
   @keyframes rose-lumen-rise { 0%, 100% { opacity: 0; transform: translate3d(0, .5rem, 0) scale(.25); } 22% { opacity: .8; } 65% { opacity: .34; } 86% { opacity: 0; transform: translate3d(var(--lumen-drift, .8rem), -7rem, 0) scale(1.2); } }
+  @keyframes rose-thanks-arrive { from { opacity: 0; transform: translate3d(-50%, -43%, 0) scale(.88); } to { opacity: 1; transform: translate3d(-50%, -50%, 0) scale(1); } }
+  @keyframes rose-thanks-halo { from { opacity: 0; transform: scale(.74); } to { opacity: 1; transform: scale(1); } }
+  @keyframes rose-thanks-lumens-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes rose-thanks-spark { 0%, 100% { opacity: 0; transform: translate3d(0, .6rem, 0) scale(.42) rotate(0deg); } 24% { opacity: .96; } 54% { opacity: .36; transform: translate3d(.45rem, -1rem, 0) scale(1.2) rotate(18deg); } 76% { opacity: 0; transform: translate3d(.8rem, -1.7rem, 0) scale(.7) rotate(35deg); } }
+  @keyframes rose-thanks-glyph {
+    0% { opacity: 0; transform: translate3d(0, .26em, 0) rotate(-1.5deg) scale(.82); }
+    54% { opacity: 1; transform: translate3d(0, -.035em, 0) rotate(.35deg) scale(1.055); }
+    76% { transform: translate3d(0, .012em, 0) rotate(0deg) scale(.992); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  }
+  @keyframes rose-thanks-light-pass {
+    0%, 13% { opacity: 0; transform: translate3d(-1.2em, 0, 0) skewX(-14deg); }
+    22% { opacity: .88; }
+    42% { opacity: 0; transform: translate3d(10.4em, 0, 0) skewX(-14deg); }
+    100% { opacity: 0; transform: translate3d(10.4em, 0, 0) skewX(-14deg); }
+  }
 
   @media (prefers-reduced-motion: reduce) {
-    .rose-memory-cinema.is-letter-final .rose-cinema-letter,
-    .rose-memory-cinema.is-letter-final .rose-cinema-lumens i { animation: none; }
+    .rose-memory-cinema.is-paper-in .rose-cinema-letter,
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks,
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks::before,
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks::after,
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks strong::before,
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks strong::after,
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks__glyph,
+    .rose-memory-cinema.is-thanks-in .rose-cinema-lumens,
+    .rose-memory-cinema.is-thanks-in .rose-cinema-lumens i { animation: none; }
+
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks__glyph {
+      opacity: 1;
+      transform: none;
+    }
+
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks {
+      color: #fff1d8;
+      opacity: 1;
+      visibility: visible;
+      text-shadow: 0 0 .09em rgba(255, 247, 226, .85), 0 .18em .5em rgba(13, 3, 10, .7);
+      transform: translate3d(-50%, -50%, 0);
+    }
+
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks strong,
+    .rose-memory-cinema.is-thanks-in .rose-cinema-thanks__ornament {
+      opacity: 1;
+      visibility: visible;
+    }
   }
 
   @media (max-width: 720px) {
     .rose-cinema-letter { width: min(86vw, 24rem); min-height: min(58svh, 28rem); }
     .rose-cinema-letter__inner { width: 76%; padding: 2.6rem 0; }
     .rose-cinema-letter h2 { font-size: clamp(2rem, 10vw, 2.75rem); }
+    .rose-cinema-thanks { width: min(92vw, 32rem); justify-content: center; font-size: clamp(3rem, 14vw, 5.2rem); }
     .rose-cinema-grain { opacity: .055; }
     .rose-memory-cinema.is-cinema-ready .rose-cinema-grain { display: none; }
     .rose-cinema-depth i:nth-child(3) { display: none; }

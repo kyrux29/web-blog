@@ -1,0 +1,37 @@
+- generic [active] [ref=e1]:
+  - status [ref=e2]
+  - main [ref=e7]:
+    - region [ref=e8]:
+      - heading "Rose Door" [level=1] [ref=e9]
+      - button "Gõ lên cánh cửa lần thứ nhất" [ref=e33] [cursor=pointer]
+      - paragraph: Gõ cửa ba lần
+      - status [ref=e43]
+    - region [ref=e44]:
+      - article [ref=e45]:
+        - generic [ref=e46]: R
+        - generic [ref=e47]:
+          - paragraph [ref=e48]: To · Trà
+          - heading "Không cần phải ổn ngay." [level=2] [ref=e49]
+          - generic [ref=e50]:
+            - paragraph [ref=e51]: Có những người không cần bước vào thật ồn ào, nhưng lại làm cả một khoảng thời gian trở nên khác đi. Cậu là một người như vậy.
+            - paragraph [ref=e52]: "Ở đây không có lời hứa thật lớn. Chỉ có một căn phòng nhỏ, vài mảnh ký ức, và một điều rất đơn giản: mong cậu luôn được đối xử dịu dàng — kể cả bởi chính cậu."
+            - paragraph [ref=e53]:
+              - text: Nếu một ngày mọi thứ hơi nặng, cứ nghỉ một chút. Cánh cửa này vẫn ở đây, ánh đèn vẫn bật, và trong căn phòng này cậu luôn là
+              - emphasis [ref=e54]: Trà bản xinh đẹp số 1.
+          - paragraph [ref=e55]: — vq
+          - group "Điều khiển Rose Door" [ref=e56]:
+            - button "Xem lại bộ phim" [ref=e57] [cursor=pointer]:
+              - generic [ref=e60]: Xem lại
+            - button "Khép cửa lại" [ref=e61] [cursor=pointer]:
+              - generic [ref=e64]: Khép cửa
+            - link "Về Kyrux Blog" [ref=e65] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e68]: Về trang chủ
+  - link "Bỏ qua phần mở đầu và mở lá thư" [ref=e69] [cursor=pointer]:
+    - /url: "#rose-story"
+    - text: Bỏ qua
+  - generic [ref=e74]:
+    - button [ref=e75]
+    - button [ref=e81]
+    - button [ref=e85]
+    - button [ref=e93]
