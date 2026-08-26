@@ -1,5 +1,9 @@
 # build output
 dist/
+
+# local browser QA artefacts
+.playwright-cli/
+output/
 # generated types
 .astro/
 
